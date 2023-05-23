@@ -538,7 +538,8 @@ public class Generate {
                     }
                     #ifndef VULKAN_HPP_NO_SMART_HANDLE
                     namespace VULKAN_HPP_NAMESPACE {
-                      template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::$0, VMA_HPP_NAMESPACE::Dispatcher> {
+                      template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::$0, VMA_HPP_NAMESPACE::Dispatcher> {
+                        public:
                         using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::$0, $3>;
                       };
                     }
