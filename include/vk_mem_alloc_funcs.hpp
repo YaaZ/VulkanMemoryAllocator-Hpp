@@ -4,6 +4,143 @@
 namespace VMA_HPP_NAMESPACE {
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
+    vmaDestroyVirtualBlock(m_virtualBlock);
+  }
+#else
+  VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
+    vmaDestroyVirtualBlock(m_virtualBlock);
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Bool32 VirtualBlock::isVirtualBlockEmpty() const {
+    VULKAN_HPP_NAMESPACE::Bool32 result = static_cast<VULKAN_HPP_NAMESPACE::Bool32>( vmaIsVirtualBlockEmpty(m_virtualBlock) );
+    return result;
+  }
+#else
+  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Bool32 VirtualBlock::isVirtualBlockEmpty() const {
+    VULKAN_HPP_NAMESPACE::Bool32 result = static_cast<VULKAN_HPP_NAMESPACE::Bool32>( vmaIsVirtualBlockEmpty(m_virtualBlock) );
+    return result;
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE VirtualAllocationInfo VirtualBlock::getVirtualAllocationInfo(VirtualAllocation allocation) const {
+    VirtualAllocationInfo virtualAllocInfo;
+    vmaGetVirtualAllocationInfo(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), reinterpret_cast<VmaVirtualAllocationInfo*>(&virtualAllocInfo));
+    return virtualAllocInfo;
+  }
+#endif
+  VULKAN_HPP_INLINE void VirtualBlock::getVirtualAllocationInfo(VirtualAllocation allocation,
+                                                                VirtualAllocationInfo* virtualAllocInfo) const {
+    vmaGetVirtualAllocationInfo(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), reinterpret_cast<VmaVirtualAllocationInfo*>(virtualAllocInfo));
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualAllocation>::type VirtualBlock::virtualAllocate(const VirtualAllocationCreateInfo& createInfo,
+                                                                                                                          VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) const {
+    VirtualAllocation allocation;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaVirtualAllocate(m_virtualBlock, reinterpret_cast<const VmaVirtualAllocationCreateInfo*>(&createInfo), reinterpret_cast<VmaVirtualAllocation*>(&allocation), reinterpret_cast<VkDeviceSize*>(static_cast<VULKAN_HPP_NAMESPACE::DeviceSize*>(offset))) );
+    resultCheck(result, VMA_HPP_NAMESPACE_STRING "::VirtualBlock::virtualAllocate");
+    return createResultValueType(result, allocation);
+  }
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+  VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualAllocation>::type VirtualBlock::virtualAllocateUnique(const VirtualAllocationCreateInfo& createInfo,
+                                                                                                                                      VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) const {
+    VirtualAllocation allocation;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaVirtualAllocate(m_virtualBlock, reinterpret_cast<const VmaVirtualAllocationCreateInfo*>(&createInfo), reinterpret_cast<VmaVirtualAllocation*>(&allocation), reinterpret_cast<VkDeviceSize*>(static_cast<VULKAN_HPP_NAMESPACE::DeviceSize*>(offset))) );
+    resultCheck(result, VMA_HPP_NAMESPACE_STRING "::VirtualBlock::virtualAllocate");
+    return createResultValueType(result, createUniqueHandle(allocation, this));
+  }
+#endif
+#endif
+  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result VirtualBlock::virtualAllocate(const VirtualAllocationCreateInfo* createInfo,
+                                                                               VirtualAllocation* allocation,
+                                                                               VULKAN_HPP_NAMESPACE::DeviceSize* offset) const {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaVirtualAllocate(m_virtualBlock, reinterpret_cast<const VmaVirtualAllocationCreateInfo*>(createInfo), reinterpret_cast<VmaVirtualAllocation*>(allocation), reinterpret_cast<VkDeviceSize*>(offset)) );
+    return result;
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void VirtualBlock::virtualFree(VirtualAllocation allocation) const {
+    vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
+  }
+#else
+  VULKAN_HPP_INLINE void VirtualBlock::virtualFree(VirtualAllocation allocation) const {
+    vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
+    vmaClearVirtualBlock(m_virtualBlock);
+  }
+#else
+  VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
+    vmaClearVirtualBlock(m_virtualBlock);
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void VirtualBlock::setVirtualAllocationUserData(VirtualAllocation allocation,
+                                                                    void* userData) const {
+    vmaSetVirtualAllocationUserData(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), userData);
+  }
+#else
+  VULKAN_HPP_INLINE void VirtualBlock::setVirtualAllocationUserData(VirtualAllocation allocation,
+                                                                    void* userData) const {
+    vmaSetVirtualAllocationUserData(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), userData);
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE Statistics VirtualBlock::getVirtualBlockStatistics() const {
+    Statistics stats;
+    vmaGetVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaStatistics*>(&stats));
+    return stats;
+  }
+#endif
+  VULKAN_HPP_INLINE void VirtualBlock::getVirtualBlockStatistics(Statistics* stats) const {
+    vmaGetVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaStatistics*>(stats));
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE DetailedStatistics VirtualBlock::calculateVirtualBlockStatistics() const {
+    DetailedStatistics stats;
+    vmaCalculateVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaDetailedStatistics*>(&stats));
+    return stats;
+  }
+#endif
+  VULKAN_HPP_INLINE void VirtualBlock::calculateVirtualBlockStatistics(DetailedStatistics* stats) const {
+    vmaCalculateVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaDetailedStatistics*>(stats));
+  }
+
+#if VMA_STATS_STRING_ENABLED
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE char* VirtualBlock::buildVirtualBlockStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
+    char* statsString;
+    vmaBuildVirtualBlockStatsString(m_virtualBlock, &statsString, static_cast<VkBool32>(detailedMap));
+    return statsString;
+  }
+#endif
+  VULKAN_HPP_INLINE void VirtualBlock::buildVirtualBlockStatsString(char** statsString,
+                                                                    VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
+    vmaBuildVirtualBlockStatsString(m_virtualBlock, statsString, static_cast<VkBool32>(detailedMap));
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* statsString) const {
+    vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
+  }
+#else
+  VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* statsString) const {
+    vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
+  }
+#endif
+
+#endif
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_INLINE void Allocator::destroy() const {
     vmaDestroyAllocator(m_allocator);
   }
@@ -897,143 +1034,6 @@ namespace VMA_HPP_NAMESPACE {
 #else
   VULKAN_HPP_INLINE void Allocator::freeStatsString(char* statsString) const {
     vmaFreeStatsString(m_allocator, statsString);
-  }
-#endif
-
-#endif
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
-    vmaDestroyVirtualBlock(m_virtualBlock);
-  }
-#else
-  VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
-    vmaDestroyVirtualBlock(m_virtualBlock);
-  }
-#endif
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Bool32 VirtualBlock::isVirtualBlockEmpty() const {
-    VULKAN_HPP_NAMESPACE::Bool32 result = static_cast<VULKAN_HPP_NAMESPACE::Bool32>( vmaIsVirtualBlockEmpty(m_virtualBlock) );
-    return result;
-  }
-#else
-  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Bool32 VirtualBlock::isVirtualBlockEmpty() const {
-    VULKAN_HPP_NAMESPACE::Bool32 result = static_cast<VULKAN_HPP_NAMESPACE::Bool32>( vmaIsVirtualBlockEmpty(m_virtualBlock) );
-    return result;
-  }
-#endif
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE VirtualAllocationInfo VirtualBlock::getVirtualAllocationInfo(VirtualAllocation allocation) const {
-    VirtualAllocationInfo virtualAllocInfo;
-    vmaGetVirtualAllocationInfo(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), reinterpret_cast<VmaVirtualAllocationInfo*>(&virtualAllocInfo));
-    return virtualAllocInfo;
-  }
-#endif
-  VULKAN_HPP_INLINE void VirtualBlock::getVirtualAllocationInfo(VirtualAllocation allocation,
-                                                                VirtualAllocationInfo* virtualAllocInfo) const {
-    vmaGetVirtualAllocationInfo(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), reinterpret_cast<VmaVirtualAllocationInfo*>(virtualAllocInfo));
-  }
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualAllocation>::type VirtualBlock::virtualAllocate(const VirtualAllocationCreateInfo& createInfo,
-                                                                                                                          VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) const {
-    VirtualAllocation allocation;
-    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaVirtualAllocate(m_virtualBlock, reinterpret_cast<const VmaVirtualAllocationCreateInfo*>(&createInfo), reinterpret_cast<VmaVirtualAllocation*>(&allocation), reinterpret_cast<VkDeviceSize*>(static_cast<VULKAN_HPP_NAMESPACE::DeviceSize*>(offset))) );
-    resultCheck(result, VMA_HPP_NAMESPACE_STRING "::VirtualBlock::virtualAllocate");
-    return createResultValueType(result, allocation);
-  }
-#ifndef VULKAN_HPP_NO_SMART_HANDLE
-  VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualAllocation>::type VirtualBlock::virtualAllocateUnique(const VirtualAllocationCreateInfo& createInfo,
-                                                                                                                                      VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) const {
-    VirtualAllocation allocation;
-    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaVirtualAllocate(m_virtualBlock, reinterpret_cast<const VmaVirtualAllocationCreateInfo*>(&createInfo), reinterpret_cast<VmaVirtualAllocation*>(&allocation), reinterpret_cast<VkDeviceSize*>(static_cast<VULKAN_HPP_NAMESPACE::DeviceSize*>(offset))) );
-    resultCheck(result, VMA_HPP_NAMESPACE_STRING "::VirtualBlock::virtualAllocate");
-    return createResultValueType(result, createUniqueHandle(allocation, this));
-  }
-#endif
-#endif
-  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result VirtualBlock::virtualAllocate(const VirtualAllocationCreateInfo* createInfo,
-                                                                               VirtualAllocation* allocation,
-                                                                               VULKAN_HPP_NAMESPACE::DeviceSize* offset) const {
-    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaVirtualAllocate(m_virtualBlock, reinterpret_cast<const VmaVirtualAllocationCreateInfo*>(createInfo), reinterpret_cast<VmaVirtualAllocation*>(allocation), reinterpret_cast<VkDeviceSize*>(offset)) );
-    return result;
-  }
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE void VirtualBlock::virtualFree(VirtualAllocation allocation) const {
-    vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
-  }
-#else
-  VULKAN_HPP_INLINE void VirtualBlock::virtualFree(VirtualAllocation allocation) const {
-    vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
-  }
-#endif
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
-    vmaClearVirtualBlock(m_virtualBlock);
-  }
-#else
-  VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
-    vmaClearVirtualBlock(m_virtualBlock);
-  }
-#endif
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE void VirtualBlock::setVirtualAllocationUserData(VirtualAllocation allocation,
-                                                                    void* userData) const {
-    vmaSetVirtualAllocationUserData(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), userData);
-  }
-#else
-  VULKAN_HPP_INLINE void VirtualBlock::setVirtualAllocationUserData(VirtualAllocation allocation,
-                                                                    void* userData) const {
-    vmaSetVirtualAllocationUserData(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), userData);
-  }
-#endif
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE Statistics VirtualBlock::getVirtualBlockStatistics() const {
-    Statistics stats;
-    vmaGetVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaStatistics*>(&stats));
-    return stats;
-  }
-#endif
-  VULKAN_HPP_INLINE void VirtualBlock::getVirtualBlockStatistics(Statistics* stats) const {
-    vmaGetVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaStatistics*>(stats));
-  }
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE DetailedStatistics VirtualBlock::calculateVirtualBlockStatistics() const {
-    DetailedStatistics stats;
-    vmaCalculateVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaDetailedStatistics*>(&stats));
-    return stats;
-  }
-#endif
-  VULKAN_HPP_INLINE void VirtualBlock::calculateVirtualBlockStatistics(DetailedStatistics* stats) const {
-    vmaCalculateVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaDetailedStatistics*>(stats));
-  }
-
-#if VMA_STATS_STRING_ENABLED
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE char* VirtualBlock::buildVirtualBlockStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
-    char* statsString;
-    vmaBuildVirtualBlockStatsString(m_virtualBlock, &statsString, static_cast<VkBool32>(detailedMap));
-    return statsString;
-  }
-#endif
-  VULKAN_HPP_INLINE void VirtualBlock::buildVirtualBlockStatsString(char** statsString,
-                                                                    VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
-    vmaBuildVirtualBlockStatsString(m_virtualBlock, statsString, static_cast<VkBool32>(detailedMap));
-  }
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* statsString) const {
-    vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
-  }
-#else
-  VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* statsString) const {
-    vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
   }
 #endif
 
