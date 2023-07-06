@@ -81,7 +81,8 @@ namespace VMA_HPP_NAMESPACE {
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VULKAN_HPP_NAMESPACE {
-  template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::Dispatcher> {
+  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::Dispatcher> {
+    public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::Allocator>;
   };
 }
@@ -138,7 +139,8 @@ namespace VMA_HPP_NAMESPACE {
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VULKAN_HPP_NAMESPACE {
-  template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::Dispatcher> {
+  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::Dispatcher> {
+    public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::Allocator>;
   };
 }
@@ -195,7 +197,8 @@ namespace VMA_HPP_NAMESPACE {
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VULKAN_HPP_NAMESPACE {
-  template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::DefragmentationContext, VMA_HPP_NAMESPACE::Dispatcher> {
+  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::DefragmentationContext, VMA_HPP_NAMESPACE::Dispatcher> {
+    public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::DefragmentationContext, void>;
   };
 }
@@ -731,7 +734,8 @@ namespace VMA_HPP_NAMESPACE {
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VULKAN_HPP_NAMESPACE {
-  template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocator, VMA_HPP_NAMESPACE::Dispatcher> {
+  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocator, VMA_HPP_NAMESPACE::Dispatcher> {
+    public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::Allocator, void>;
   };
 }
@@ -788,7 +792,8 @@ namespace VMA_HPP_NAMESPACE {
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VULKAN_HPP_NAMESPACE {
-  template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualAllocation, VMA_HPP_NAMESPACE::Dispatcher> {
+  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualAllocation, VMA_HPP_NAMESPACE::Dispatcher> {
+    public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::VirtualAllocation, VMA_HPP_NAMESPACE::VirtualBlock>;
   };
 }
@@ -919,7 +924,8 @@ namespace VMA_HPP_NAMESPACE {
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VULKAN_HPP_NAMESPACE {
-  template<> struct UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualBlock, VMA_HPP_NAMESPACE::Dispatcher> {
+  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualBlock, VMA_HPP_NAMESPACE::Dispatcher> {
+    public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::VirtualBlock, void>;
   };
 }
