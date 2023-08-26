@@ -580,11 +580,13 @@ namespace VMA_HPP_NAMESPACE {
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBufferMemory2(Allocation allocation,
                                                                                  VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                 VULKAN_HPP_NAMESPACE::Buffer buffer) const;
+                                                                                 VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                                 const void* next) const;
 #else
     VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result bindBufferMemory2(Allocation allocation,
                                                                         VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                        VULKAN_HPP_NAMESPACE::Buffer buffer) const;
+                                                                        VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                        const void* next) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
@@ -598,11 +600,13 @@ namespace VMA_HPP_NAMESPACE {
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImageMemory2(Allocation allocation,
                                                                                 VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                VULKAN_HPP_NAMESPACE::Image image) const;
+                                                                                VULKAN_HPP_NAMESPACE::Image image,
+                                                                                const void* next) const;
 #else
     VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result bindImageMemory2(Allocation allocation,
                                                                        VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                       VULKAN_HPP_NAMESPACE::Image image) const;
+                                                                       VULKAN_HPP_NAMESPACE::Image image,
+                                                                       const void* next) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE

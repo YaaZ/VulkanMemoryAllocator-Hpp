@@ -322,7 +322,7 @@ public class Generate {
                 "(const\\s+)?(\\w+)" +
                 "(\\s*\\*)?(?:\\s+VMA_(NULLABLE|NOT_NULL)(?:_NON_DISPATCHABLE)?)?" +
                 "(\\s*\\*)?(?:\\s+VMA_(NULLABLE|NOT_NULL)(?:_NON_DISPATCHABLE)?)?" +
-                "(?:\\s+VMA_LEN_IF_NOT_NULL\\(\\s*([^)]+)\\s*\\))?" +
+                "(?:\\s+(VMA_LEN_IF_NOT_NULL|VMA_EXTENDS_VK_STRUCT)\\(\\s*([^)]+)\\s*\\))?" +
                 "\\s+(\\w+)" +
                 "((?:\\s*\\[\\w+])+)?" +
                 "\\s*[;,)]");
@@ -353,7 +353,7 @@ public class Generate {
                 if (tag2 != null) tag = VarTag.valueOf(tag2);
             }  else if (tag1 != null) tag = VarTag.valueOf(tag1);
 
-            String arr = matcher.group(9);
+            String arr = matcher.group(10);
             if (arr != null) {
                 arr = arr.strip();
                 while (!arr.isEmpty()) {
@@ -366,7 +366,12 @@ public class Generate {
 
             if (p1 && p2) c = false; // double pointer, then first-level pointer is not const
 
-            return new Var(originalType, c, type, p1 || p2, tag, matcher.group(7), primitive, matcher.group(8));
+            String lenIfNotNull = null;
+            if ((matcher.group(7) != null) && (matcher.group(7).equals("VMA_LEN_IF_NOT_NULL"))) {
+                lenIfNotNull = matcher.group(8);
+            }
+
+            return new Var(originalType, c, type, p1 || p2, tag, lenIfNotNull, primitive, matcher.group(9));
         }
 
         public String capitalName() {

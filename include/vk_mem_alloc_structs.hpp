@@ -1082,6 +1082,7 @@ namespace VMA_HPP_NAMESPACE {
         , size_t maxBlockCount_ = {}
         , float priority_ = {}
         , VULKAN_HPP_NAMESPACE::DeviceSize minAllocationAlignment_ = {}
+        , void* pMemoryAllocateNext_ = {}
       ) VULKAN_HPP_NOEXCEPT
       : memoryTypeIndex(memoryTypeIndex_)
       , flags(flags_)
@@ -1090,6 +1091,7 @@ namespace VMA_HPP_NAMESPACE {
       , maxBlockCount(maxBlockCount_)
       , priority(priority_)
       , minAllocationAlignment(minAllocationAlignment_)
+      , pMemoryAllocateNext(pMemoryAllocateNext_)
       {}
 
     VULKAN_HPP_CONSTEXPR PoolCreateInfo(PoolCreateInfo const &) VULKAN_HPP_NOEXCEPT = default;
@@ -1121,6 +1123,7 @@ namespace VMA_HPP_NAMESPACE {
           && maxBlockCount == rhs.maxBlockCount
           && priority == rhs.priority
           && minAllocationAlignment == rhs.minAllocationAlignment
+          && pMemoryAllocateNext == rhs.pMemoryAllocateNext
       ;
     }
 #endif
@@ -1161,6 +1164,11 @@ namespace VMA_HPP_NAMESPACE {
       minAllocationAlignment = minAllocationAlignment_;
       return *this;
     }
+
+    VULKAN_HPP_CONSTEXPR_14 PoolCreateInfo& setPMemoryAllocateNext(void* pMemoryAllocateNext_) VULKAN_HPP_NOEXCEPT {
+      pMemoryAllocateNext = pMemoryAllocateNext_;
+      return *this;
+    }
 #endif
 
   public:
@@ -1171,6 +1179,7 @@ namespace VMA_HPP_NAMESPACE {
     size_t maxBlockCount = {};
     float priority = {};
     VULKAN_HPP_NAMESPACE::DeviceSize minAllocationAlignment = {};
+    void* pMemoryAllocateNext = {};
   };
   VULKAN_HPP_STATIC_ASSERT(sizeof(PoolCreateInfo) == sizeof(VmaPoolCreateInfo),
                            "struct and wrapper have different size!");
