@@ -834,11 +834,11 @@ public class Generate {
                         if (uniqueHandle) {
                             if (params.get(outputs.get(0)).lenIfNotNull != null) {
                                 returnValue = "createUniqueHandleVector(" + returnValue +
-                                        (handle != namespaceHandle ? ", this" : "") +
+                                        (handle != namespaceHandle ? ", *this" : "") +
                                         (customVectorAllocator ? ", vectorAllocator)" : ", VectorAllocator())");
                             } else {
                                 returnValue = "createUniqueHandle(" + returnValue +
-                                        (handle != namespaceHandle ? ", this)" : ")");
+                                        (handle != namespaceHandle ? ", *this)" : ")");
                             }
                         }
                         if (ret.equals("void")) returnValue = "result";
