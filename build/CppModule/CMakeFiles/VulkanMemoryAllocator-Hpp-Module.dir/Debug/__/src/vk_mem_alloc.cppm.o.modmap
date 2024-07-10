@@ -1,3 +1,0 @@
--x c++-module
--fmodule-output=CppModule/CMakeFiles/VulkanMemoryAllocator-Hpp-Module.dir/Debug/vk_mem_alloc_hpp.pcm
--fmodule-file=vulkan_hpp=CppModule/CMakeFiles/Vulkan-Hpp-Module.dir/Debug/vulkan_hpp.pcm

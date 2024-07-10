@@ -1,4 +1,0 @@
-ninja_dyndep_version = 1.0
-build CppModule/CMakeFiles/Vulkan-Hpp-Module.dir/Debug/usr/include/vulkan/vulkan.cppm.o | CppModule/CMakeFiles/Vulkan-Hpp-Module.dir/Debug/vulkan_hpp.pcm: dyndep
-  restat = 1
-
