@@ -1,3 +1,4 @@
+list(APPEND CMAKE_PREFIX_PATH ./VulkanMemoryAllocator/install)
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 
 project(
@@ -8,6 +9,16 @@ project(
 
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
 add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp ALIAS VulkanMemoryAllocator-Hpp)
+target_link_libraries(VulkanMemoryAllocator-Hpp
+    INTERFACE
+        Vulkan::Vulkan
+        GPUOpen::VulkanMemoryAllocator
+)
+
+option(VMA_BUILD_CXX_MODULE OFF)
+if (${VMA_BUILD_CXX_MODULE})
+  add_subdirectory(CppModule)
+endif()
 
 target_include_directories(VulkanMemoryAllocator-Hpp INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 

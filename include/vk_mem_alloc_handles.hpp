@@ -1,7 +1,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
 #define VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
 
   struct DeviceMemoryCallbacks;
   struct VulkanFunctions;
@@ -32,7 +32,7 @@ namespace VMA_HPP_NAMESPACE {
 }
 
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   class Pool {
   public:
     using CType      = VmaPool;
@@ -81,16 +81,16 @@ namespace VMA_HPP_NAMESPACE {
                            "handle and wrapper have different size!");
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-namespace VULKAN_HPP_NAMESPACE {
+VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::Dispatcher> {
     public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::Allocator>;
   };
 }
-namespace VMA_HPP_NAMESPACE { using UniquePool = VULKAN_HPP_NAMESPACE::UniqueHandle<Pool, Dispatcher>; }
+VMA_EXPORT namespace VMA_HPP_NAMESPACE { using UniquePool = VULKAN_HPP_NAMESPACE::UniqueHandle<Pool, Dispatcher>; }
 #endif
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   class Allocation {
   public:
     using CType      = VmaAllocation;
@@ -139,16 +139,16 @@ namespace VMA_HPP_NAMESPACE {
                            "handle and wrapper have different size!");
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-namespace VULKAN_HPP_NAMESPACE {
+VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::Dispatcher> {
     public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::Allocator>;
   };
 }
-namespace VMA_HPP_NAMESPACE { using UniqueAllocation = VULKAN_HPP_NAMESPACE::UniqueHandle<Allocation, Dispatcher>; }
+VMA_EXPORT namespace VMA_HPP_NAMESPACE { using UniqueAllocation = VULKAN_HPP_NAMESPACE::UniqueHandle<Allocation, Dispatcher>; }
 #endif
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   class DefragmentationContext {
   public:
     using CType      = VmaDefragmentationContext;
@@ -197,7 +197,7 @@ namespace VMA_HPP_NAMESPACE {
                            "handle and wrapper have different size!");
 }
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   class Allocator {
   public:
     using CType      = VmaAllocator;
@@ -755,16 +755,16 @@ namespace VMA_HPP_NAMESPACE {
                            "handle and wrapper have different size!");
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-namespace VULKAN_HPP_NAMESPACE {
+VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocator, VMA_HPP_NAMESPACE::Dispatcher> {
     public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::Allocator, void>;
   };
 }
-namespace VMA_HPP_NAMESPACE { using UniqueAllocator = VULKAN_HPP_NAMESPACE::UniqueHandle<Allocator, Dispatcher>; }
+VMA_EXPORT namespace VMA_HPP_NAMESPACE { using UniqueAllocator = VULKAN_HPP_NAMESPACE::UniqueHandle<Allocator, Dispatcher>; }
 #endif
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   class VirtualAllocation {
   public:
     using CType      = VmaVirtualAllocation;
@@ -813,16 +813,16 @@ namespace VMA_HPP_NAMESPACE {
                            "handle and wrapper have different size!");
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-namespace VULKAN_HPP_NAMESPACE {
+VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualAllocation, VMA_HPP_NAMESPACE::Dispatcher> {
     public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::VirtualAllocation, VMA_HPP_NAMESPACE::VirtualBlock>;
   };
 }
-namespace VMA_HPP_NAMESPACE { using UniqueVirtualAllocation = VULKAN_HPP_NAMESPACE::UniqueHandle<VirtualAllocation, Dispatcher>; }
+VMA_EXPORT namespace VMA_HPP_NAMESPACE { using UniqueVirtualAllocation = VULKAN_HPP_NAMESPACE::UniqueHandle<VirtualAllocation, Dispatcher>; }
 #endif
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   class VirtualBlock {
   public:
     using CType      = VmaVirtualBlock;
@@ -945,16 +945,16 @@ namespace VMA_HPP_NAMESPACE {
                            "handle and wrapper have different size!");
 }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-namespace VULKAN_HPP_NAMESPACE {
+VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualBlock, VMA_HPP_NAMESPACE::Dispatcher> {
     public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::VirtualBlock, void>;
   };
 }
-namespace VMA_HPP_NAMESPACE { using UniqueVirtualBlock = VULKAN_HPP_NAMESPACE::UniqueHandle<VirtualBlock, Dispatcher>; }
+VMA_EXPORT namespace VMA_HPP_NAMESPACE { using UniqueVirtualBlock = VULKAN_HPP_NAMESPACE::UniqueHandle<VirtualBlock, Dispatcher>; }
 #endif
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type createAllocator(const AllocatorCreateInfo& createInfo);

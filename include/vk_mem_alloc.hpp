@@ -1,6 +1,9 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_HPP
 #define VULKAN_MEMORY_ALLOCATOR_HPP
 
+#ifndef VMA_BUILD_MODULE
+#define VMA_EXPORT
+
 #if !defined(AMD_VULKAN_MEMORY_ALLOCATOR_H)
 #include <vk_mem_alloc.h>
 #endif
@@ -9,6 +12,10 @@
 #include <vulkan/vulkan.hpp>
 #endif
 
+#else // VMA_BUILD_MODULE
+#define VMA_EXPORT export
+#endif // VMA_BUILD_MODULE
+
 #if !defined(VMA_HPP_NAMESPACE)
 #define VMA_HPP_NAMESPACE vma
 #endif
@@ -16,7 +23,7 @@
 #define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
 
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   struct Dispatcher {}; // VMA uses function pointers from VmaAllocator instead
   class Allocator;
 
@@ -60,7 +67,7 @@ namespace VMA_HPP_NAMESPACE {
     void destroy(const T& t) VULKAN_HPP_NOEXCEPT { t.destroy(); }
   };
 }
-namespace VULKAN_HPP_NAMESPACE {
+VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::Dispatcher> {
     public:
     using deleter = VMA_HPP_NAMESPACE::Deleter<Buffer, VMA_HPP_NAMESPACE::Allocator>;
@@ -70,7 +77,7 @@ namespace VULKAN_HPP_NAMESPACE {
     using deleter = VMA_HPP_NAMESPACE::Deleter<Image, VMA_HPP_NAMESPACE::Allocator>;
   };
 }
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   using UniqueBuffer = VULKAN_HPP_NAMESPACE::UniqueHandle<VULKAN_HPP_NAMESPACE::Buffer, Dispatcher>;
   using UniqueImage = VULKAN_HPP_NAMESPACE::UniqueHandle<VULKAN_HPP_NAMESPACE::Image, Dispatcher>;
 }
@@ -81,7 +88,7 @@ namespace VMA_HPP_NAMESPACE {
 #include "vk_mem_alloc_structs.hpp"
 #include "vk_mem_alloc_funcs.hpp"
 
-namespace VMA_HPP_NAMESPACE {
+VMA_EXPORT namespace VMA_HPP_NAMESPACE {
   
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 # define VMA_HPP_DESTROY_IMPL(NAME) \
