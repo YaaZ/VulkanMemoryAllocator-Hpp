@@ -1,0 +1,17 @@
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CMakeFiles/edit_cache.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CMakeFiles/rebuild_cache.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CMakeFiles/install.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CMakeFiles/install/local.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CMakeFiles/install/strip.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/VulkanMemoryAllocator/CMakeFiles/edit_cache.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/VulkanMemoryAllocator/CMakeFiles/rebuild_cache.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/VulkanMemoryAllocator/CMakeFiles/install.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/VulkanMemoryAllocator/CMakeFiles/install/local.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/VulkanMemoryAllocator/CMakeFiles/install/strip.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/Vulkan-Hpp-Module.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/VulkanMemoryAllocator-Hpp-Module.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/edit_cache.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/rebuild_cache.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/install.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/install/local.dir
+/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/build/CppModule/CMakeFiles/install/strip.dir

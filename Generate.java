@@ -911,17 +911,32 @@ public class Generate {
                 #define VMA_USE_VULKAN_HPP_MODULE 0
                 #endif
 
+                #ifndef VMA_USE_STD_MODULE
+                #define VMA_USE_STD_MODULE 0
+                #endif
+
                 #define VMA_IMPLEMENTATION
                 #include <vk_mem_alloc.h>
 
-                #if !VMA_USE_VULKAN_HPP_MODULE
+                #if VMA_USE_VULKAN_HPP_MODULE
+                #include <vulkan/vulkan_hpp_macros.hpp>
+                #else
                 #include <vulkan/vulkan.hpp>
-                #endif // !VMA_USE_VULKAN_HPP_MODULE
+                #endif
+
+                #if !VMA_USE_STD_MODULE
+                #include <string>
+                #include <vector>
+                #endif
 
                 export module vk_mem_alloc_hpp;
 
                 #if VMA_USE_VULKAN_HPP_MODULE
                 import vulkan_hpp;
+                #endif
+
+                #if VMA_USE_STD_MODULE
+                import std.compat;
                 #endif
 
                 #include "vk_mem_alloc.hpp"

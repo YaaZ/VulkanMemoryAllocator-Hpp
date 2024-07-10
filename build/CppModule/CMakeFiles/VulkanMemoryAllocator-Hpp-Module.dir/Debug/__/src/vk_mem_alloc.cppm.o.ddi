@@ -1,0 +1,21 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "CppModule/CMakeFiles/VulkanMemoryAllocator-Hpp-Module.dir/Debug/__/src/vk_mem_alloc.cppm.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "vk_mem_alloc_hpp",
+          "source-path": "/home/kuba/Desktop/gitproj/VulkanMemoryAllocator-Hpp/src/vk_mem_alloc.cppm"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "vulkan_hpp"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

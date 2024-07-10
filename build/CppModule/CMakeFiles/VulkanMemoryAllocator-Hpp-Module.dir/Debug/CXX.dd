@@ -1,0 +1,4 @@
+ninja_dyndep_version = 1.0
+build CppModule/CMakeFiles/VulkanMemoryAllocator-Hpp-Module.dir/Debug/__/src/vk_mem_alloc.cppm.o | CppModule/CMakeFiles/VulkanMemoryAllocator-Hpp-Module.dir/Debug/vk_mem_alloc_hpp.pcm: dyndep | CppModule/CMakeFiles/Vulkan-Hpp-Module.dir/Debug/vulkan_hpp.pcm
+  restat = 1
+
