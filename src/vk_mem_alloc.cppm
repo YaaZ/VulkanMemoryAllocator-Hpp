@@ -13,9 +13,9 @@ module;
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
-#if VMA_USE_VULKAN_HPP_MODULE
 #include <vulkan/vulkan_hpp_macros.hpp>
-#else
+
+#if !VMA_USE_VULKAN_HPP_MODULE
 #include <vulkan/vulkan.hpp>
 #endif
 

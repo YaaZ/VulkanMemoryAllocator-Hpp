@@ -843,9 +843,9 @@ public class Generate {
                         }
                         if (ret.equals("void")) returnValue = "result";
                         else returnValue = "result, " + returnValue;
-                        s.append("\nVULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::");
+                        s.append("\nVMA_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::");
                         if (handle != namespaceHandle) s.append(handle.name).append("::");
-                        s.append(methodName).append("\");\nreturn VULKAN_HPP_NAMESPACE::detail::createResultValueType(").append(returnValue).append(");");
+                        s.append(methodName).append("\");\nreturn VMA_HPP_NAMESPACE::detail::createResultValueType(").append(returnValue).append(");");
                     } else if (!ret.equals("void")) s.append("\nreturn ").append(returnValue).append(";");
                     return processTemplate("""
                                 $0 {
@@ -918,9 +918,9 @@ public class Generate {
                 #define VMA_IMPLEMENTATION
                 #include <vk_mem_alloc.h>
 
-                #if VMA_USE_VULKAN_HPP_MODULE
                 #include <vulkan/vulkan_hpp_macros.hpp>
-                #else
+                
+                #if !VMA_USE_VULKAN_HPP_MODULE
                 #include <vulkan/vulkan.hpp>
                 #endif
 
