@@ -8,11 +8,14 @@ project(
 
 find_package(Vulkan REQUIRED)
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/CMakeLists.txt)
+if (TARGET VulkanMemoryAllocator)
+    add_library(VulkanMemoryAllocator::VulkanMemoryAllocator ALIAS VulkanMemoryAllocator)
+elseif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/CMakeLists.txt)
     add_subdirectory(VulkanMemoryAllocator)
-else()
+    add_library(VulkanMemoryAllocator::VulkanMemoryAllocator ALIAS VulkanMemoryAllocator)
+else ()
     find_package(VulkanMemoryAllocator REQUIRED)
-endif()
+endif ()
 
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
 
@@ -47,7 +50,7 @@ install(
 )
 
 install(
-    TARGETS VulkanMemoryAllocator-Hpp
+    TARGETS VulkanMemoryAllocator-Hpp VulkanMemoryAllocator
     EXPORT VulkanMemoryAllocator-HppTargets
 )
 
