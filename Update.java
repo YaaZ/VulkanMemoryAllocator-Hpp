@@ -56,11 +56,11 @@ public class Update {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
-            System.err.println("Usage: java Update.java vma_revision vk_hpp_revision");
+            System.err.println("Usage: java Update.java vma_revision vk_headers_revision");
             return;
         }
 
-        if (!Files.exists(Path.of("VulkanMemoryAllocator/.git")) || !Files.exists(Path.of("Vulkan-Hpp/.git"))) {
+        if (!Files.exists(Path.of("VulkanMemoryAllocator/.git")) || !Files.exists(Path.of("Vulkan-Headers/.git"))) {
             System.out.println("Initializing submodules...");
             exec(".", "git", "submodule", "update");
             System.out.println();
@@ -71,9 +71,9 @@ public class Update {
         execIgnoringErrors("VulkanMemoryAllocator", "git", "pull");
         System.out.println();
 
-        System.out.println("Updating Vulkan-Hpp...");
-        exec("Vulkan-Hpp", "git", "-c", "advice.detachedHead=false", "checkout", args[1]);
-        execIgnoringErrors("Vulkan-Hpp", "git", "pull");
+        System.out.println("Updating Vulkan-Headers...");
+        exec("Vulkan-Headers", "git", "-c", "advice.detachedHead=false", "checkout", args[1]);
+        execIgnoringErrors("Vulkan-Headers", "git", "pull");
         System.out.println();
 
         Path vmaFile = Path.of("VulkanMemoryAllocator/include/vk_mem_alloc.h");
