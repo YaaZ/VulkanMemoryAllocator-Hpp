@@ -31,7 +31,7 @@ import vulkan_hpp;
 #endif
 
 #if VMA_USE_STD_MODULE
-import std.compat;
+import VULKAN_HPP_STD_MODULE;
 #endif
 
 #include "vk_mem_alloc.hpp"
