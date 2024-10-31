@@ -1,5 +1,5 @@
-list(APPEND CMAKE_PREFIX_PATH ./VulkanMemoryAllocator/install)
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "0e5b6991-d74f-4b3d-a41c-cf096e0b2508")
 
 project(
     VulkanMemoryAllocator-Hpp
