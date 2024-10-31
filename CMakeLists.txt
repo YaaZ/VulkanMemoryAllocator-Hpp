@@ -9,11 +9,6 @@ project(
 
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
 add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp ALIAS VulkanMemoryAllocator-Hpp)
-target_link_libraries(VulkanMemoryAllocator-Hpp
-    INTERFACE
-        Vulkan::Vulkan
-        GPUOpen::VulkanMemoryAllocator
-)
 
 option(VMA_BUILD_CXX_MODULE OFF)
 if (${VMA_BUILD_CXX_MODULE})

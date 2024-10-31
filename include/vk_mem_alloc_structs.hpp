@@ -1,7 +1,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_STRUCTS_HPP
 #define VULKAN_MEMORY_ALLOCATOR_STRUCTS_HPP
 
-VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+namespace VMA_HPP_NAMESPACE {
 
   struct DeviceMemoryCallbacks {
     using NativeType = VmaDeviceMemoryCallbacks;

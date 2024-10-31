@@ -1,7 +1,12 @@
+#if defined(__cpp_lib_modules)
+import std;
+#else
+// Tere are issues if you include the same thing after you import
+#include <iostream>
+#endif
+
 import vk_mem_alloc_hpp;
 import vulkan_hpp;
-
-#include <iostream>
 
 int main() {
   vk::raii::Context context{};
@@ -10,23 +15,23 @@ int main() {
       "VK_LAYER_KHRONOS_validation",
   };
   vk::raii::Instance instance{context, vk::InstanceCreateInfo{
-    {},
-    {},
-    layers,
-  }};
+                                           {},
+                                           {},
+                                           layers,
+                                       }};
   vk::raii::PhysicalDevices physicalDevices{instance};
   vk::raii::PhysicalDevice physicalDevice{physicalDevices[0]};
 
   float queuePriority[] = {1.0f};
   vk::DeviceQueueCreateInfo queueCreateInfo{
-    {},
-    0,
-    queuePriority,
+      {},
+      0,
+      queuePriority,
   };
   vk::raii::Device device{physicalDevice, vk::DeviceCreateInfo{
-    {},
-    queueCreateInfo,
-  }};
+                                              {},
+                                              queueCreateInfo,
+                                          }};
 
   vma::AllocatorCreateInfo allocatorInfo{};
   vma::VulkanFunctions funcs = vma::functionsFromDispatcher(
@@ -45,8 +50,8 @@ int main() {
           vk::BufferUsageFlagBits::eTransferSrc,
       },
       vma::AllocationCreateInfo{
-        vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
-        vma::MemoryUsage::eAuto,
+          vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
+          vma::MemoryUsage::eAuto,
       });
 
   vk::raii::Buffer buffer{device, buffer_tmp.release()};

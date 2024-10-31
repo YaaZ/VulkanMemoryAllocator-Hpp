@@ -248,7 +248,7 @@ public class Generate {
 
             content.append(processTemplate(ifdef, typedefMatcher.start(), """
                     
-                    VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                    namespace VMA_HPP_NAMESPACE {
                     
                       enum class $0$1 {
                         {{{e${name} = ${originalName}${,$}}}}
@@ -265,7 +265,7 @@ public class Generate {
             if (flagBits) {
                 content.append(processTemplate(ifdef, typedefMatcher.start(), """
                         
-                        VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
+                        namespace VULKAN_HPP_NAMESPACE {
                           template<> struct FlagTraits<VMA_HPP_NAMESPACE::$0> {
                             static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
                             static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::$0> allFlags =
@@ -273,7 +273,7 @@ public class Generate {
                           };
                         }
                         
-                        VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                        namespace VMA_HPP_NAMESPACE {
                         
                           using $1 = VULKAN_HPP_NAMESPACE::Flags<$0>;
                         
@@ -481,7 +481,7 @@ public class Generate {
                 #ifndef VULKAN_MEMORY_ALLOCATOR_STRUCTS_HPP
                 #define VULKAN_MEMORY_ALLOCATOR_STRUCTS_HPP
 
-                VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                namespace VMA_HPP_NAMESPACE {
                   $0
                 }
                 #endif
@@ -518,7 +518,7 @@ public class Generate {
 
         String generateClass() {
             return processTemplate("""
-                    VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                    namespace VMA_HPP_NAMESPACE {
                       class $0 {
                       public:
                         using CType      = Vma$0;
@@ -568,13 +568,13 @@ public class Generate {
                     }
                     """ + (hasUniqueVariant() ? """
                     #ifndef VULKAN_HPP_NO_SMART_HANDLE
-                    VMA_EXPORT namespace VULKAN_HPP_NAMESPACE {
+                    namespace VULKAN_HPP_NAMESPACE {
                       template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::$0, VMA_HPP_NAMESPACE::Dispatcher> {
                         public:
                         using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::$0, $3>;
                       };
                     }
-                    VMA_EXPORT namespace VMA_HPP_NAMESPACE { using Unique$0 = VULKAN_HPP_NAMESPACE::UniqueHandle<$0, Dispatcher>; }
+                    namespace VMA_HPP_NAMESPACE { using Unique$0 = VULKAN_HPP_NAMESPACE::UniqueHandle<$0, Dispatcher>; }
                     #endif
                     """ : ""),
                     name, getLowerName(), declarations.toString().indent(4),
@@ -582,7 +582,7 @@ public class Generate {
         }
         String generateNamespace() {
             return processTemplate("""
-                    VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                    namespace VMA_HPP_NAMESPACE {
                     $0
                     }
                     """, declarations.toString().indent(2));
@@ -881,7 +881,7 @@ public class Generate {
                 #ifndef VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
                 #define VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
                 
-                VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                namespace VMA_HPP_NAMESPACE {
                   $0
                 }
 
@@ -893,7 +893,7 @@ public class Generate {
                 #ifndef VULKAN_MEMORY_ALLOCATOR_FUNCS_HPP
                 #define VULKAN_MEMORY_ALLOCATOR_FUNCS_HPP
 
-                VMA_EXPORT namespace VMA_HPP_NAMESPACE {
+                namespace VMA_HPP_NAMESPACE {
                   $0
                 }
                 #endif
@@ -902,50 +902,45 @@ public class Generate {
     }
 
     static void generateModule(List<String> enums, List<String> structs, List<Handle> handles) throws IOException {
-        Files.writeString(Path.of("src/vk_mem_alloc.cppm"), """
+        Files.writeString(Path.of("src/vk_mem_alloc.cppm"), processTemplate("""
                 module;
 
-                #define VMA_BUILD_MODULE
-
-                #ifndef VMA_USE_VULKAN_HPP_MODULE
-                #define VMA_USE_VULKAN_HPP_MODULE 0
-                #endif
-
-                #ifndef VMA_USE_STD_MODULE
-                #define VMA_USE_STD_MODULE 0
+                #if defined( __cpp_lib_modules )
+                #define VMA_ENABLE_STD_MODULE
                 #endif
 
                 #define VMA_IMPLEMENTATION
                 #include <vk_mem_alloc.h>
 
-                #include <vulkan/vulkan_hpp_macros.hpp>
-                
-                #if !VMA_USE_VULKAN_HPP_MODULE
-                #include <vulkan/vulkan.hpp>
-                #endif
-
-                #if !VMA_USE_STD_MODULE
-                #include <string>
-                #include <vector>
-                #endif
+                #include "vk_mem_alloc.hpp"
 
                 export module vk_mem_alloc_hpp;
 
-                #if VMA_USE_VULKAN_HPP_MODULE
-                import vulkan_hpp;
-                #endif
+                export namespace VMA_HPP_NAMESPACE {
+                  using VMA_HPP_NAMESPACE::operator|;
+                  using VMA_HPP_NAMESPACE::operator&;
+                  using VMA_HPP_NAMESPACE::operator^;
+                  using VMA_HPP_NAMESPACE::operator~;
+                  using VMA_HPP_NAMESPACE::to_string;
+                  using VMA_HPP_NAMESPACE::functionsFromDispatcher;
+                  using VMA_HPP_NAMESPACE::createAllocatorUnique;
+                  using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
+                  {{{using VMA_HPP_NAMESPACE::${toString};}}}
+                }
 
-                #if VMA_USE_STD_MODULE
-                import std.compat;
-                #endif
-
-                #include "vk_mem_alloc.hpp"
-
-                """ +
+                """, Stream.concat(Stream.concat(enums.stream(), structs.stream()), handles.stream()
+                        .flatMap(h -> h.name == null ? h.methods.stream() : Stream.of(h.name)))) +
                 processTemplate("""
-                
+                #ifndef VULKAN_HPP_NO_SMART_HANDLE
+                export namespace VMA_HPP_NAMESPACE {
+                  using VMA_HPP_NAMESPACE::UniqueBuffer;
+                  using VMA_HPP_NAMESPACE::UniqueImage;
+                  {{{using VMA_HPP_NAMESPACE::Unique${name};}}}
+                }
+                #endif
+
                 module : private;
-                
+
                 #ifndef VULKAN_HPP_NO_SMART_HANDLE
                 // Instantiate unique handle templates.
                 // This is a workaround for MSVC bugs, but wouldn't harm on other compilers anyway.
