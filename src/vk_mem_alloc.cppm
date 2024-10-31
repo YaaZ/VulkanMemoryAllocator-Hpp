@@ -18,8 +18,6 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::operator~;
   using VMA_HPP_NAMESPACE::to_string;
   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
-  using VMA_HPP_NAMESPACE::createAllocatorUnique;
-  using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
   using VMA_HPP_NAMESPACE::AllocatorCreateFlagBits;
   using VMA_HPP_NAMESPACE::AllocatorCreateFlags;
   using VMA_HPP_NAMESPACE::MemoryUsage;
@@ -65,6 +63,8 @@ export namespace VMA_HPP_NAMESPACE {
 
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 export namespace VMA_HPP_NAMESPACE {
+  using VMA_HPP_NAMESPACE::createAllocatorUnique;
+  using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
   using VMA_HPP_NAMESPACE::UniqueBuffer;
   using VMA_HPP_NAMESPACE::UniqueImage;
   using VMA_HPP_NAMESPACE::UniqueAllocator;
