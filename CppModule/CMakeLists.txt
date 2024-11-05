@@ -5,7 +5,7 @@ project(CppModules LANGUAGES CXX)
 find_package(Vulkan REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
-option(VMA_BUILD_WITH_VULKAN_MODULE OFF)
+option(VMA_BUILD_WITH_VULKAN_MODULE ON)
 option(VMA_BUILD_MODULE_VULKAN_DYNAMIC OFF)
 
 option(VMA_BUILD_WITH_STD_MODULE OFF)
