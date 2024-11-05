@@ -1,7 +1,7 @@
 #if defined(__cpp_lib_modules)
 import std;
 #else
-// Tere are issues if you include the same thing after you import
+// There are issues if you include the same thing after you import
 #include <iostream>
 #endif
 
