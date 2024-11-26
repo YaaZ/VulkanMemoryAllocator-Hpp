@@ -926,6 +926,8 @@ public class Generate {
                   using VMA_HPP_NAMESPACE::UniqueBuffer;
                   using VMA_HPP_NAMESPACE::UniqueImage;
                   {{{using VMA_HPP_NAMESPACE::Unique${name};}}}
+                  using VMA_HPP_NAMESPACE::createAllocatorUnique;
+                  using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
                 }
                 #endif
                 

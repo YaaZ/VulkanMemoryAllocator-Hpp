@@ -62,6 +62,8 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::UniqueAllocation;
   using VMA_HPP_NAMESPACE::UniqueVirtualAllocation;
   using VMA_HPP_NAMESPACE::UniqueVirtualBlock;
+  using VMA_HPP_NAMESPACE::createAllocatorUnique;
+  using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
 }
 #endif
 
