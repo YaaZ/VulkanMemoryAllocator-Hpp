@@ -227,7 +227,8 @@ createResultValueType(VULKAN_HPP_NAMESPACE::Result result, T &&data) {
 } // namespace VMA_HPP_NAMESPACE::detail
 
 namespace VMA_HPP_NAMESPACE::detail {
-void resultCheck(VULKAN_HPP_NAMESPACE::Result result, char const *message) {
+VULKAN_HPP_INLINE void 
+resultCheck(VULKAN_HPP_NAMESPACE::Result result, char const *message) {
 #ifdef VULKAN_HPP_NO_EXCEPTIONS
   VMA_HPP_NAMESPACE::detail::ignore(
       result); // just in case VULKAN_HPP_ASSERT_ON_RESULT is empty
