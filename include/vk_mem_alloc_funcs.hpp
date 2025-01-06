@@ -467,6 +467,24 @@ namespace VMA_HPP_NAMESPACE {
     vmaGetAllocationMemoryProperties(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VkMemoryPropertyFlags*>(flags));
   }
 
+#if VMA_EXTERNAL_MEMORY_WIN32
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<HANDLE>::type Allocator::getMemoryWin32Handle(Allocation allocation,
+                                                                                                                 HANDLE hTargetProcess) const {
+    HANDLE handle;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaGetMemoryWin32Handle(m_allocator, static_cast<VmaAllocation>(allocation), hTargetProcess, &handle) );
+    VMA_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::getMemoryWin32Handle");
+    return VMA_HPP_NAMESPACE::detail::createResultValueType(result, handle);
+  }
+#endif
+  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::getMemoryWin32Handle(Allocation allocation,
+                                                                                 HANDLE hTargetProcess,
+                                                                                 HANDLE* handle) const {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaGetMemoryWin32Handle(m_allocator, static_cast<VmaAllocation>(allocation), hTargetProcess, handle) );
+    return result;
+  }
+
+#endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void*>::type Allocator::mapMemory(Allocation allocation) const {
     void* data;

@@ -12,7 +12,8 @@ namespace VMA_HPP_NAMESPACE {
     eBufferDeviceAddress = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
     eExtMemoryPriority = VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT,
     eKhrMaintenance4 = VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT,
-    eKhrMaintenance5 = VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT
+    eKhrMaintenance5 = VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT,
+    eKhrExternalMemoryWin32 = VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT
   };
 
 # if !defined( VULKAN_HPP_NO_TO_STRING )
@@ -26,6 +27,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == AllocatorCreateFlagBits::eExtMemoryPriority) return "ExtMemoryPriority";
     if (value == AllocatorCreateFlagBits::eKhrMaintenance4) return "KhrMaintenance4";
     if (value == AllocatorCreateFlagBits::eKhrMaintenance5) return "KhrMaintenance5";
+    if (value == AllocatorCreateFlagBits::eKhrExternalMemoryWin32) return "KhrExternalMemoryWin32";
     return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
   }
 # endif
@@ -43,7 +45,8 @@ namespace VULKAN_HPP_NAMESPACE {
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eBufferDeviceAddress
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eExtMemoryPriority
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrMaintenance4
-      | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrMaintenance5;
+      | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrMaintenance5
+      | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrExternalMemoryWin32;
   };
 }
 
@@ -80,6 +83,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value & AllocatorCreateFlagBits::eExtMemoryPriority) result += "ExtMemoryPriority | ";
     if (value & AllocatorCreateFlagBits::eKhrMaintenance4) result += "KhrMaintenance4 | ";
     if (value & AllocatorCreateFlagBits::eKhrMaintenance5) result += "KhrMaintenance5 | ";
+    if (value & AllocatorCreateFlagBits::eKhrExternalMemoryWin32) result += "KhrExternalMemoryWin32 | ";
     return "{ " + result.substr( 0, result.size() - 3 ) + " }";
   }
 # endif

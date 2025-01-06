@@ -1,6 +1,6 @@
-# VulkanMemoryAllocator-Hpp <!--VER-->3.1.0<!--/VER-->
+# VulkanMemoryAllocator-Hpp <!--VER-->3.2.0<!--/VER-->
 
-### Supports Vulkan <!--VK-->1.3<!--/VK-->
+### Supports Vulkan <!--VK-->1.4<!--/VK-->
 
 This is a former fork of https://github.com/malte-v/VulkanMemoryAllocator-Hpp which is now maintained independently
 as discussed in [this PR](https://github.com/malte-v/VulkanMemoryAllocator-Hpp/pull/15).

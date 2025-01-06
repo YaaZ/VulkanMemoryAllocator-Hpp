@@ -484,6 +484,16 @@ namespace VMA_HPP_NAMESPACE {
     void getAllocationMemoryProperties(Allocation allocation,
                                        VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* flags) const;
 
+#if VMA_EXTERNAL_MEMORY_WIN32
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<HANDLE>::type getMemoryWin32Handle(Allocation allocation,
+                                                                                                                              HANDLE hTargetProcess) const;
+#endif
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result getMemoryWin32Handle(Allocation allocation,
+                                                                           HANDLE hTargetProcess,
+                                                                           HANDLE* handle) const;
+
+#endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void*>::type mapMemory(Allocation allocation) const;
 #endif
