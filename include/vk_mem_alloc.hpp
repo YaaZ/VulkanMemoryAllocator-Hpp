@@ -173,8 +173,8 @@ throwResultException(VULKAN_HPP_NAMESPACE::Result result, char const *message) {
   case Result::eErrorInvalidDrmFormatModifierPlaneLayoutEXT:
     throw VULKAN_HPP_NAMESPACE::InvalidDrmFormatModifierPlaneLayoutEXTError(
         message);
-  case Result::eErrorNotPermittedKHR:
-    throw VULKAN_HPP_NAMESPACE::NotPermittedKHRError(message);
+  case Result::eErrorNotPermitted:
+    throw VULKAN_HPP_NAMESPACE::NotPermittedError(message);
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
   case Result::eErrorFullScreenExclusiveModeLostEXT:
     throw VULKAN_HPP_NAMESPACE::FullScreenExclusiveModeLostEXTError(message);
