@@ -1,5 +1,6 @@
 module;
 
+#include <version>
 #if defined( __cpp_lib_modules )
 #define VMA_ENABLE_STD_MODULE
 #endif

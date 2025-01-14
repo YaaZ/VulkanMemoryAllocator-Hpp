@@ -905,6 +905,7 @@ public class Generate {
         Files.writeString(Path.of("src/vk_mem_alloc.cppm"), processTemplate("""
                 module;
 
+                #include <version>
                 #if defined( __cpp_lib_modules )
                 #define VMA_ENABLE_STD_MODULE
                 #endif
