@@ -924,7 +924,6 @@ public class Generate {
                   using VMA_HPP_NAMESPACE::operator~;
                   using VMA_HPP_NAMESPACE::to_string;
                   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
-                  {{{using VMA_HPP_NAMESPACE::${toString};}}}
                 }
 
                 """, Stream.concat(Stream.concat(enums.stream(), structs.stream()), handles.stream()
@@ -939,6 +938,12 @@ public class Generate {
                   {{{using VMA_HPP_NAMESPACE::Unique${name};}}}
                   using VMA_HPP_NAMESPACE::createAllocatorUnique;
                   using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
+                }
+                #endif
+
+                #ifndef VULKAN_HPP_NO_TO_STRING
+                export namespace VMA_HPP_NAMESPACE {
+                  {{{using VMA_HPP_NAMESPACE::${toString};}}}
                 }
                 #endif
 
