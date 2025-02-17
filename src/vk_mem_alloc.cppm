@@ -17,7 +17,6 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::operator&;
   using VMA_HPP_NAMESPACE::operator^;
   using VMA_HPP_NAMESPACE::operator~;
-  using VMA_HPP_NAMESPACE::to_string;
   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
   using VMA_HPP_NAMESPACE::AllocatorCreateFlagBits;
   using VMA_HPP_NAMESPACE::AllocatorCreateFlags;
@@ -75,6 +74,12 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::UniqueVirtualBlock;
   using VMA_HPP_NAMESPACE::createAllocatorUnique;
   using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
+}
+#endif
+
+#ifndef VULKAN_HPP_NO_TO_STRING
+export namespace VMA_HPP_NAMESPACE {
+  using VMA_HPP_NAMESPACE::to_string;
 }
 #endif
 
