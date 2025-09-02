@@ -1106,6 +1106,22 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #endif
+#ifdef VOLK_HEADER_VERSION
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VulkanFunctions>::type importVulkanFunctionsFromVolk(const AllocatorCreateInfo& allocatorCreateInfo) {
+    VulkanFunctions dstVulkanFunctions;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaImportVulkanFunctionsFromVolk(reinterpret_cast<const VmaAllocatorCreateInfo*>(&allocatorCreateInfo), reinterpret_cast<VmaVulkanFunctions*>(&dstVulkanFunctions)) );
+    VMA_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::importVulkanFunctionsFromVolk");
+    return VMA_HPP_NAMESPACE::detail::createResultValueType(result, dstVulkanFunctions);
+  }
+#endif
+  VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result importVulkanFunctionsFromVolk(const AllocatorCreateInfo* allocatorCreateInfo,
+                                                                               VulkanFunctions* dstVulkanFunctions) {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaImportVulkanFunctionsFromVolk(reinterpret_cast<const VmaAllocatorCreateInfo*>(allocatorCreateInfo), reinterpret_cast<VmaVulkanFunctions*>(dstVulkanFunctions)) );
+    return result;
+  }
+
+#endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type createAllocator(const AllocatorCreateInfo& createInfo) {
     Allocator allocator;

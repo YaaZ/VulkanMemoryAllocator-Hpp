@@ -2,7 +2,7 @@ module;
 
 #include <version>
 #if defined( __cpp_lib_modules )
-#define VMA_ENABLE_STD_MODULE
+#define VULKAN_HPP_ENABLE_STD_MODULE
 #endif
 
 #define VMA_IMPLEMENTATION
@@ -51,6 +51,10 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::VirtualBlockCreateInfo;
   using VMA_HPP_NAMESPACE::VirtualAllocationCreateInfo;
   using VMA_HPP_NAMESPACE::VirtualAllocationInfo;
+
+#ifdef VOLK_HEADER_VERSION
+  using VMA_HPP_NAMESPACE::importVulkanFunctionsFromVolk;
+#endif
   using VMA_HPP_NAMESPACE::createAllocator;
   using VMA_HPP_NAMESPACE::createVirtualBlock;
   using VMA_HPP_NAMESPACE::Allocator;

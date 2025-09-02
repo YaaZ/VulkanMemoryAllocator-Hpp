@@ -495,17 +495,16 @@ public class Generate {
     static class Handle {
         final String name;
         final boolean dispatchable;
-        final StringBuilder declarations = new StringBuilder(), definitions = new StringBuilder();
-        Ifdef.Range ifdef;
+        final StringBuilder declarations = new StringBuilder(), definitions = new StringBuilder(), exports = new StringBuilder();
+        Ifdef.Range ifdef, expifdef;
         final Set<Handle> dependencies = new LinkedHashSet<>();
-        final Set<String> methods = new LinkedHashSet<>();
         Handle owner = null;
         boolean appended = false;
 
         Handle(String name, boolean dispatchable, Ifdef.Range ifdef) {
             this.name = name;
             this.dispatchable = dispatchable;
-            this.ifdef = ifdef;
+            this.ifdef = expifdef = ifdef;
         }
 
         public String name() { return name; }
@@ -527,19 +526,19 @@ public class Generate {
                         VULKAN_HPP_CONSTEXPR         $0() = default;
                         VULKAN_HPP_CONSTEXPR         $0(std::nullptr_t) VULKAN_HPP_NOEXCEPT {}
                         VULKAN_HPP_TYPESAFE_EXPLICIT $0(Vma$0 $1) VULKAN_HPP_NOEXCEPT : m_$1($1) {}
-                      
+                    
                       #if defined(VULKAN_HPP_TYPESAFE_CONVERSION)
                         $0& operator=(Vma$0 $1) VULKAN_HPP_NOEXCEPT {
                           m_$1 = $1;
                           return *this;
                         }
                       #endif
-                      
+                    
                         $0& operator=(std::nullptr_t) VULKAN_HPP_NOEXCEPT {
                           m_$1 = {};
                           return *this;
                         }
-                      
+                    
                       #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
                         auto operator<=>($0 const &) const = default;
                       #else
@@ -547,15 +546,15 @@ public class Generate {
                           return m_$1 == rhs.m_$1;
                         }
                       #endif
-                      
+                    
                         VULKAN_HPP_TYPESAFE_EXPLICIT operator Vma$0() const VULKAN_HPP_NOEXCEPT {
                           return m_$1;
                         }
-                      
+                    
                         explicit operator bool() const VULKAN_HPP_NOEXCEPT {
                           return m_$1 != VK_NULL_HANDLE;
                         }
-                      
+                    
                         bool operator!() const VULKAN_HPP_NOEXCEPT {
                           return m_$1 == VK_NULL_HANDLE;
                         }
@@ -593,8 +592,10 @@ public class Generate {
             for (Handle h : dependencies) h.append(declarations, definitions);
             ifdef.goTo(this.declarations, -1);
             ifdef.goTo(this.definitions, -1);
+            expifdef.goTo(this.exports, -1);
             declarations.append("\n").append(name == null ? generateNamespace() : generateClass());
             definitions.append(this.definitions);
+            if (name != null) this.exports.append("\nusing VMA_HPP_NAMESPACE::").append(name).append(';');
             appended = true;
         }
     }
@@ -655,7 +656,6 @@ public class Generate {
             String funcName = "vma" + name; // Original function name
             if (handle != namespaceHandle && name.equals("Destroy" + handle.name)) name = "destroy"; // E.g. Allocator::destroyAllocator -> Allocator::destroy
             String methodName = name.substring(0, 1).toLowerCase() + name.substring(1); // Generated method name
-            handle.methods.add(methodName);
 
             // Find dependencies of array sizes
             Integer[] arrayByLengthIndex = new Integer[params.size()];
@@ -873,6 +873,11 @@ public class Generate {
                 handle.declarations.append("#endif\n");
                 handle.definitions.append("#endif\n");
             }
+
+            if (handle.name == null) {
+                handle.expifdef = handle.expifdef.goTo(handle.exports, funcMatcher.start());
+                handle.exports.append("\nusing VMA_HPP_NAMESPACE::").append(methodName).append(';');
+            }
         }
 
         namespaceHandle.append(declarations, definitions);
@@ -907,7 +912,7 @@ public class Generate {
 
                 #include <version>
                 #if defined( __cpp_lib_modules )
-                #define VMA_ENABLE_STD_MODULE
+                #define VULKAN_HPP_ENABLE_STD_MODULE
                 #endif
 
                 #define VMA_IMPLEMENTATION
@@ -924,10 +929,10 @@ public class Generate {
                   using VMA_HPP_NAMESPACE::operator~;
                   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
                   {{{using VMA_HPP_NAMESPACE::${toString};}}}
+                  $0
                 }
 
-                """, Stream.concat(Stream.concat(enums.stream(), structs.stream()), handles.stream()
-                        .flatMap(h -> h.name == null ? h.methods.stream() : Stream.of(h.name)))) +
+                """, Stream.concat(enums.stream(), structs.stream()), handles.stream().map(h -> h.exports.toString()).collect(Collectors.joining())) +
                 processTemplate("""
                 #ifndef VULKAN_HPP_NO_SMART_HANDLE
                 export namespace VMA_HPP_NAMESPACE {

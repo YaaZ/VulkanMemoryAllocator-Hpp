@@ -966,6 +966,14 @@ namespace VMA_HPP_NAMESPACE { using UniqueVirtualBlock = VULKAN_HPP_NAMESPACE::U
 
 namespace VMA_HPP_NAMESPACE {
 
+#ifdef VOLK_HEADER_VERSION
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<VulkanFunctions>::type importVulkanFunctionsFromVolk(const AllocatorCreateInfo& allocatorCreateInfo);
+#endif
+  VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result importVulkanFunctionsFromVolk(const AllocatorCreateInfo* allocatorCreateInfo,
+                                                                                  VulkanFunctions* dstVulkanFunctions);
+
+#endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type createAllocator(const AllocatorCreateInfo& createInfo);
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
