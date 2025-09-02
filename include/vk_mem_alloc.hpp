@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan_hpp_macros.hpp>
 
-#ifdef VMA_ENABLE_STD_MODULE
+#ifdef VULKAN_HPP_ENABLE_STD_MODULE
 import VULKAN_HPP_STD_MODULE;
 #else
 #include <algorithm>
@@ -153,8 +153,8 @@ throwResultException(VULKAN_HPP_NAMESPACE::Result result, char const *message) {
     throw VULKAN_HPP_NAMESPACE::OutOfDateKHRError(message);
   case Result::eErrorIncompatibleDisplayKHR:
     throw VULKAN_HPP_NAMESPACE::IncompatibleDisplayKHRError(message);
-  case Result::eErrorValidationFailedEXT:
-    throw VULKAN_HPP_NAMESPACE::ValidationFailedEXTError(message);
+  case Result::eErrorValidationFailed:
+    throw VULKAN_HPP_NAMESPACE::ValidationFailedError(message);
   case Result::eErrorInvalidShaderNV:
     throw VULKAN_HPP_NAMESPACE::InvalidShaderNVError(message);
   case Result::eErrorImageUsageNotSupportedKHR:
