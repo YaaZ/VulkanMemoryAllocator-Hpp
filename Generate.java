@@ -748,7 +748,7 @@ public class Generate {
                 }
                 String returnType(boolean uniqueHandle, boolean noVectorAllocator) {
                     return enhanced ? switch (outputs.size()) {
-                        case 2 -> "std::pair<" + returnType(0, uniqueHandle) + ", " + returnType(1, uniqueHandle) + ">";
+                        case 2 -> "std::pair<" + returnType(1, uniqueHandle) + ", " + returnType(0, uniqueHandle) + ">";
                         case 1 -> params.get(outputs.get(0)).lenIfNotNull != null ? "std::vector<" + returnType(0, uniqueHandle) + (noVectorAllocator ? "" : ", VectorAllocator") + ">" : returnType(0, uniqueHandle);
                         default -> returnType.equals("VULKAN_HPP_NAMESPACE::Result") ? "void" : returnType;
                     } : returnType;
@@ -804,7 +804,7 @@ public class Generate {
                         }
                         // Generate output variable declarations
                         if (outputs.size() == 2) {
-                            Var p1 = params.get(outputs.get(0)), p2 = params.get(outputs.get(1));
+                            Var p1 = params.get(outputs.get(1)), p2 = params.get(outputs.get(0));
                             s.append(ret).append(" pair;\n")
                                     .append(p1.stripPtr()).append("& ").append(p1.prettyName()).append(" = pair.first;\n")
                                     .append(p2.stripPtr()).append("& ").append(p2.prettyName()).append(" = pair.second;\n");
