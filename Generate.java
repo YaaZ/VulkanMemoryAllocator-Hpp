@@ -16,7 +16,19 @@ import java.util.stream.Stream;
  */
 public class Generate {
 
-    static Set<String> BLACKLISTED_UNIQUE_HANDLES = Set.of("DefragmentationContext"); // These handles will not have unique variants
+    static final Set<String> BLACKLISTED_UNIQUE_HANDLES = Set.of("DefragmentationContext"); // These handles will not have unique variants
+
+    final String original;
+    final Ifdef.Range root;
+    Generate(String original, Ifdef.Range root) {
+        this.original = original;
+        this.root = root;
+    }
+
+    static StringBuilder ensureNewLine(StringBuilder s) {
+        if (s.isEmpty() || s.charAt(s.length() - 1) != '\n') s.append('\n');
+        return s;
+    }
 
     /**
      * Represents single sequence of #if - [#elif]... - [#else] - #endif statements.
@@ -38,11 +50,11 @@ public class Generate {
         Range goTo(StringBuilder content, int index, int fromRange) {
             for (int i = fromRange; i < ranges.size(); i++) {
                 Range r = ranges.get(i);
-                if (!skip) content.append("\n#").append(r.text);
+                if (!skip) ensureNewLine(content).append("#").append(r.text).append('\n');
                 if (index >= r.start && index < r.end) return r.goTo(content, index);
             }
             if (parent != null) {
-                if (!skip) content.append("\n#endif");
+                if (!skip) ensureNewLine(content).append("#endif\n");
                 return parent.goTo(content, index);
             } else return null;
         }
@@ -89,6 +101,10 @@ public class Generate {
                     return parent.goTo(content, index, this.index + 1);
                 }
             }
+
+            Range goTo(StringBuilder content, Range target) {
+                return target == null ? goTo(content, -1) : goTo(content, target.start);
+            }
         }
 
         /**
@@ -121,10 +137,13 @@ public class Generate {
         }
     }
 
-    record TemplateEntry<T>(T data, int position) {
-        static final Pattern loopPattern = Pattern.compile("\\{\\{\\{([\\w\\W]+?)}}}\n");
-        static final Pattern entryPattern = Pattern.compile("\\$\\{(.*?\\^)?(.*?)(\\$.*?)?}");
+    interface Symbol {
+        String name();
+        int sourcePosition();
     }
+
+    static final Pattern TEMPLATE_LOOP_PATTERN = Pattern.compile("\\{\\{\\{([\\w\\W]+?)}}}\n");
+    static final Pattern TEMPLATE_ENTRY_PATTERN = Pattern.compile("\\$\\{(.*?\\^)?(.*?)(\\$.*?)?}");
 
     /**
      * Expressions $0 ... $N are replaced with corresponding strings from {@code replacementStrings}
@@ -153,19 +172,20 @@ public class Generate {
      * (e.g. when generating comma separated lists).
      * Then expressions $0 ... $N are replaced with corresponding strings from {@code replacementStrings}
      */
-    static <T> String processTemplate(Ifdef.Range ifdef, int sourcePosition,
-                                      String template, List<TemplateEntry<T>> entries, String... replacementStrings) {
+    static String processTemplate(Ifdef.Range ifdef, int sourcePosition,
+                                  String template, List<?> entries, String... replacementStrings) {
+        Ifdef.Range root = ifdef;
         int lastIndex = 0;
         StringBuilder content = new StringBuilder();
         if (ifdef != null) ifdef = ifdef.goTo(content, sourcePosition);
-        Matcher loopMatcher = TemplateEntry.loopPattern.matcher(template);
+        Matcher loopMatcher = TEMPLATE_LOOP_PATTERN.matcher(template);
         while (loopMatcher.find()) {
             content.append(template, lastIndex, loopMatcher.start());
             lastIndex = loopMatcher.end();
             int nl = template.lastIndexOf('\n', loopMatcher.start()) + 1;
-            String indent = "\n" + " ".repeat(loopMatcher.start() - nl);
+            String indent = " ".repeat(loopMatcher.start() - nl);
             String entryTemplate = loopMatcher.group(1);
-            Matcher entryMatcher = TemplateEntry.entryPattern.matcher(entryTemplate);
+            Matcher entryMatcher = TEMPLATE_ENTRY_PATTERN.matcher(entryTemplate);
             List<IntFunction<String>> entryTextParts = new ArrayList<>();
             int li = 0;
             while (entryMatcher.find()) {
@@ -174,18 +194,14 @@ public class Generate {
                 li = entryMatcher.end();
                 String firstIteration = entryMatcher.group(1), entry = entryMatcher.group(2), lastIteration = entryMatcher.group(3);
                 if (firstIteration == null && lastIteration == null) {
-                    try {
-                        Method getter = entries.get(0).data.getClass().getMethod(entry);
-                        entryTextParts.add(i -> {
-                            try {
-                                return getter.invoke(entries.get(i).data).toString();
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                throw new Error(e);
-                            }
-                        });
-                    } catch (NoSuchMethodException e) {
-                        throw new Error(e);
-                    }
+                    entryTextParts.add(i -> {
+                        try {
+                            Method getter = entries.get(i).getClass().getMethod(entry);
+                            return getter.invoke(entries.get(i)).toString();
+                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                            throw new Error(e);
+                        }
+                    });
                 } else {
                     entryTextParts.add(i -> {
                         if (firstIteration != null && i == 0) return firstIteration.substring(0, firstIteration.length() - 1);
@@ -197,32 +213,32 @@ public class Generate {
             String lastPart = entryTemplate.substring(li);
             entryTextParts.add(i -> lastPart);
             for (int i = 0; i < entries.size(); i++) {
-                if (ifdef != null) ifdef = ifdef.goTo(content, entries.get(i).position);
-                if (i != 0) content.append(indent);
+                if (ifdef != null) ifdef = ifdef.goTo(content, ((Symbol) entries.get(i)).sourcePosition());
+                if (i != 0) ensureNewLine(content).append(indent);
                 for (var e : entryTextParts) content.append(e.apply(i));
             }
             if (ifdef != null) ifdef = ifdef.goTo(content, sourcePosition);
-            content.append("\n");
+            ensureNewLine(content);
         }
         content.append(template.substring(lastIndex));
-        if (ifdef != null) ifdef.goTo(content, -1);
+        if (ifdef != null) ifdef.goTo(content, root);
         return processTemplate(content.toString(), replacementStrings);
     }
 
     /**
      * Simplified version of {@link #processTemplate(Ifdef.Range, int, String, List, String...)}.
      */
-    static <T> String processTemplate(String template, Stream<T> entries, String... replacementStrings) {
-        return processTemplate(null, 0, template, entries.map(e -> new TemplateEntry<>(e, 0)).toList(), replacementStrings);
+    static String processTemplate(String template, Stream<?> entries, String... replacementStrings) {
+        return processTemplate(null, -1, template, entries.toList(), replacementStrings);
     }
 
-    static List<String> generateEnums(String orig, Ifdef.Range ifdef) throws IOException {
+    static List<String> generateEnums() throws IOException {
         List<String> enums = new ArrayList<>();
-        record Entry(String name, String originalName) {}
+        record Entry(String name, String originalName, int sourcePosition) implements Symbol {}
         StringBuilder content = new StringBuilder();
         Pattern typedefPattern = Pattern.compile("typedef\\s+enum\\s+Vma(\\w+)");
         Pattern entryPattern = Pattern.compile("(VMA_\\w+)[^,}]*");
-        Matcher typedefMatcher = typedefPattern.matcher(orig);
+        Matcher typedefMatcher = typedefPattern.matcher(original);
         while (typedefMatcher.find()) {
             String name = typedefMatcher.group(1);
             boolean flagBits = name.endsWith("FlagBits");
@@ -230,9 +246,9 @@ public class Generate {
             enums.add(name);
             if (flagBits) enums.add(flags);
 
-            String body = orig.substring(typedefMatcher.end(), orig.indexOf("}", typedefMatcher.end()));
+            String body = original.substring(typedefMatcher.end(), original.indexOf("}", typedefMatcher.end()));
             Matcher entryMatcher = entryPattern.matcher(body);
-            List<TemplateEntry<Entry>> entries = new ArrayList<>();
+            List<Entry> entries = new ArrayList<>();
             while (entryMatcher.find()) {
                 String value = entryMatcher.group(1);
                 if (value.endsWith("_MAX_ENUM")) break;
@@ -243,17 +259,17 @@ public class Generate {
                 if (flagBits) entry = entry.substring(name.length() - 5, entry.length() - 3);
                 else entry = entry.substring(name.length() + 3);
 
-                entries.add(new TemplateEntry<>(new Entry(entry, value), typedefMatcher.end() + entryMatcher.start()));
+                entries.add(new Entry(entry, value, typedefMatcher.end() + entryMatcher.start()));
             }
 
-            content.append(processTemplate(ifdef, typedefMatcher.start(), """
-                    
+            content.append(processTemplate(root, typedefMatcher.start(), """
+
                     namespace VMA_HPP_NAMESPACE {
-                    
+
                       enum class $0$1 {
                         {{{e${name} = ${originalName}${,$}}}}
                       };
-                    
+
                     # if !defined( VULKAN_HPP_NO_TO_STRING )
                       VULKAN_HPP_INLINE std::string to_string($0 value) {
                         {{{if (value == $0::e${name}) return "${name}";}}}
@@ -263,8 +279,8 @@ public class Generate {
                     }
                     """, entries, name, flagBits ? (" : Vma" + flags) : ""));
             if (flagBits) {
-                content.append(processTemplate(ifdef, typedefMatcher.start(), """
-                        
+                content.append(processTemplate(root, typedefMatcher.start(), """
+
                         namespace VULKAN_HPP_NAMESPACE {
                           template<> struct FlagTraits<VMA_HPP_NAMESPACE::$0> {
                             static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
@@ -272,27 +288,27 @@ public class Generate {
                               {{{${ ^|} VMA_HPP_NAMESPACE::$0::e${name}${$;}}}}
                           };
                         }
-                        
+
                         namespace VMA_HPP_NAMESPACE {
-                        
+
                           using $1 = VULKAN_HPP_NAMESPACE::Flags<$0>;
-                        
+
                           VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR $1 operator|($0 bit0, $0 bit1) VULKAN_HPP_NOEXCEPT {
                             return $1(bit0) | bit1;
                           }
-                        
+
                           VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR $1 operator&($0 bit0, $0 bit1) VULKAN_HPP_NOEXCEPT {
                             return $1(bit0) & bit1;
                           }
-                        
+
                           VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR $1 operator^($0 bit0, $0 bit1) VULKAN_HPP_NOEXCEPT {
                             return $1(bit0) ^ bit1;
                           }
-                        
+
                           VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR $1 operator~($0 bits) VULKAN_HPP_NOEXCEPT {
                             return ~($1(bits));
                           }
-                        
+
                         # if !defined( VULKAN_HPP_NO_TO_STRING )
                           VULKAN_HPP_INLINE std::string to_string($1 value) {
                             if (!value) return "{}";
@@ -309,7 +325,7 @@ public class Generate {
                 #ifndef VULKAN_MEMORY_ALLOCATOR_ENUMS_HPP
                 #define VULKAN_MEMORY_ALLOCATOR_ENUMS_HPP
                 $0
-                
+
                 #endif
                 """, content.toString()));
         return enums;
@@ -331,7 +347,7 @@ public class Generate {
      * @param underlyingType underlying type (`type` without const and pointers applied)
      */
     record Var(String originalType, boolean constant, String type, boolean pointer, VarTag tag,
-               String lenIfNotNull, boolean primitive, String underlyingType, String name) {
+               String lenIfNotNull, boolean primitive, String underlyingType, String name, int sourcePosition) implements Symbol {
 
         static final Pattern pattern = Pattern.compile(
                 "(const\\s+)?(\\w+)" +
@@ -347,7 +363,7 @@ public class Generate {
             if (pointer2) type += "*";
             return type;
         }
-        static Var parse(Matcher matcher) {
+        static Var parse(Matcher matcher, int sourcePosition) {
             String originalType = matcher.group(2), type = originalType;
 
             if (type.startsWith("Vk")) type = "VULKAN_HPP_NAMESPACE::" + type.substring(2);
@@ -387,7 +403,7 @@ public class Generate {
                 lenIfNotNull = matcher.group(8);
             }
 
-            return new Var(originalType, c, type, p1 || p2, tag, lenIfNotNull, primitive, underlyingType, matcher.group(9));
+            return new Var(originalType, c, type, p1 || p2, tag, lenIfNotNull, primitive, underlyingType, matcher.group(9), sourcePosition);
         }
 
         public String capitalName() {
@@ -405,50 +421,50 @@ public class Generate {
         }
     }
 
-    static List<String> generateStructs(String orig, Ifdef.Range ifdef) throws IOException {
+    static List<String> generateStructs() throws IOException {
         List<String> structs = new ArrayList<>();
         StringBuilder content = new StringBuilder();
         Pattern typedefPattern = Pattern.compile("typedef\\s+struct\\s+Vma(\\w+)");
-        Matcher typedefMatcher = typedefPattern.matcher(orig);
+        Matcher typedefMatcher = typedefPattern.matcher(original);
         while (typedefMatcher.find()) {
             String name = typedefMatcher.group(1);
             structs.add(name);
-            String body = orig.substring(typedefMatcher.end(), orig.indexOf("}", typedefMatcher.end()));
-            List<TemplateEntry<Var>> fields = new ArrayList<>();
+            String body = original.substring(typedefMatcher.end(), original.indexOf("}", typedefMatcher.end()));
+            List<Var> fields = new ArrayList<>();
             Matcher memberMatcher = Var.pattern.matcher(body);
             while (memberMatcher.find()) {
-                fields.add(new TemplateEntry<>(Var.parse(memberMatcher),  typedefMatcher.end() + memberMatcher.start()));
+                fields.add(Var.parse(memberMatcher,  typedefMatcher.end() + memberMatcher.start()));
             }
-            content.append(processTemplate(ifdef, typedefMatcher.start(), """
-                    
+            content.append(processTemplate(root, typedefMatcher.start(), """
+
                     struct $0 {
                       using NativeType = Vma$0;
-                    
+
                     #if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
                       VULKAN_HPP_CONSTEXPR $0(
                           {{{${ ^,} ${type} ${name}_ = {}}}}
                         ) VULKAN_HPP_NOEXCEPT
                         {{{${:^,} ${name}(${name}_)}}}
                         {}
-                    
+
                       VULKAN_HPP_CONSTEXPR $0($0 const &) VULKAN_HPP_NOEXCEPT = default;
                       $0(Vma$0 const & rhs) VULKAN_HPP_NOEXCEPT : $0(*reinterpret_cast<$0 const *>(&rhs)) {}
                     #endif
-                    
+
                       $0& operator=($0 const &) VULKAN_HPP_NOEXCEPT = default;
                       $0& operator=(Vma$0 const & rhs) VULKAN_HPP_NOEXCEPT {
                         *this = *reinterpret_cast<VMA_HPP_NAMESPACE::$0 const *>(&rhs);
                         return *this;
                       }
-                      
+
                       explicit operator Vma$0 const &() const VULKAN_HPP_NOEXCEPT {
                         return *reinterpret_cast<const Vma$0 *>(this);
                       }
-                      
+
                       explicit operator Vma$0&() VULKAN_HPP_NOEXCEPT {
                         return *reinterpret_cast<Vma$0 *>(this);
                       }
-                      
+
                     #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
                       bool operator==($0 const &) const = default;
                     #else
@@ -457,7 +473,7 @@ public class Generate {
                         ;
                       }
                     #endif
-                    
+
                     #if !defined( VULKAN_HPP_NO_STRUCT_SETTERS )
                     {{{
                       VULKAN_HPP_CONSTEXPR_14 $0& set${capitalName}(${type} ${name}_) VULKAN_HPP_NOEXCEPT {
@@ -465,7 +481,7 @@ public class Generate {
                         return *this;
                       }}}}
                     #endif
-                    
+
                     public:
                       {{{${type} ${name} = {};}}}
                     };
@@ -489,25 +505,31 @@ public class Generate {
         return structs;
     }
 
+    record Function(String name, String declaration, String definition, int sourcePosition) implements Symbol {
+        public String defaultValidation() {
+            return processTemplate(root, sourcePosition(), "false", List.of());
+        }
+    }
+
     /**
      * Handle class, from which ..._handles.hpp and ..._funcs.hpp files are generated
      */
-    static class Handle {
+    static class Handle implements Symbol {
         final String name;
-        final boolean dispatchable;
-        final StringBuilder declarations = new StringBuilder(), definitions = new StringBuilder(), exports = new StringBuilder();
-        Ifdef.Range ifdef, expifdef;
+        final int sourcePosition;
+        final List<Function> functions = new ArrayList<>();
         final Set<Handle> dependencies = new LinkedHashSet<>();
         Handle owner = null;
         boolean appended = false;
 
-        Handle(String name, boolean dispatchable, Ifdef.Range ifdef) {
+        Handle(String name, int sourcePosition) {
             this.name = name;
-            this.dispatchable = dispatchable;
-            this.ifdef = expifdef = ifdef;
+            this.sourcePosition = sourcePosition;
         }
 
         public String name() { return name; }
+
+        public int sourcePosition() { return sourcePosition; }
 
         boolean hasUniqueVariant() { return !BLACKLISTED_UNIQUE_HANDLES.contains(name); }
 
@@ -516,7 +538,7 @@ public class Generate {
         }
 
         String generateClass() {
-            return processTemplate("""
+            return processTemplate(root, 0, """
                     namespace VMA_HPP_NAMESPACE {
                       class $0 {
                       public:
@@ -526,19 +548,19 @@ public class Generate {
                         VULKAN_HPP_CONSTEXPR         $0() = default;
                         VULKAN_HPP_CONSTEXPR         $0(std::nullptr_t) VULKAN_HPP_NOEXCEPT {}
                         VULKAN_HPP_TYPESAFE_EXPLICIT $0(Vma$0 $1) VULKAN_HPP_NOEXCEPT : m_$1($1) {}
-                    
+
                       #if defined(VULKAN_HPP_TYPESAFE_CONVERSION)
                         $0& operator=(Vma$0 $1) VULKAN_HPP_NOEXCEPT {
                           m_$1 = $1;
                           return *this;
                         }
                       #endif
-                    
+
                         $0& operator=(std::nullptr_t) VULKAN_HPP_NOEXCEPT {
                           m_$1 = {};
                           return *this;
                         }
-                    
+
                       #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
                         auto operator<=>($0 const &) const = default;
                       #else
@@ -546,19 +568,21 @@ public class Generate {
                           return m_$1 == rhs.m_$1;
                         }
                       #endif
-                    
+
                         VULKAN_HPP_TYPESAFE_EXPLICIT operator Vma$0() const VULKAN_HPP_NOEXCEPT {
                           return m_$1;
                         }
-                    
+
                         explicit operator bool() const VULKAN_HPP_NOEXCEPT {
                           return m_$1 != VK_NULL_HANDLE;
                         }
-                    
+
                         bool operator!() const VULKAN_HPP_NOEXCEPT {
                           return m_$1 == VK_NULL_HANDLE;
                         }
-                    $2
+
+                        {{{${declaration}}}}
+
                       private:
                         Vma$0 m_$1 = {};
                       };
@@ -570,32 +594,29 @@ public class Generate {
                     namespace VULKAN_HPP_NAMESPACE {
                       template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::$0, VMA_HPP_NAMESPACE::Dispatcher> {
                         public:
-                        using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::$0, $3>;
+                        using deleter = VMA_HPP_NAMESPACE::Deleter<VMA_HPP_NAMESPACE::$0, $2>;
                       };
                     }
                     namespace VMA_HPP_NAMESPACE { using Unique$0 = VULKAN_HPP_NAMESPACE::UniqueHandle<$0, Dispatcher>; }
                     #endif
-                    """ : ""),
-                    name, getLowerName(), declarations.toString().indent(4),
-                    owner == null ? "void" : "VMA_HPP_NAMESPACE::" + owner.name);
+                    """ : ""), functions,
+                    name, getLowerName(), owner == null ? "void" : "VMA_HPP_NAMESPACE::" + owner.name);
         }
+
         String generateNamespace() {
-            return processTemplate("""
+            return processTemplate(root, 0, """
                     namespace VMA_HPP_NAMESPACE {
-                    $0
+                      {{{${declaration}}}}
                     }
-                    """, declarations.toString().indent(2));
+                    """, functions);
         }
 
         void append(StringBuilder declarations, StringBuilder definitions) {
             if (appended) return;
             for (Handle h : dependencies) h.append(declarations, definitions);
-            ifdef.goTo(this.declarations, -1);
-            ifdef.goTo(this.definitions, -1);
-            expifdef.goTo(this.exports, -1);
             declarations.append("\n").append(name == null ? generateNamespace() : generateClass());
-            definitions.append(this.definitions);
-            if (name != null) this.exports.append("\nusing VMA_HPP_NAMESPACE::").append(name).append(';');
+            // TODO definitions do not respect ifdefs!!!
+            definitions.append(this.functions.stream().map(Function::definition).collect(Collectors.joining("\n\n")));
             appended = true;
         }
     }
@@ -609,34 +630,28 @@ public class Generate {
         }
     }
 
-    static List<Handle> generateHandles(String orig, Ifdef.Range ifdef, List<String> structs) throws IOException {
-        // Forward declarations for structs
-        StringBuilder forwardDeclarations = new StringBuilder(), declarations = new StringBuilder(), definitions = new StringBuilder();
-        for (String s : structs) forwardDeclarations.append("\nstruct ").append(s).append(";");
+    static List<Handle> generateHandles(List<String> structs) throws IOException {
+        List<Function> functions = new ArrayList<>();
 
         // Find all handles
-        Handle namespaceHandle = new Handle(null, false, ifdef);
+        Handle namespaceHandle = new Handle(null, 0);
         Map<String, Handle> handles = new LinkedHashMap<>();
         Pattern handlePattern = Pattern.compile("VK_DEFINE_(NON_DISPATCHABLE_)?HANDLE\\s*\\(\\s*Vma(\\w+)\\s*\\)");
-        Matcher handleMatcher = handlePattern.matcher(orig);
+        Matcher handleMatcher = handlePattern.matcher(original);
         while (handleMatcher.find()) {
             String name = handleMatcher.group(2);
-            Handle h = new Handle(name, handleMatcher.group(1) == null, ifdef);
+            Handle h = new Handle(name, handleMatcher.start());
             handles.put("Vma" + name, h);
             namespaceHandle.dependencies.add(h);
         }
 
-        // Forward declarations for handles
-        forwardDeclarations.append("\n\n");
-        for (Handle h : handles.values()) forwardDeclarations.append("class ").append(h.name).append(";\n");
-
         // Iterate VMA functions
         Pattern funcPattern = Pattern.compile("VMA_CALL_PRE\\s+(\\w+)\\s+VMA_CALL_POST\\s+vma(\\w+)\\s*(\\([\\s\\S]+?\\)\\s*;)");
-        Matcher funcMatcher = funcPattern.matcher(orig);
+        Matcher funcMatcher = funcPattern.matcher(original);
         while (funcMatcher.find()) {
             Matcher paramMatcher = Var.pattern.matcher(funcMatcher.group(3));
             List<Var> params = new ArrayList<>();
-            while (paramMatcher.find()) params.add(Var.parse(paramMatcher));
+            while (paramMatcher.find()) params.add(Var.parse(paramMatcher, funcMatcher.start()));
             // Find dispatchable handle if any
             Handle handle = handles.getOrDefault(params.get(0).originalType, namespaceHandle);
             if (handle != namespaceHandle) params.remove(0);
@@ -689,13 +704,13 @@ public class Generate {
                 default -> throw new Error("Unknown return type: " + funcMatcher.group(1));
             };
 
-            class Method {
+            class MethodVariant {
                 final boolean enhanced;
                 final List<String> paramTypes = new ArrayList<>(), paramsPass = new ArrayList<>();
                 final List<Integer> paramIndices = new ArrayList<>();
                 boolean returnsHandles = false;
 
-                Method(boolean enhanced) {
+                MethodVariant(boolean enhanced) {
                     this.enhanced = enhanced;
                     if (handle != namespaceHandle) paramsPass.add("m_" + handle.getLowerName());
                     for (int i = 0; i < params.size(); i++) {
@@ -761,11 +776,16 @@ public class Generate {
                     if (outputs.size() >= 2 && params.get(outputs.get(0)).lenIfNotNull != null) throw new Error("2+ mandatory outputs with at least one array");
                     String ret = returnType(false);
 
+                    // Generate "binding" declaration
+//                    String bindingDecl = definition ? "" : (handle == namespaceHandle ?
+//                            "VMA_HPP_GLOBAL_BINDING(" : "VMA_HPP_BINDING(") + funcName + ")\n";
+                    String bindingDecl = "";
+
                     String decl = "";
                     // Generate template for vector allocator
                     if (enhanced && outputs.size() == 1 && params.get(outputs.get(0)).lenIfNotNull != null) {
                         if (!customVectorAllocator) decl = generate(definition, uniqueHandle, true) + "\n";
-                        decl += "template<typename VectorAllocator";
+                        decl += bindingDecl + "template<typename VectorAllocator";
                         if (!definition) decl += " = std::allocator<" + returnType(0, uniqueHandle) + ">";
                         if (customVectorAllocator) {
                             decl += ",\n         typename B";
@@ -775,7 +795,7 @@ public class Generate {
                             if (!definition) decl += " = 0";
                         }
                         decl += ">\n";
-                    }
+                    } else decl += bindingDecl;
 
                     if (definition) decl += "VULKAN_HPP_INLINE ";
                     else if (!ret.equals("void")) decl += enhanced ? "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS " : "VULKAN_HPP_NODISCARD ";
@@ -792,7 +812,7 @@ public class Generate {
                         s.append("VectorAllocator& vectorAllocator");
                     }
                     decl = processTemplate("$0$1($2)$3", decl, methodName + (uniqueHandle ? "Unique" : ""), s.toString(), handle != namespaceHandle ? " const" : "");
-                    if (!definition) return decl + ";\n";
+                    if (!definition) return decl + ";";
 
                     s.setLength(0);
                     if (enhanced) {
@@ -842,7 +862,7 @@ public class Generate {
                             }
                         }
                         if (ret.equals("void")) returnValue = "result";
-                        else returnValue = "result, " + returnValue;
+                        else returnValue = "result, std::move(" + returnValue + ")";
                         s.append("\nVMA_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::");
                         if (handle != namespaceHandle) s.append(handle.name).append("::");
                         s.append(methodName).append("\");\nreturn VMA_HPP_NAMESPACE::detail::createResultValueType(").append(returnValue).append(");");
@@ -850,49 +870,55 @@ public class Generate {
                     return processTemplate("""
                                 $0 {
                                   $1
-                                }
-                                """, decl, s.toString());
+                                }""", decl, s.toString());
                 }
             }
-            Method simple = new Method(false), enhanced = new Method(true);
+            class MethodGenerator {
+                final MethodVariant simple = new MethodVariant(false), enhanced = new MethodVariant(true);
+                final boolean sameSignatures = simple.paramTypes.equals(enhanced.paramTypes);
 
-            boolean sameSignatures = simple.paramTypes.equals(enhanced.paramTypes);
-
-            handle.ifdef.goTo(handle.declarations, funcMatcher.start());
-            handle.ifdef = handle.ifdef.goTo(handle.definitions, funcMatcher.start());
-
-            handle.declarations.append("\n#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE\n").append(enhanced.generate(false, false, false));
-            handle.definitions.append("\n#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE\n").append(enhanced.generate(true, false, false));
-            if (enhanced.returnsHandles) {
-                handle.declarations.append("#ifndef VULKAN_HPP_NO_SMART_HANDLE\n").append(enhanced.generate(false, true, false)).append("#endif\n");
-                handle.definitions.append("#ifndef VULKAN_HPP_NO_SMART_HANDLE\n").append(enhanced.generate(true, true, false)).append("#endif\n");
+                String generate(boolean definition) {
+                    String result = "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE\n" +
+                            enhanced.generate(definition, false, false);
+                    if (enhanced.returnsHandles) {
+                        result += "\n#ifndef VULKAN_HPP_NO_SMART_HANDLE\n" +
+                                enhanced.generate(definition, true, false) +
+                                "\n#endif";
+                    }
+                    result += (sameSignatures ? "\n#else\n" : "\n#endif\n") +
+                            simple.generate(definition, false, false);
+                    if (sameSignatures) result += "\n#endif";
+                    return result;
+                }
             }
-            handle.declarations.append(sameSignatures ? "#else\n" : "#endif\n").append(simple.generate(false, false, false));
-            handle.definitions.append(sameSignatures ? "#else\n" : "#endif\n").append(simple.generate(true, false, false));
-            if (sameSignatures) {
-                handle.declarations.append("#endif\n");
-                handle.definitions.append("#endif\n");
-            }
 
-            if (handle.name == null) {
-                handle.expifdef = handle.expifdef.goTo(handle.exports, funcMatcher.start());
-                handle.exports.append("\nusing VMA_HPP_NAMESPACE::").append(methodName).append(';');
-            }
+            MethodGenerator generator = new MethodGenerator();
+            Function function = new Function(funcName, generator.generate(false), generator.generate(true), funcMatcher.start());
+            handle.functions.add(function);
+            functions.add(function);
         }
 
+        StringBuilder declarations = new StringBuilder(), definitions = new StringBuilder(); // TODO
         namespaceHandle.append(declarations, definitions);
 
         Files.writeString(Path.of("include/vk_mem_alloc_handles.hpp"), processTemplate("""
                 #ifndef VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
                 #define VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
-                
+
                 namespace VMA_HPP_NAMESPACE {
                   $0
+
+                  {{{class ${name};}}}
                 }
 
                 $1
+
+                namespace VMA_HPP_NAMESPACE { VMA_HPP_VALIDATE(
+                  {{{${name}${,$}}}}
+                ); }
                 #endif
-                """, forwardDeclarations.toString(), declarations.toString()));
+                """, handles.values().stream(),
+                processTemplate("{{{struct ${toString};}}}\n", structs.stream()), declarations.toString()));
 
         Files.writeString(Path.of("include/vk_mem_alloc_funcs.hpp"), processTemplate("""
                 #ifndef VULKAN_MEMORY_ALLOCATOR_FUNCS_HPP
@@ -903,6 +929,49 @@ public class Generate {
                 }
                 #endif
                 """, definitions.toString()));
+
+        Files.writeString(Path.of("include/vk_mem_alloc_validation.hpp"), processTemplate(null, -1, """
+                #ifndef VULKAN_MEMORY_ALLOCATOR_VALIDATION_HPP
+                #define VULKAN_MEMORY_ALLOCATOR_VALIDATION_HPP
+
+                #define VMA_HPP_BINDING(FUNCTION) private:                                      \\
+                friend struct ::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION;         \\
+                static_assert(!::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION::value, \\
+                #FUNCTION " is statically disabled!"); using VmaHppValidationTag = void; public:
+
+                #define VMA_HPP_GLOBAL_BINDING(FUNCTION) namespace detail { namespace validation { \\
+                static_assert(!::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION::value,    \\
+                #FUNCTION " is statically disabled!"); using FUNCTION = std::true_type; } }
+
+                #define VMA_HPP_VALIDATE(...) namespace detail { namespace validation { \\
+                  using namespace ::VMA_HPP_NAMESPACE::detail::validation_traits; \\
+                  {{{static_assert(HasBinding<${name}>::WithClasses<__VA_ARGS__>::value, "${name} binding is missing!"); \\}}}
+                } } static_assert(true, "")
+
+                namespace VMA_HPP_NAMESPACE {
+                  namespace detail {
+                    namespace validation_traits {
+                      template<class, class, class = void> struct BindingInClass : std::false_type {};
+
+                      template<class Function> struct HasBinding {
+                        template<class...> struct WithClasses : Function {};
+                      };
+                      template<class Function> template<class Class, class... Remaining>
+                      struct HasBinding<Function>::WithClasses<Class, Remaining...> : std::integral_constant<bool,
+                        BindingInClass<Class, Function>::value || WithClasses<Remaining...>::value> {};
+                      template<> template<class... Classes>
+                      struct HasBinding<std::true_type>::WithClasses<Classes...> : std::true_type {};
+
+                      template<bool value = true> using Default = std::integral_constant<bool, value>;
+
+                      {{{struct ${name} : Default<${defaultValidation}> { template<class T> using InClass = T::VmaHppValidationTag; };
+                      template<class T> struct BindingInClass<T, ${name}, ${name}::InClass<T>> : std::true_type {};}}}
+                    }
+                  }
+                }
+                #endif
+                """, functions));
+
         return Stream.concat(Stream.of(namespaceHandle), handles.values().stream()).toList();
     }
 
@@ -919,6 +988,7 @@ public class Generate {
                 #include <vk_mem_alloc.h>
 
                 #include "vk_mem_alloc.hpp"
+                #include "vk_mem_alloc_raii.hpp"
 
                 export module vk_mem_alloc_hpp;
 
@@ -929,10 +999,13 @@ public class Generate {
                   using VMA_HPP_NAMESPACE::operator~;
                   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
                   {{{using VMA_HPP_NAMESPACE::${toString};}}}
+                }
+                """, Stream.concat(enums.stream(), structs.stream())) +
+                processTemplate("""
+                export namespace VMA_HPP_NAMESPACE {
                   $0
                 }
-
-                """, Stream.concat(enums.stream(), structs.stream()), handles.stream().map(h -> h.exports.toString()).collect(Collectors.joining())) +
+                """, handles.stream().skip(1)) +
                 processTemplate("""
                 #ifndef VULKAN_HPP_NO_SMART_HANDLE
                 export namespace VMA_HPP_NAMESPACE {
@@ -971,17 +1044,17 @@ public class Generate {
             System.err.println("Usage: java Generate.java <path/to/vk_mem_alloc.h>");
             return;
         }
-        String orig = Files.readString(Path.of(args[0]))
+        String original = Files.readString(Path.of(args[0]))
                 .replaceAll("/\\*[\\s\\S]*?\\*/", "") // Delete multi-line comments
                 .replaceAll("//.*", ""); // Delete single-line comments
-        orig = orig.substring(0, orig.indexOf("#ifdef VMA_IMPLEMENTATION")); // Strip implementation part
+        original = original.substring(0, original.indexOf("#ifdef VMA_IMPLEMENTATION")); // Strip implementation part
 
-        Ifdef.Range ifdef = Ifdef.buildTree(orig, 2);
+        Generate gen = new Generate(original, Ifdef.buildTree(original, 2));
 
-        List<String> enums = generateEnums(orig, ifdef);
-        List<String> structs = generateStructs(orig, ifdef);
-        List<Handle> handles = generateHandles(orig, ifdef, structs);
-        generateModule(enums, structs, handles);
+//        List<String> enums = generateEnums();
+//        List<String> structs = generateStructs();
+//        List<Handle> handles = generateHandles(structs);
+//        generateModule(enums, structs, handles);
     }
 
 }
