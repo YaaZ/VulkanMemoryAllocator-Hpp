@@ -9,8 +9,17 @@ module;
 #include <vk_mem_alloc.h>
 
 #include "vk_mem_alloc.hpp"
+#include "vk_mem_alloc_raii.hpp"
 
-export module vk_mem_alloc_hpp;
+export module vk_mem_alloc_hpp_old;
+
+namespace VULKAN_HPP_NAMESPACE {
+  // This is needed for template specialization to be visible outside the module, operators don't work otherwise.
+  template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits>;
+  // template vk::FlagTraits<vma::AllocatorCreateFlagBits>;
+  // using vk::FlagTraits<vma::AllocatorCreateFlagBits>;
+  // using vk::FlagTraits;
+}
 
 export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::operator|;
@@ -51,20 +60,26 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::VirtualBlockCreateInfo;
   using VMA_HPP_NAMESPACE::VirtualAllocationCreateInfo;
   using VMA_HPP_NAMESPACE::VirtualAllocationInfo;
-
-#ifdef VOLK_HEADER_VERSION
-  using VMA_HPP_NAMESPACE::importVulkanFunctionsFromVolk;
-#endif
-  using VMA_HPP_NAMESPACE::createAllocator;
-  using VMA_HPP_NAMESPACE::createVirtualBlock;
-  using VMA_HPP_NAMESPACE::Allocator;
-  using VMA_HPP_NAMESPACE::Pool;
-  using VMA_HPP_NAMESPACE::Allocation;
-  using VMA_HPP_NAMESPACE::DefragmentationContext;
-  using VMA_HPP_NAMESPACE::VirtualAllocation;
-  using VMA_HPP_NAMESPACE::VirtualBlock;
 }
+export namespace VMA_HPP_NAMESPACE {
+  // $0
 
+//  namespace VMA_HPP_RAII_NAMESPACE {
+//    using VMA_HPP_RAII_NAMESPACE::createAllocator;
+//    using VMA_HPP_RAII_NAMESPACE::createVirtualBlock;
+//#if VMA_STATS_STRING_ENABLED
+//    using VMA_HPP_RAII_NAMESPACE::StatsString;
+//#endif
+//    using VMA_HPP_RAII_NAMESPACE::Pool;
+//    using VMA_HPP_RAII_NAMESPACE::Allocation;
+//    using VMA_HPP_RAII_NAMESPACE::DefragmentationContext;
+//    using VMA_HPP_RAII_NAMESPACE::Allocator;
+//    using VMA_HPP_RAII_NAMESPACE::VirtualAllocation;
+//    using VMA_HPP_RAII_NAMESPACE::VirtualBlock;
+//    using VMA_HPP_RAII_NAMESPACE::Buffer;
+//    using VMA_HPP_RAII_NAMESPACE::Image;
+//  }
+}
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::createAllocatorUnique;

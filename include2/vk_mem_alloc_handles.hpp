@@ -928,12 +928,12 @@ VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createVirtualBlock(const Virtu
                                                                      VirtualBlock* virtualBlock);
 }
 
-// namespace VMA_HPP_NAMESPACE { VMA_HPP_VALIDATE(
-//   Allocator,
-//   Pool,
-//   Allocation,
-//   DefragmentationContext,
-//   VirtualAllocation,
-//   VirtualBlock
-// ); }
+namespace VMA_HPP_NAMESPACE { VMA_HPP_VALIDATE(
+  Allocator,
+  Pool,
+  Allocation,
+  DefragmentationContext,
+  VirtualAllocation,
+  VirtualBlock
+); }
 #endif
