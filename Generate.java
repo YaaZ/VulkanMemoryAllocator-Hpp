@@ -936,17 +936,17 @@ public class Generate {
 
                 #define VMA_HPP_BINDING(FUNCTION) private:                                      \\
                 friend struct ::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION;         \\
-                static_assert(!::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION::value, \\
+                VULKAN_HPP_STATIC_ASSERT(!::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION::value, \\
                 #FUNCTION " is statically disabled!"); using VmaHppValidationTag = void; public:
 
                 #define VMA_HPP_GLOBAL_BINDING(FUNCTION) namespace detail { namespace validation { \\
-                static_assert(!::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION::value,    \\
+                VULKAN_HPP_STATIC_ASSERT(!::VMA_HPP_NAMESPACE::detail::validation_traits::FUNCTION::value,    \\
                 #FUNCTION " is statically disabled!"); using FUNCTION = std::true_type; } }
 
                 #define VMA_HPP_VALIDATE(...) namespace detail { namespace validation { \\
                   using namespace ::VMA_HPP_NAMESPACE::detail::validation_traits; \\
-                  {{{static_assert(HasBinding<${name}>::WithClasses<__VA_ARGS__>::value, "${name} binding is missing!"); \\}}}
-                } } static_assert(true, "")
+                  {{{VULKAN_HPP_STATIC_ASSERT(HasBinding<${name}>::WithClasses<__VA_ARGS__>::value, "${name} binding is missing!"); \\}}}
+                } } VULKAN_HPP_STATIC_ASSERT(true, "")
 
                 namespace VMA_HPP_NAMESPACE {
                   namespace detail {

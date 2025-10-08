@@ -65,7 +65,7 @@ target_link_libraries(
 
 if(${VMA_BUILD_WITH_VULKAN_MODULE})
   target_compile_definitions(VulkanMemoryAllocator-Hpp-Module
-                             PRIVATE VMA_ENABLE_VULKAN_HPP_MODULE)
+                             PRIVATE VMA_HPP_ENABLE_VULKAN_HPP_MODULE)
 endif()
 
 if(VMA_BUILD_WITH_VULKAN_MODULE)

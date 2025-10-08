@@ -1,34 +1,42 @@
-#ifndef VULKAN_MEMORY_ALLOCATOR_HPP
-#define VULKAN_MEMORY_ALLOCATOR_HPP
+// Macros
+#ifndef VMA_HPP_NAMESPACE
+#define VMA_HPP_NAMESPACE vma
+#endif
+#ifndef VMA_HPP_RAII_NAMESPACE
+#define VMA_HPP_RAII_NAMESPACE raii
+#endif
+#include <vulkan/vulkan_hpp_macros.hpp>
+#define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
+#define VMA_HPP_RAII_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE)
 
-#if !defined(AMD_VULKAN_MEMORY_ALLOCATOR_H)
+// VMA header
+#ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
 #include <vk_mem_alloc.h>
 #endif
 
-#include <vulkan/vulkan_hpp_macros.hpp>
+// The body
+#ifndef VULKAN_MEMORY_ALLOCATOR_HPP
+#define VULKAN_MEMORY_ALLOCATOR_HPP
 
 #ifdef VULKAN_HPP_ENABLE_STD_MODULE
 import VULKAN_HPP_STD_MODULE;
 #else
 #include <algorithm>
 #include <array>
-#include <string>
 #include <vector>
+#ifndef VULKAN_HPP_NO_TO_STRING
+#include <string>
+#endif
 #endif
 
-#ifdef VMA_ENABLE_VULKAN_HPP_MODULE
+#ifdef VMA_HPP_ENABLE_VULKAN_HPP_MODULE
 import vulkan_hpp;
 #else
-#if !defined(VULKAN_HPP)
+#ifndef VULKAN_HPP
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 #endif
 #endif
-
-#if !defined(VMA_HPP_NAMESPACE)
-#define VMA_HPP_NAMESPACE vma
-#endif
-
-#define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
 
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
 namespace VMA_HPP_NAMESPACE {
@@ -105,170 +113,19 @@ using UniqueImage =
 } // namespace VMA_HPP_NAMESPACE
 #endif
 
-#ifndef VULKAN_HPP_NO_EXCEPTIONS
-namespace VMA_HPP_NAMESPACE::detail {
-[[noreturn]] VULKAN_HPP_INLINE void
-throwResultException(VULKAN_HPP_NAMESPACE::Result result, char const *message) {
-  switch (result) {
-    using VULKAN_HPP_NAMESPACE::Result;
-  case Result::eErrorOutOfHostMemory:
-    throw VULKAN_HPP_NAMESPACE::OutOfHostMemoryError(message);
-  case Result::eErrorOutOfDeviceMemory:
-    throw VULKAN_HPP_NAMESPACE::OutOfDeviceMemoryError(message);
-  case Result::eErrorInitializationFailed:
-    throw VULKAN_HPP_NAMESPACE::InitializationFailedError(message);
-  case Result::eErrorDeviceLost:
-    throw VULKAN_HPP_NAMESPACE::DeviceLostError(message);
-  case Result::eErrorMemoryMapFailed:
-    throw VULKAN_HPP_NAMESPACE::MemoryMapFailedError(message);
-  case Result::eErrorLayerNotPresent:
-    throw VULKAN_HPP_NAMESPACE::LayerNotPresentError(message);
-  case Result::eErrorExtensionNotPresent:
-    throw VULKAN_HPP_NAMESPACE::ExtensionNotPresentError(message);
-  case Result::eErrorFeatureNotPresent:
-    throw VULKAN_HPP_NAMESPACE::FeatureNotPresentError(message);
-  case Result::eErrorIncompatibleDriver:
-    throw VULKAN_HPP_NAMESPACE::IncompatibleDriverError(message);
-  case Result::eErrorTooManyObjects:
-    throw VULKAN_HPP_NAMESPACE::TooManyObjectsError(message);
-  case Result::eErrorFormatNotSupported:
-    throw VULKAN_HPP_NAMESPACE::FormatNotSupportedError(message);
-  case Result::eErrorFragmentedPool:
-    throw VULKAN_HPP_NAMESPACE::FragmentedPoolError(message);
-  case Result::eErrorUnknown:
-    throw VULKAN_HPP_NAMESPACE::UnknownError(message);
-  case Result::eErrorOutOfPoolMemory:
-    throw VULKAN_HPP_NAMESPACE::OutOfPoolMemoryError(message);
-  case Result::eErrorInvalidExternalHandle:
-    throw VULKAN_HPP_NAMESPACE::InvalidExternalHandleError(message);
-  case Result::eErrorFragmentation:
-    throw VULKAN_HPP_NAMESPACE::FragmentationError(message);
-  case Result::eErrorInvalidOpaqueCaptureAddress:
-    throw VULKAN_HPP_NAMESPACE::InvalidOpaqueCaptureAddressError(message);
-  case Result::eErrorSurfaceLostKHR:
-    throw VULKAN_HPP_NAMESPACE::SurfaceLostKHRError(message);
-  case Result::eErrorNativeWindowInUseKHR:
-    throw VULKAN_HPP_NAMESPACE::NativeWindowInUseKHRError(message);
-  case Result::eErrorOutOfDateKHR:
-    throw VULKAN_HPP_NAMESPACE::OutOfDateKHRError(message);
-  case Result::eErrorIncompatibleDisplayKHR:
-    throw VULKAN_HPP_NAMESPACE::IncompatibleDisplayKHRError(message);
-  case Result::eErrorValidationFailed:
-    throw VULKAN_HPP_NAMESPACE::ValidationFailedError(message);
-  case Result::eErrorInvalidShaderNV:
-    throw VULKAN_HPP_NAMESPACE::InvalidShaderNVError(message);
-  case Result::eErrorImageUsageNotSupportedKHR:
-    throw VULKAN_HPP_NAMESPACE::ImageUsageNotSupportedKHRError(message);
-  case Result::eErrorVideoPictureLayoutNotSupportedKHR:
-    throw VULKAN_HPP_NAMESPACE::VideoPictureLayoutNotSupportedKHRError(message);
-  case Result::eErrorVideoProfileOperationNotSupportedKHR:
-    throw VULKAN_HPP_NAMESPACE::VideoProfileOperationNotSupportedKHRError(
-        message);
-  case Result::eErrorVideoProfileFormatNotSupportedKHR:
-    throw VULKAN_HPP_NAMESPACE::VideoProfileFormatNotSupportedKHRError(message);
-  case Result::eErrorVideoProfileCodecNotSupportedKHR:
-    throw VULKAN_HPP_NAMESPACE::VideoProfileCodecNotSupportedKHRError(message);
-  case Result::eErrorVideoStdVersionNotSupportedKHR:
-    throw VULKAN_HPP_NAMESPACE::VideoStdVersionNotSupportedKHRError(message);
-  case Result::eErrorInvalidDrmFormatModifierPlaneLayoutEXT:
-    throw VULKAN_HPP_NAMESPACE::InvalidDrmFormatModifierPlaneLayoutEXTError(
-        message);
-  case Result::eErrorNotPermitted:
-    throw VULKAN_HPP_NAMESPACE::NotPermittedError(message);
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-  case Result::eErrorFullScreenExclusiveModeLostEXT:
-    throw VULKAN_HPP_NAMESPACE::FullScreenExclusiveModeLostEXTError(message);
-#endif /*VK_USE_PLATFORM_WIN32_KHR*/
-  case Result::eErrorInvalidVideoStdParametersKHR:
-    throw VULKAN_HPP_NAMESPACE::InvalidVideoStdParametersKHRError(message);
-  case Result::eErrorCompressionExhaustedEXT:
-    throw VULKAN_HPP_NAMESPACE::CompressionExhaustedEXTError(message);
-  default:
-    throw VULKAN_HPP_NAMESPACE::SystemError(
-        VULKAN_HPP_NAMESPACE::make_error_code(result), message);
-  }
-}
-} // namespace VMA_HPP_NAMESPACE::detail
-#endif // VULKAN_HPP_NO_EXCEPTIONS
-
-namespace VMA_HPP_NAMESPACE::detail {
-template <typename T> void ignore(T const &) VULKAN_HPP_NOEXCEPT {}
-
-VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type
-createResultValueType(VULKAN_HPP_NAMESPACE::Result result) {
-#ifdef VULKAN_HPP_NO_EXCEPTIONS
-  return result;
-#else
-  VMA_HPP_NAMESPACE::detail::ignore(result);
-#endif
-}
-
-template <typename T>
-VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<T>::type
-createResultValueType(VULKAN_HPP_NAMESPACE::Result result, T &data) {
-#ifdef VULKAN_HPP_NO_EXCEPTIONS
-  return VULKAN_HPP_NAMESPACE::ResultValue<T>(result, data);
-#else
-  VMA_HPP_NAMESPACE::detail::ignore(result);
-  return data;
-#endif
-}
-
-template <typename T>
-VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<T>::type
-createResultValueType(VULKAN_HPP_NAMESPACE::Result result, T &&data) {
-#ifdef VULKAN_HPP_NO_EXCEPTIONS
-  return VULKAN_HPP_NAMESPACE::ResultValue<T>(result, std::move(data));
-#else
-  VMA_HPP_NAMESPACE::detail::ignore(result);
-  return std::move(data);
-#endif
-}
-} // namespace VMA_HPP_NAMESPACE::detail
-
-namespace VMA_HPP_NAMESPACE::detail {
-VULKAN_HPP_INLINE void 
-resultCheck(VULKAN_HPP_NAMESPACE::Result result, char const *message) {
-#ifdef VULKAN_HPP_NO_EXCEPTIONS
-  VMA_HPP_NAMESPACE::detail::ignore(
-      result); // just in case VULKAN_HPP_ASSERT_ON_RESULT is empty
-  VMA_HPP_NAMESPACE::detail::ignore(message);
-  VULKAN_HPP_ASSERT_ON_RESULT(result == VULKAN_HPP_NAMESPACE::Result::eSuccess);
-#else
-  if (result != VULKAN_HPP_NAMESPACE::Result::eSuccess) {
-    VMA_HPP_NAMESPACE::detail::throwResultException(result, message);
-  }
-#endif
-}
-
-VULKAN_HPP_INLINE void
-resultCheck(VULKAN_HPP_NAMESPACE::Result result, char const *message,
-            std::initializer_list<VULKAN_HPP_NAMESPACE::Result> successCodes) {
-#ifdef VULKAN_HPP_NO_EXCEPTIONS
-  VMA_HPP_NAMESPACE::detail::ignore(
-      result); // just in case VULKAN_HPP_ASSERT_ON_RESULT is empty
-  VMA_HPP_NAMESPACE::detail::ignore(message);
-  VMA_HPP_NAMESPACE::detail::ignore(
-      successCodes); // just in case VULKAN_HPP_ASSERT_ON_RESULT is empty
-  VULKAN_HPP_ASSERT_ON_RESULT(std::find(successCodes.begin(),
-                                        successCodes.end(),
-                                        result) != successCodes.end());
-#else
-  if (std::find(successCodes.begin(), successCodes.end(), result) ==
-      successCodes.end()) {
-    VMA_HPP_NAMESPACE::detail::throwResultException(result, message);
-  }
-#endif
-}
-} // namespace VMA_HPP_NAMESPACE::detail
+// #include "vk_mem_alloc_validation.hpp"
 
 #include "vk_mem_alloc_enums.hpp"
+
+#ifndef VULKAN_HPP_NO_TO_STRING
+#include "vk_mem_alloc_to_string.hpp"
+#endif
 
 #include "vk_mem_alloc_handles.hpp"
 
 #include "vk_mem_alloc_structs.hpp"
 
-#include "vk_mem_alloc_funcs.hpp"
+// #include "vk_mem_alloc_funcs.hpp"
 
 namespace VMA_HPP_NAMESPACE {
 
@@ -291,57 +148,22 @@ VMA_HPP_DESTROY_IMPL(VirtualAllocation) { owner.virtualFree(t); }
 #undef VMA_HPP_DESTROY_IMPL
 #endif
 
-template <class InstanceDispatcher, class DeviceDispatcher>
-VULKAN_HPP_CONSTEXPR VulkanFunctions
-functionsFromDispatcher(InstanceDispatcher const *instance,
-                        DeviceDispatcher const *device) VULKAN_HPP_NOEXCEPT {
-  return VulkanFunctions{
-      instance->vkGetInstanceProcAddr,
-      instance->vkGetDeviceProcAddr,
-      instance->vkGetPhysicalDeviceProperties,
-      instance->vkGetPhysicalDeviceMemoryProperties,
-      device->vkAllocateMemory,
-      device->vkFreeMemory,
-      device->vkMapMemory,
-      device->vkUnmapMemory,
-      device->vkFlushMappedMemoryRanges,
-      device->vkInvalidateMappedMemoryRanges,
-      device->vkBindBufferMemory,
-      device->vkBindImageMemory,
-      device->vkGetBufferMemoryRequirements,
-      device->vkGetImageMemoryRequirements,
-      device->vkCreateBuffer,
-      device->vkDestroyBuffer,
-      device->vkCreateImage,
-      device->vkDestroyImage,
-      device->vkCmdCopyBuffer,
-      device->vkGetBufferMemoryRequirements2KHR
-          ? device->vkGetBufferMemoryRequirements2KHR
-          : device->vkGetBufferMemoryRequirements2,
-      device->vkGetImageMemoryRequirements2KHR
-          ? device->vkGetImageMemoryRequirements2KHR
-          : device->vkGetImageMemoryRequirements2,
-      device->vkBindBufferMemory2KHR ? device->vkBindBufferMemory2KHR
-                                     : device->vkBindBufferMemory2,
-      device->vkBindImageMemory2KHR ? device->vkBindImageMemory2KHR
-                                    : device->vkBindImageMemory2,
-      instance->vkGetPhysicalDeviceMemoryProperties2KHR
-          ? instance->vkGetPhysicalDeviceMemoryProperties2KHR
-          : instance->vkGetPhysicalDeviceMemoryProperties2,
-      device->vkGetDeviceBufferMemoryRequirementsKHR
-          ? device->vkGetDeviceBufferMemoryRequirementsKHR
-          : device->vkGetDeviceBufferMemoryRequirements,
-      device->vkGetDeviceImageMemoryRequirementsKHR
-          ? device->vkGetDeviceImageMemoryRequirementsKHR
-          : device->vkGetDeviceImageMemoryRequirements,
-  };
+template <class InstanceDispatcher, class DeviceDispatcher> VULKAN_HPP_CONSTEXPR VulkanFunctions
+functionsFromDispatcher(InstanceDispatcher const * instance, DeviceDispatcher const * device) VULKAN_HPP_NOEXCEPT {
+  return VulkanFunctions { instance->vkGetInstanceProcAddr, device->vkGetDeviceProcAddr };
 }
 
-template <class Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
-VULKAN_HPP_CONSTEXPR VulkanFunctions
-functionsFromDispatcher(Dispatch const &dispatch) VULKAN_HPP_NOEXCEPT {
-  return functionsFromDispatcher(&dispatch, &dispatch);
+template <class Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE> VULKAN_HPP_CONSTEXPR VulkanFunctions
+functionsFromDispatcher(Dispatch const & dispatch VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT) VULKAN_HPP_NOEXCEPT {
+  return VulkanFunctions { dispatch.vkGetInstanceProcAddr, dispatch.vkGetDeviceProcAddr };
 }
+
+#if !defined( VK_NO_PROTOTYPES )
+template <> VULKAN_HPP_CONSTEXPR VulkanFunctions
+functionsFromDispatcher<VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE>(VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE const &) VULKAN_HPP_NOEXCEPT {
+  return VulkanFunctions { &vkGetInstanceProcAddr, &vkGetDeviceProcAddr };
+}
+#endif
 } // namespace VMA_HPP_NAMESPACE
 
 #endif
