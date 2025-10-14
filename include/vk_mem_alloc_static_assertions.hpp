@@ -79,4 +79,28 @@ VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::V
 VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::VirtualAllocationInfo) == sizeof(VmaVirtualAllocationInfo), "struct and wrapper have different size!");
 VULKAN_HPP_STATIC_ASSERT(std::is_standard_layout<VMA_HPP_NAMESPACE::VirtualAllocationInfo>::value, "struct wrapper is not a standard layout!");
 VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::VirtualAllocationInfo>::value, "VirtualAllocationInfo is not nothrow_move_constructible!");
+
+VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::Allocator) == sizeof(VmaAllocator), "handle and wrapper have different size!");
+VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::Allocator>::value, "Allocator is not copy_constructible!");
+VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::Allocator>::value, "Allocator is not nothrow_move_constructible!");
+
+VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::Pool) == sizeof(VmaPool), "handle and wrapper have different size!");
+VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::Pool>::value, "Pool is not copy_constructible!");
+VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::Pool>::value, "Pool is not nothrow_move_constructible!");
+
+VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::Allocation) == sizeof(VmaAllocation), "handle and wrapper have different size!");
+VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::Allocation>::value, "Allocation is not copy_constructible!");
+VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::Allocation>::value, "Allocation is not nothrow_move_constructible!");
+
+VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::DefragmentationContext) == sizeof(VmaDefragmentationContext), "handle and wrapper have different size!");
+VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::DefragmentationContext>::value, "DefragmentationContext is not copy_constructible!");
+VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::DefragmentationContext>::value, "DefragmentationContext is not nothrow_move_constructible!");
+
+VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::VirtualAllocation) == sizeof(VmaVirtualAllocation), "handle and wrapper have different size!");
+VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::VirtualAllocation>::value, "VirtualAllocation is not copy_constructible!");
+VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::VirtualAllocation>::value, "VirtualAllocation is not nothrow_move_constructible!");
+
+VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::VirtualBlock) == sizeof(VmaVirtualBlock), "handle and wrapper have different size!");
+VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::VirtualBlock>::value, "VirtualBlock is not copy_constructible!");
+VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::VirtualBlock>::value, "VirtualBlock is not nothrow_move_constructible!");
 #endif
