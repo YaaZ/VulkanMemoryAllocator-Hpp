@@ -14,8 +14,6 @@
 #include <variant>
 #include <vector>
 
-#define COMPAT
-
 using Match = std::match_results<std::string_view::const_iterator>;
 template<class Iterator> class Iterable {
     Iterator b, e;
@@ -566,10 +564,6 @@ private:
         name = group(9);
         prettyName = pointers && name.length() > 0 && (*name)[0] == 'p' ? name.substr(1).capitalize(false) : name;
 
-#ifdef COMPAT
-        name = prettyName = pointers == 2 && prettyName.length() > 0 && (*prettyName)[0] == 'p' ? prettyName.substr(1).capitalize(false) : prettyName;
-#endif
-
         std::string_view arr = trim(group(10));
         originalType += arr;
         while (!(arr = trim(arr)).empty()) {
@@ -1039,11 +1033,7 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
         } else if (outputs.size() == 1) {
             auto t = returnType(*outputs[0]);
             if (outputs[0]->lenIfNotNull) { // Vector.
-#ifdef COMPAT
-                vecAllocName = "VectorAllocator";
-#else
                 vecAllocName = std::string(*t.first) + "Allocator";
-#endif
                 (enhancedReturn, uniqueReturn) + "std::vector<" + t + ", " + vecAllocName + ">";
                 if (!t.second) uniqueReturn = {};
             } else (enhancedReturn, uniqueReturn) + t; // Single value.
@@ -1069,18 +1059,6 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
         auto enhancedDefinitions = ((enhancedDef, enhancedVecAllocDef), (uniqueDef, uniqueVecAllocDef));
 
         // Generate template for vector allocator.
-#ifdef COMPAT
-        if (vecAllocName) {
-            auto t = returnType(*outputs[0]);
-            enhanced + "template<typename " + vecAllocName;
-            (enhancedDecl, uniqueDecl) + " = std::allocator<" + t + ">";
-            ((enhancedVecAllocDecl, enhancedVecAllocDef), (uniqueVecAllocDecl, uniqueVecAllocDef)) + "," + n +
-                "         typename B," + n +
-                "         typename std::enable_if<std::is_same<typename B::value_type, " + t + ">::value, int>::type";
-            (enhancedVecAllocDecl, uniqueVecAllocDecl) + " = 0";
-            enhanced + ">" + n;
-        }
-#else
         if (vecAllocName) {
             auto t = returnType(*outputs[0]);
             enhanced + "template <typename " + vecAllocName;
@@ -1090,18 +1068,13 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
             (enhancedVecAllocDecl, uniqueVecAllocDecl) + " = 0";
             enhanced + ">" + n;
         }
-#endif
 
         // Generate macros.
-#ifdef COMPAT
-        if (enhancedReturn.blank()) enhancedReturn + "void";
-#else
         if (enhancedReturn.blank()) {
             enhancedReturn + "void";
             if (originalReturnType == "VkResult") enhanced + "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
         } else enhanced + "VULKAN_HPP_NODISCARD ";
         if (*simpleReturn != "void") simple + "VULKAN_HPP_NODISCARD ";
-#endif
         definitions + "VULKAN_HPP_INLINE ";
 
         // Generate return type.
@@ -1128,17 +1101,10 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
             // Enhanced methods only transform pointer parameters.
             Segment type;
             if (param.pointers && param.kind != Var::Kind::VOID) {
-#ifdef COMPAT
-                if (param.lenIfNotNull && !param.constant)
-                    type + "VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<" + param.prettyType + ">";
-                else if (param.lenIfNotNull && param.constant)
-                    type + "VULKAN_HPP_NAMESPACE::ArrayProxy<" + param.prettyType + ">";
-#else
                 if (param.lenIfNotNull && !param.constant)
                     type + "VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<" + param.prettyType + "> const &";
                 else if (param.lenIfNotNull && param.constant)
                     type + "VULKAN_HPP_NAMESPACE::ArrayProxy<" + param.prettyType + "> const &";
-#endif
                 else if (param.tag == Var::Tag::NOT_NULL)
                     type + param.prettyType + "&";
                 else if (!param.constant && param.kind != Var::Kind::OTHER && param.kind != Var::Kind::CHAR)
@@ -1252,19 +1218,11 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
         enhancedDefinitions + n + "  " + enhancedCall + ";";
 
         // Generate result check.
-#ifdef COMPAT
-        if (originalReturnType == "VkResult") { // TODO success codes!
-            enhancedDefinitions + n + "  VMA_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::";
-            if (handle) enhancedDefinitions + handle->name + "::";
-            enhancedDefinitions + name + "\");";
-        }
-#else
         if (originalReturnType == "VkResult") { // TODO success codes!
             enhancedDefinitions + n + "  VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::";
             if (handle) enhancedDefinitions + handle->name + "::";
             enhancedDefinitions + name + "\");";
         }
-#endif
 
         // Generate unique conversion.
         (uniqueDef, uniqueVecAllocDef) + n + "  " + uniqueReturn + " " + outputName + "Unique";
@@ -1292,22 +1250,11 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
         if (*simpleReturn != "void" || !outputs.empty()) {
             enhancedDefinitions + n + "  return ";
             if (originalReturnType == "VkResult")
-#ifdef COMPAT
-                enhancedDefinitions + "VMA_HPP_NAMESPACE::detail::createResultValueType(result" + (outputs.empty() ? "" : ", ");
-#else
                 enhancedDefinitions + "VULKAN_HPP_NAMESPACE::detail::createResultValueType(result" + (outputs.empty() ? "" : ", ");
-#endif
             if (!outputs.empty() || originalReturnType != "VkResult") {
-#ifdef COMPAT
-                if (originalReturnType == "VkResult") enhancedDefinitions + "std::move(";
-                enhancedDefinitions + outputName;
-                (uniqueDef, uniqueVecAllocDef) + "Unique";
-                if (originalReturnType == "VkResult") enhancedDefinitions + ")";
-#else
                 (uniqueDef, uniqueVecAllocDef) + "std::move(";
                 enhancedDefinitions + outputName;
                 (uniqueDef, uniqueVecAllocDef) + "Unique)";
-#endif
             }
             if (originalReturnType == "VkResult") enhancedDefinitions + ")";
             enhancedDefinitions + ";";
@@ -1318,17 +1265,6 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
         bool hasUniqueVariant = !uniqueReturn.blank();
         auto appendMethods = [&](Segment& dst, const auto& variants) {
             auto& [simple, enhanced, unique, enhancedVecAlloc, uniqueVecAlloc] = variants;
-#ifdef COMPAT
-            dst + nn + navigate(match) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg;
-            if (vecAllocName) dst + n + std::move(enhancedVecAlloc);
-            dst + n + std::move(enhanced);
-            if (hasUniqueVariant) {
-                dst + n + "#ifndef VULKAN_HPP_NO_SMART_HANDLE"_seg;
-                if (vecAllocName) dst + n + std::move(uniqueVecAlloc);
-                dst + n + std::move(unique);
-                dst + n + "#endif"_seg;
-            }
-#else
             dst + nn + navigate(match) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n + std::move(enhanced);
             if (vecAllocName) dst + n + std::move(enhancedVecAlloc);
             if (hasUniqueVariant) {
@@ -1336,7 +1272,6 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
                 if (vecAllocName) dst + n + std::move(uniqueVecAlloc);
                 dst + n + "#endif"_seg;
             }
-#endif
             dst + n + (signatureTransformed ? "#endif"_seg : "#else"_seg) + n + std::move(simple);
             if (!signatureTransformed) dst + n + "#endif"_seg;
         };

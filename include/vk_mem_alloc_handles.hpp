@@ -94,25 +94,25 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    AllocatorInfo getAllocatorInfo() const;
+    VULKAN_HPP_NODISCARD AllocatorInfo getAllocatorInfo() const;
 #endif
-    void getAllocatorInfo(AllocatorInfo* allocatorInfo) const;
+    void getAllocatorInfo(AllocatorInfo* pAllocatorInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties* getPhysicalDeviceProperties() const;
+    VULKAN_HPP_NODISCARD const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties* getPhysicalDeviceProperties() const;
 #endif
-    void getPhysicalDeviceProperties(const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties** physicalDeviceProperties) const;
+    void getPhysicalDeviceProperties(const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties** ppPhysicalDeviceProperties) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties* getMemoryProperties() const;
+    VULKAN_HPP_NODISCARD const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties* getMemoryProperties() const;
 #endif
-    void getMemoryProperties(const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties** physicalDeviceMemoryProperties) const;
+    void getMemoryProperties(const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties** ppPhysicalDeviceMemoryProperties) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    VULKAN_HPP_NAMESPACE::MemoryPropertyFlags getMemoryTypeProperties(uint32_t memoryTypeIndex) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::MemoryPropertyFlags getMemoryTypeProperties(uint32_t memoryTypeIndex) const;
 #endif
     void getMemoryTypeProperties(uint32_t memoryTypeIndex,
-                                 VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* flags) const;
+                                 VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* pFlags) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void setCurrentFrameIndex(uint32_t frameIndex) const;
@@ -121,52 +121,51 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    TotalStatistics calculateStatistics() const;
+    VULKAN_HPP_NODISCARD TotalStatistics calculateStatistics() const;
 #endif
-    void calculateStatistics(TotalStatistics* stats) const;
+    void calculateStatistics(TotalStatistics* pStats) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    template<typename VectorAllocator,
-             typename B,
-             typename std::enable_if<std::is_same<typename B::value_type, Budget>::value, int>::type = 0>
-    std::vector<Budget, VectorAllocator> getHeapBudgets(VectorAllocator& vectorAllocator) const;
-    template<typename VectorAllocator = std::allocator<Budget>>
-    std::vector<Budget, VectorAllocator> getHeapBudgets() const;
+    template <typename BudgetAllocator = std::allocator<Budget>>
+    VULKAN_HPP_NODISCARD std::vector<Budget, BudgetAllocator> getHeapBudgets() const;
+    template <typename BudgetAllocator,
+              typename std::enable_if<std::is_same<typename BudgetAllocator::value_type, Budget>::value, int>::type = 0>
+    VULKAN_HPP_NODISCARD std::vector<Budget, BudgetAllocator> getHeapBudgets(BudgetAllocator& budgetAllocator) const;
 #endif
-    void getHeapBudgets(Budget* budgets) const;
+    void getHeapBudgets(Budget* pBudgets) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type findMemoryTypeIndex(uint32_t memoryTypeBits,
-                                                                                       const AllocationCreateInfo& allocationCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type findMemoryTypeIndex(uint32_t memoryTypeBits,
+                                                                                                            const AllocationCreateInfo& allocationCreateInfo) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result findMemoryTypeIndex(uint32_t memoryTypeBits,
-                                                     const AllocationCreateInfo* allocationCreateInfo,
-                                                     uint32_t* memoryTypeIndex) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result findMemoryTypeIndex(uint32_t memoryTypeBits,
+                                                                          const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                          uint32_t* pMemoryTypeIndex) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type findMemoryTypeIndexForBufferInfo(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
-                                                                                                    const AllocationCreateInfo& allocationCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type findMemoryTypeIndexForBufferInfo(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                         const AllocationCreateInfo& allocationCreateInfo) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result findMemoryTypeIndexForBufferInfo(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* bufferCreateInfo,
-                                                                  const AllocationCreateInfo* allocationCreateInfo,
-                                                                  uint32_t* memoryTypeIndex) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result findMemoryTypeIndexForBufferInfo(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
+                                                                                       const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                                       uint32_t* pMemoryTypeIndex) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type findMemoryTypeIndexForImageInfo(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
-                                                                                                   const AllocationCreateInfo& allocationCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type findMemoryTypeIndexForImageInfo(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                                                                                                                        const AllocationCreateInfo& allocationCreateInfo) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result findMemoryTypeIndexForImageInfo(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* imageCreateInfo,
-                                                                 const AllocationCreateInfo* allocationCreateInfo,
-                                                                 uint32_t* memoryTypeIndex) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result findMemoryTypeIndexForImageInfo(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
+                                                                                      const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                                      uint32_t* pMemoryTypeIndex) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<Pool>::type createPool(const PoolCreateInfo& createInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Pool>::type createPool(const PoolCreateInfo& createInfo) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniquePool>::type createPoolUnique(const PoolCreateInfo& createInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniquePool>::type createPoolUnique(const PoolCreateInfo& createInfo) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createPool(const PoolCreateInfo* createInfo,
-                                            Pool* pool) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createPool(const PoolCreateInfo* pCreateInfo,
+                                                                 Pool* pPool) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void destroyPool(Pool pool) const;
@@ -175,113 +174,111 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    Statistics getPoolStatistics(Pool pool) const;
+    VULKAN_HPP_NODISCARD Statistics getPoolStatistics(Pool pool) const;
 #endif
     void getPoolStatistics(Pool pool,
-                           Statistics* poolStats) const;
+                           Statistics* pPoolStats) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    DetailedStatistics calculatePoolStatistics(Pool pool) const;
+    VULKAN_HPP_NODISCARD DetailedStatistics calculatePoolStatistics(Pool pool) const;
 #endif
     void calculatePoolStatistics(Pool pool,
-                                 DetailedStatistics* poolStats) const;
+                                 DetailedStatistics* pPoolStats) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type checkPoolCorruption(Pool pool) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type checkPoolCorruption(Pool pool) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result checkPoolCorruption(Pool pool) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result checkPoolCorruption(Pool pool) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    const char* getPoolName(Pool pool) const;
+    VULKAN_HPP_NODISCARD const char* getPoolName(Pool pool) const;
 #endif
     void getPoolName(Pool pool,
-                     const char** name) const;
+                     const char** ppName) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void setPoolName(Pool pool,
                      const char* name) const;
 #else
     void setPoolName(Pool pool,
-                     const char* name) const;
+                     const char* pName) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
-                                                                                    const AllocationCreateInfo& createInfo,
-                                                                                    VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
-#ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type allocateMemoryUnique(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
-                                                                                                const AllocationCreateInfo& createInfo,
-                                                                                                VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
-#endif
-#endif
-    VULKAN_HPP_NAMESPACE::Result allocateMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements* vkMemoryRequirements,
-                                                const AllocationCreateInfo* createInfo,
-                                                Allocation* allocation,
-                                                AllocationInfo* allocationInfo) const;
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    template<typename VectorAllocator,
-             typename B,
-             typename std::enable_if<std::is_same<typename B::value_type, Allocation>::value, int>::type = 0>
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, VectorAllocator>>::type allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> vkMemoryRequirements,
-                                                                                                                       VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> createInfo,
-                                                                                                                       VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> allocationInfo,
-                                                                                                                       VectorAllocator& vectorAllocator) const;
-    template<typename VectorAllocator = std::allocator<Allocation>>
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, VectorAllocator>>::type allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> vkMemoryRequirements,
-                                                                                                                       VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> createInfo,
-                                                                                                                       VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
-#ifndef VULKAN_HPP_NO_SMART_HANDLE
-    template<typename VectorAllocator,
-             typename B,
-             typename std::enable_if<std::is_same<typename B::value_type, UniqueAllocation>::value, int>::type = 0>
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<UniqueAllocation, VectorAllocator>>::type allocateMemoryPagesUnique(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> vkMemoryRequirements,
-                                                                                                                                   VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> createInfo,
-                                                                                                                                   VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> allocationInfo,
-                                                                                                                                   VectorAllocator& vectorAllocator) const;
-    template<typename VectorAllocator = std::allocator<UniqueAllocation>>
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<UniqueAllocation, VectorAllocator>>::type allocateMemoryPagesUnique(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> vkMemoryRequirements,
-                                                                                                                                   VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> createInfo,
-                                                                                                                                   VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
-#endif
-#endif
-    VULKAN_HPP_NAMESPACE::Result allocateMemoryPages(const VULKAN_HPP_NAMESPACE::MemoryRequirements* vkMemoryRequirements,
-                                                     const AllocationCreateInfo* createInfo,
-                                                     size_t allocationCount,
-                                                     Allocation* allocations,
-                                                     AllocationInfo* allocationInfo) const;
-
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
-                                                                                             const AllocationCreateInfo& createInfo,
-                                                                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
-#ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type allocateMemoryForBufferUnique(VULKAN_HPP_NAMESPACE::Buffer buffer,
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
                                                                                                          const AllocationCreateInfo& createInfo,
                                                                                                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type allocateMemoryUnique(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
+                                                                                                                     const AllocationCreateInfo& createInfo,
+                                                                                                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
-                                                         const AllocationCreateInfo* createInfo,
-                                                         Allocation* allocation,
-                                                         AllocationInfo* allocationInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result allocateMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements* pVkMemoryRequirements,
+                                                                     const AllocationCreateInfo* pCreateInfo,
+                                                                     Allocation* pAllocation,
+                                                                     AllocationInfo* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
-                                                                                            const AllocationCreateInfo& createInfo,
-                                                                                            VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    template <typename AllocationAllocator = std::allocator<Allocation>>
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, AllocationAllocator>>::type allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
+                                                                                                                                                VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> const & createInfo,
+                                                                                                                                                VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> const & allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    template <typename AllocationAllocator,
+              typename std::enable_if<std::is_same<typename AllocationAllocator::value_type, Allocation>::value, int>::type = 0>
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, AllocationAllocator>>::type allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
+                                                                                                                                                VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> const & createInfo,
+                                                                                                                                                VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> const & allocationInfo,
+                                                                                                                                                AllocationAllocator& allocationAllocator) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type allocateMemoryForImageUnique(VULKAN_HPP_NAMESPACE::Image image,
-                                                                                                        const AllocationCreateInfo& createInfo,
-                                                                                                        VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    template <typename AllocationAllocator = std::allocator<UniqueAllocation>>
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<UniqueAllocation, AllocationAllocator>>::type allocateMemoryPagesUnique(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
+                                                                                                                                                            VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> const & createInfo,
+                                                                                                                                                            VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> const & allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    template <typename AllocationAllocator,
+              typename std::enable_if<std::is_same<typename AllocationAllocator::value_type, UniqueAllocation>::value, int>::type = 0>
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<UniqueAllocation, AllocationAllocator>>::type allocateMemoryPagesUnique(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
+                                                                                                                                                            VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> const & createInfo,
+                                                                                                                                                            VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<AllocationInfo> const & allocationInfo,
+                                                                                                                                                            AllocationAllocator& allocationAllocator) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
-                                                        const AllocationCreateInfo* createInfo,
-                                                        Allocation* allocation,
-                                                        AllocationInfo* allocationInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result allocateMemoryPages(const VULKAN_HPP_NAMESPACE::MemoryRequirements* pVkMemoryRequirements,
+                                                                          const AllocationCreateInfo* pCreateInfo,
+                                                                          size_t allocationCount,
+                                                                          Allocation* pAllocations,
+                                                                          AllocationInfo* pAllocationInfo) const;
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                                                                  const AllocationCreateInfo& createInfo,
+                                                                                                                  VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type allocateMemoryForBufferUnique(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                                                                              const AllocationCreateInfo& createInfo,
+                                                                                                                              VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+#endif
+#endif
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                              const AllocationCreateInfo* pCreateInfo,
+                                                                              Allocation* pAllocation,
+                                                                              AllocationInfo* pAllocationInfo) const;
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
+                                                                                                                 const AllocationCreateInfo& createInfo,
+                                                                                                                 VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type allocateMemoryForImageUnique(VULKAN_HPP_NAMESPACE::Image image,
+                                                                                                                             const AllocationCreateInfo& createInfo,
+                                                                                                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+#endif
+#endif
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
+                                                                             const AllocationCreateInfo* pCreateInfo,
+                                                                             Allocation* pAllocation,
+                                                                             AllocationInfo* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void freeMemory(Allocation allocation) const;
@@ -290,29 +287,29 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    void freeMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> allocations) const;
+    void freeMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const;
 #endif
     void freeMemoryPages(size_t allocationCount,
-                         const Allocation* allocations) const;
+                         const Allocation* pAllocations) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    AllocationInfo getAllocationInfo(Allocation allocation) const;
+    VULKAN_HPP_NODISCARD AllocationInfo getAllocationInfo(Allocation allocation) const;
 #endif
     void getAllocationInfo(Allocation allocation,
-                           AllocationInfo* allocationInfo) const;
+                           AllocationInfo* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    AllocationInfo2 getAllocationInfo2(Allocation allocation) const;
+    VULKAN_HPP_NODISCARD AllocationInfo2 getAllocationInfo2(Allocation allocation) const;
 #endif
     void getAllocationInfo2(Allocation allocation,
-                            AllocationInfo2* allocationInfo) const;
+                            AllocationInfo2* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void setAllocationUserData(Allocation allocation,
                                void* userData) const;
 #else
     void setAllocationUserData(Allocation allocation,
-                               void* userData) const;
+                               void* pUserData) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
@@ -320,30 +317,30 @@ namespace VMA_HPP_NAMESPACE {
                            const char* name) const;
 #else
     void setAllocationName(Allocation allocation,
-                           const char* name) const;
+                           const char* pName) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    VULKAN_HPP_NAMESPACE::MemoryPropertyFlags getAllocationMemoryProperties(Allocation allocation) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::MemoryPropertyFlags getAllocationMemoryProperties(Allocation allocation) const;
 #endif
     void getAllocationMemoryProperties(Allocation allocation,
-                                       VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* flags) const;
+                                       VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* pFlags) const;
 
 #if VMA_EXTERNAL_MEMORY_WIN32
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<HANDLE>::type getMemoryWin32Handle(Allocation allocation,
-                                                                                      HANDLE hTargetProcess) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<HANDLE>::type getMemoryWin32Handle(Allocation allocation,
+                                                                                                           HANDLE hTargetProcess) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result getMemoryWin32Handle(Allocation allocation,
-                                                      HANDLE hTargetProcess,
-                                                      HANDLE* handle) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result getMemoryWin32Handle(Allocation allocation,
+                                                                           HANDLE hTargetProcess,
+                                                                           HANDLE* pHandle) const;
 
 #endif 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void*>::type mapMemory(Allocation allocation) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<void*>::type mapMemory(Allocation allocation) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result mapMemory(Allocation allocation,
-                                           void** data) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result mapMemory(Allocation allocation,
+                                                                void** ppData) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void unmapMemory(Allocation allocation) const;
@@ -352,201 +349,201 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type flushAllocation(Allocation allocation,
-                                                                               VULKAN_HPP_NAMESPACE::DeviceSize offset,
-                                                                               VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type flushAllocation(Allocation allocation,
+                                                                                                                       VULKAN_HPP_NAMESPACE::DeviceSize offset,
+                                                                                                                       VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result flushAllocation(Allocation allocation,
-                                                 VULKAN_HPP_NAMESPACE::DeviceSize offset,
-                                                 VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result flushAllocation(Allocation allocation,
+                                                                      VULKAN_HPP_NAMESPACE::DeviceSize offset,
+                                                                      VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type invalidateAllocation(Allocation allocation,
-                                                                                    VULKAN_HPP_NAMESPACE::DeviceSize offset,
-                                                                                    VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type invalidateAllocation(Allocation allocation,
+                                                                                                                            VULKAN_HPP_NAMESPACE::DeviceSize offset,
+                                                                                                                            VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result invalidateAllocation(Allocation allocation,
-                                                      VULKAN_HPP_NAMESPACE::DeviceSize offset,
-                                                      VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result invalidateAllocation(Allocation allocation,
+                                                                           VULKAN_HPP_NAMESPACE::DeviceSize offset,
+                                                                           VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type flushAllocations(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> allocations,
-                                                                                VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> offsets,
-                                                                                VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> sizes) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type flushAllocations(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations,
+                                                                                                                        VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & offsets,
+                                                                                                                        VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & sizes) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result flushAllocations(uint32_t allocationCount,
-                                                  const Allocation* allocations,
-                                                  const VULKAN_HPP_NAMESPACE::DeviceSize* offsets,
-                                                  const VULKAN_HPP_NAMESPACE::DeviceSize* sizes) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result flushAllocations(uint32_t allocationCount,
+                                                                       const Allocation* allocations,
+                                                                       const VULKAN_HPP_NAMESPACE::DeviceSize* offsets,
+                                                                       const VULKAN_HPP_NAMESPACE::DeviceSize* sizes) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type invalidateAllocations(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> allocations,
-                                                                                     VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> offsets,
-                                                                                     VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> sizes) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type invalidateAllocations(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations,
+                                                                                                                             VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & offsets,
+                                                                                                                             VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & sizes) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result invalidateAllocations(uint32_t allocationCount,
-                                                       const Allocation* allocations,
-                                                       const VULKAN_HPP_NAMESPACE::DeviceSize* offsets,
-                                                       const VULKAN_HPP_NAMESPACE::DeviceSize* sizes) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result invalidateAllocations(uint32_t allocationCount,
+                                                                            const Allocation* allocations,
+                                                                            const VULKAN_HPP_NAMESPACE::DeviceSize* offsets,
+                                                                            const VULKAN_HPP_NAMESPACE::DeviceSize* sizes) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type copyMemoryToAllocation(const void* srcHostPointer,
-                                                                                      Allocation dstAllocation,
-                                                                                      VULKAN_HPP_NAMESPACE::DeviceSize dstAllocationLocalOffset,
-                                                                                      VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type copyMemoryToAllocation(const void* srcHostPointer,
+                                                                                                                              Allocation dstAllocation,
+                                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize dstAllocationLocalOffset,
+                                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result copyMemoryToAllocation(const void* srcHostPointer,
-                                                        Allocation dstAllocation,
-                                                        VULKAN_HPP_NAMESPACE::DeviceSize dstAllocationLocalOffset,
-                                                        VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result copyMemoryToAllocation(const void* pSrcHostPointer,
+                                                                             Allocation dstAllocation,
+                                                                             VULKAN_HPP_NAMESPACE::DeviceSize dstAllocationLocalOffset,
+                                                                             VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type copyAllocationToMemory(Allocation srcAllocation,
-                                                                                      VULKAN_HPP_NAMESPACE::DeviceSize srcAllocationLocalOffset,
-                                                                                      void* dstHostPointer,
-                                                                                      VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type copyAllocationToMemory(Allocation srcAllocation,
+                                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize srcAllocationLocalOffset,
+                                                                                                                              void* dstHostPointer,
+                                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result copyAllocationToMemory(Allocation srcAllocation,
-                                                        VULKAN_HPP_NAMESPACE::DeviceSize srcAllocationLocalOffset,
-                                                        void* dstHostPointer,
-                                                        VULKAN_HPP_NAMESPACE::DeviceSize size) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result copyAllocationToMemory(Allocation srcAllocation,
+                                                                             VULKAN_HPP_NAMESPACE::DeviceSize srcAllocationLocalOffset,
+                                                                             void* pDstHostPointer,
+                                                                             VULKAN_HPP_NAMESPACE::DeviceSize size) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type checkCorruption(uint32_t memoryTypeBits) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type checkCorruption(uint32_t memoryTypeBits) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result checkCorruption(uint32_t memoryTypeBits) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result checkCorruption(uint32_t memoryTypeBits) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationContext>::type beginDefragmentation(const DefragmentationInfo& info) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationContext>::type beginDefragmentation(const DefragmentationInfo& info) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result beginDefragmentation(const DefragmentationInfo* info,
-                                                      DefragmentationContext* context) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result beginDefragmentation(const DefragmentationInfo* pInfo,
+                                                                           DefragmentationContext* pContext) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void endDefragmentation(DefragmentationContext context,
                             VULKAN_HPP_NAMESPACE::Optional<DefragmentationStats> stats VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #endif
     void endDefragmentation(DefragmentationContext context,
-                            DefragmentationStats* stats) const;
+                            DefragmentationStats* pStats) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationPassMoveInfo>::type beginDefragmentationPass(DefragmentationContext context) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationPassMoveInfo>::type beginDefragmentationPass(DefragmentationContext context) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result beginDefragmentationPass(DefragmentationContext context,
-                                                          DefragmentationPassMoveInfo* passInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result beginDefragmentationPass(DefragmentationContext context,
+                                                                               DefragmentationPassMoveInfo* pPassInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationPassMoveInfo>::type endDefragmentationPass(DefragmentationContext context) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationPassMoveInfo>::type endDefragmentationPass(DefragmentationContext context) const;
 #endif
-    VULKAN_HPP_NAMESPACE::Result endDefragmentationPass(DefragmentationContext context,
-                                                        DefragmentationPassMoveInfo* passInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result endDefragmentationPass(DefragmentationContext context,
+                                                                             DefragmentationPassMoveInfo* pPassInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBufferMemory(Allocation allocation,
-                                                                                VULKAN_HPP_NAMESPACE::Buffer buffer) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBufferMemory(Allocation allocation,
+                                                                                                                        VULKAN_HPP_NAMESPACE::Buffer buffer) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result bindBufferMemory(Allocation allocation,
-                                                  VULKAN_HPP_NAMESPACE::Buffer buffer) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result bindBufferMemory(Allocation allocation,
+                                                                       VULKAN_HPP_NAMESPACE::Buffer buffer) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBufferMemory2(Allocation allocation,
-                                                                                 VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                 VULKAN_HPP_NAMESPACE::Buffer buffer,
-                                                                                 const void* next) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBufferMemory2(Allocation allocation,
+                                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                         VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                                                                         const void* next) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result bindBufferMemory2(Allocation allocation,
-                                                   VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                   VULKAN_HPP_NAMESPACE::Buffer buffer,
-                                                   const void* next) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result bindBufferMemory2(Allocation allocation,
+                                                                        VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                        VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                                                        const void* pNext) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImageMemory(Allocation allocation,
-                                                                               VULKAN_HPP_NAMESPACE::Image image) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImageMemory(Allocation allocation,
+                                                                                                                       VULKAN_HPP_NAMESPACE::Image image) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result bindImageMemory(Allocation allocation,
-                                                 VULKAN_HPP_NAMESPACE::Image image) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result bindImageMemory(Allocation allocation,
+                                                                      VULKAN_HPP_NAMESPACE::Image image) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImageMemory2(Allocation allocation,
-                                                                                VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                VULKAN_HPP_NAMESPACE::Image image,
-                                                                                const void* next) const;
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImageMemory2(Allocation allocation,
+                                                                                                                        VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                        VULKAN_HPP_NAMESPACE::Image image,
+                                                                                                                        const void* next) const;
 #else
-    VULKAN_HPP_NAMESPACE::Result bindImageMemory2(Allocation allocation,
-                                                  VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                  VULKAN_HPP_NAMESPACE::Image image,
-                                                  const void* next) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result bindImageMemory2(Allocation allocation,
+                                                                       VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                       VULKAN_HPP_NAMESPACE::Image image,
+                                                                       const void* pNext) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type createBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
-                                                                                                                           const AllocationCreateInfo& allocationCreateInfo,
-                                                                                                                           VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type createBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                                                const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type createBufferUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
-                                                                                                                       const AllocationCreateInfo& allocationCreateInfo,
-                                                                                                                       VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type createBufferUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                                            const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                            VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* bufferCreateInfo,
-                                              const AllocationCreateInfo* allocationCreateInfo,
-                                              VULKAN_HPP_NAMESPACE::Buffer* buffer,
-                                              Allocation* allocation,
-                                              AllocationInfo* allocationInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
+                                                                   const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                   VULKAN_HPP_NAMESPACE::Buffer* pBuffer,
+                                                                   Allocation* pAllocation,
+                                                                   AllocationInfo* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type createBufferWithAlignment(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
-                                                                                                                                        const AllocationCreateInfo& allocationCreateInfo,
-                                                                                                                                        VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
-                                                                                                                                        VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type createBufferWithAlignment(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                                                             const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                             VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
+                                                                                                                                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type createBufferWithAlignmentUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
-                                                                                                                                    const AllocationCreateInfo& allocationCreateInfo,
-                                                                                                                                    VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
-                                                                                                                                    VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type createBufferWithAlignmentUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                                                         const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
+                                                                                                                                                         VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createBufferWithAlignment(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* bufferCreateInfo,
-                                                           const AllocationCreateInfo* allocationCreateInfo,
-                                                           VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
-                                                           VULKAN_HPP_NAMESPACE::Buffer* buffer,
-                                                           Allocation* allocation,
-                                                           AllocationInfo* allocationInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createBufferWithAlignment(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
+                                                                                const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                                VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
+                                                                                VULKAN_HPP_NAMESPACE::Buffer* pBuffer,
+                                                                                Allocation* pAllocation,
+                                                                                AllocationInfo* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type createAliasingBuffer(Allocation allocation,
-                                                                                                            const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type createAliasingBuffer(Allocation allocation,
+                                                                                                                                 const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueBuffer>::type createAliasingBufferUnique(Allocation allocation,
-                                                                                                  const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueBuffer>::type createAliasingBufferUnique(Allocation allocation,
+                                                                                                                       const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createAliasingBuffer(Allocation allocation,
-                                                      const VULKAN_HPP_NAMESPACE::BufferCreateInfo* bufferCreateInfo,
-                                                      VULKAN_HPP_NAMESPACE::Buffer* buffer) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createAliasingBuffer(Allocation allocation,
+                                                                           const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
+                                                                           VULKAN_HPP_NAMESPACE::Buffer* pBuffer) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type createAliasingBuffer2(Allocation allocation,
-                                                                                                             VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                                             const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type createAliasingBuffer2(Allocation allocation,
+                                                                                                                                  VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                                  const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueBuffer>::type createAliasingBuffer2Unique(Allocation allocation,
-                                                                                                   VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                                   const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueBuffer>::type createAliasingBuffer2Unique(Allocation allocation,
+                                                                                                                        VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                        const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createAliasingBuffer2(Allocation allocation,
-                                                       VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                       const VULKAN_HPP_NAMESPACE::BufferCreateInfo* bufferCreateInfo,
-                                                       VULKAN_HPP_NAMESPACE::Buffer* buffer) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createAliasingBuffer2(Allocation allocation,
+                                                                            VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                            const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
+                                                                            VULKAN_HPP_NAMESPACE::Buffer* pBuffer) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void destroyBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
@@ -557,47 +554,47 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image>>::type createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
-                                                                                                                         const AllocationCreateInfo& allocationCreateInfo,
-                                                                                                                         VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image>>::type createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                                                                                                                                              const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                              VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueImage>>::type createImageUnique(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
-                                                                                                                     const AllocationCreateInfo& allocationCreateInfo,
-                                                                                                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueImage>>::type createImageUnique(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                                                                                                                                          const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* imageCreateInfo,
-                                             const AllocationCreateInfo* allocationCreateInfo,
-                                             VULKAN_HPP_NAMESPACE::Image* image,
-                                             Allocation* allocation,
-                                             AllocationInfo* allocationInfo) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
+                                                                  const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                  VULKAN_HPP_NAMESPACE::Image* pImage,
+                                                                  Allocation* pAllocation,
+                                                                  AllocationInfo* pAllocationInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Image>::type createAliasingImage(Allocation allocation,
-                                                                                                          const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Image>::type createAliasingImage(Allocation allocation,
+                                                                                                                               const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueImage>::type createAliasingImageUnique(Allocation allocation,
-                                                                                                const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueImage>::type createAliasingImageUnique(Allocation allocation,
+                                                                                                                     const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createAliasingImage(Allocation allocation,
-                                                     const VULKAN_HPP_NAMESPACE::ImageCreateInfo* imageCreateInfo,
-                                                     VULKAN_HPP_NAMESPACE::Image* image) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createAliasingImage(Allocation allocation,
+                                                                          const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
+                                                                          VULKAN_HPP_NAMESPACE::Image* pImage) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Image>::type createAliasingImage2(Allocation allocation,
-                                                                                                           VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                                           const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Image>::type createAliasingImage2(Allocation allocation,
+                                                                                                                                VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                                const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueImage>::type createAliasingImage2Unique(Allocation allocation,
-                                                                                                 VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                                                                 const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueImage>::type createAliasingImage2Unique(Allocation allocation,
+                                                                                                                      VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                      const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result createAliasingImage2(Allocation allocation,
-                                                      VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
-                                                      const VULKAN_HPP_NAMESPACE::ImageCreateInfo* imageCreateInfo,
-                                                      VULKAN_HPP_NAMESPACE::Image* image) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createAliasingImage2(Allocation allocation,
+                                                                           VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                           const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
+                                                                           VULKAN_HPP_NAMESPACE::Image* pImage) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void destroyImage(VULKAN_HPP_NAMESPACE::Image image,
@@ -609,15 +606,15 @@ namespace VMA_HPP_NAMESPACE {
 
 #if VMA_STATS_STRING_ENABLED
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    char* buildStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
+    VULKAN_HPP_NODISCARD char* buildStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
 #endif
-    void buildStatsString(char** statsString,
+    void buildStatsString(char** ppStatsString,
                           VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void freeStatsString(char* statsString) const;
 #else
-    void freeStatsString(char* statsString) const;
+    void freeStatsString(char* pStatsString) const;
 #endif
 #endif 
 
@@ -893,28 +890,28 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    VULKAN_HPP_NAMESPACE::Bool32 isVirtualBlockEmpty() const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Bool32 isVirtualBlockEmpty() const;
 #else
-    VULKAN_HPP_NAMESPACE::Bool32 isVirtualBlockEmpty() const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Bool32 isVirtualBlockEmpty() const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    VirtualAllocationInfo getVirtualAllocationInfo(VirtualAllocation allocation) const;
+    VULKAN_HPP_NODISCARD VirtualAllocationInfo getVirtualAllocationInfo(VirtualAllocation allocation) const;
 #endif
     void getVirtualAllocationInfo(VirtualAllocation allocation,
-                                  VirtualAllocationInfo* virtualAllocInfo) const;
+                                  VirtualAllocationInfo* pVirtualAllocInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualAllocation>::type virtualAllocate(const VirtualAllocationCreateInfo& createInfo,
-                                                                                            VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualAllocation>::type virtualAllocate(const VirtualAllocationCreateInfo& createInfo,
+                                                                                                                 VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-    typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualAllocation>::type virtualAllocateUnique(const VirtualAllocationCreateInfo& createInfo,
-                                                                                                        VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
+    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualAllocation>::type virtualAllocateUnique(const VirtualAllocationCreateInfo& createInfo,
+                                                                                                                             VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT) const;
 #endif
 #endif
-    VULKAN_HPP_NAMESPACE::Result virtualAllocate(const VirtualAllocationCreateInfo* createInfo,
-                                                 VirtualAllocation* allocation,
-                                                 VULKAN_HPP_NAMESPACE::DeviceSize* offset) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result virtualAllocate(const VirtualAllocationCreateInfo* pCreateInfo,
+                                                                      VirtualAllocation* pAllocation,
+                                                                      VULKAN_HPP_NAMESPACE::DeviceSize* pOffset) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void virtualFree(VirtualAllocation allocation) const;
@@ -933,30 +930,30 @@ namespace VMA_HPP_NAMESPACE {
                                       void* userData) const;
 #else
     void setVirtualAllocationUserData(VirtualAllocation allocation,
-                                      void* userData) const;
+                                      void* pUserData) const;
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    Statistics getVirtualBlockStatistics() const;
+    VULKAN_HPP_NODISCARD Statistics getVirtualBlockStatistics() const;
 #endif
-    void getVirtualBlockStatistics(Statistics* stats) const;
+    void getVirtualBlockStatistics(Statistics* pStats) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    DetailedStatistics calculateVirtualBlockStatistics() const;
+    VULKAN_HPP_NODISCARD DetailedStatistics calculateVirtualBlockStatistics() const;
 #endif
-    void calculateVirtualBlockStatistics(DetailedStatistics* stats) const;
+    void calculateVirtualBlockStatistics(DetailedStatistics* pStats) const;
 
 #if VMA_STATS_STRING_ENABLED
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    char* buildVirtualBlockStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
+    VULKAN_HPP_NODISCARD char* buildVirtualBlockStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
 #endif
-    void buildVirtualBlockStatsString(char** statsString,
+    void buildVirtualBlockStatsString(char** ppStatsString,
                                       VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void freeVirtualBlockStatsString(char* statsString) const;
 #else
-    void freeVirtualBlockStatsString(char* statsString) const;
+    void freeVirtualBlockStatsString(char* pStatsString) const;
 #endif
 #endif 
 
@@ -966,29 +963,29 @@ namespace VMA_HPP_NAMESPACE {
 
 #ifdef VOLK_HEADER_VERSION
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  typename VULKAN_HPP_NAMESPACE::ResultValueType<VulkanFunctions>::type importVulkanFunctionsFromVolk(const AllocatorCreateInfo& allocatorCreateInfo);
+  VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VulkanFunctions>::type importVulkanFunctionsFromVolk(const AllocatorCreateInfo& allocatorCreateInfo);
 #endif
-  VULKAN_HPP_NAMESPACE::Result importVulkanFunctionsFromVolk(const AllocatorCreateInfo* allocatorCreateInfo,
-                                                             VulkanFunctions* dstVulkanFunctions);
+  VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result importVulkanFunctionsFromVolk(const AllocatorCreateInfo* pAllocatorCreateInfo,
+                                                                                  VulkanFunctions* pDstVulkanFunctions);
 
 #endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type createAllocator(const AllocatorCreateInfo& createInfo);
+  VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type createAllocator(const AllocatorCreateInfo& createInfo);
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-  typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocator>::type createAllocatorUnique(const AllocatorCreateInfo& createInfo);
+  VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocator>::type createAllocatorUnique(const AllocatorCreateInfo& createInfo);
 #endif
 #endif
-  VULKAN_HPP_NAMESPACE::Result createAllocator(const AllocatorCreateInfo* createInfo,
-                                               Allocator* allocator);
+  VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createAllocator(const AllocatorCreateInfo* pCreateInfo,
+                                                                    Allocator* pAllocator);
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualBlock>::type createVirtualBlock(const VirtualBlockCreateInfo& createInfo);
+  VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualBlock>::type createVirtualBlock(const VirtualBlockCreateInfo& createInfo);
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
-  typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualBlock>::type createVirtualBlockUnique(const VirtualBlockCreateInfo& createInfo);
+  VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualBlock>::type createVirtualBlockUnique(const VirtualBlockCreateInfo& createInfo);
 #endif
 #endif
-  VULKAN_HPP_NAMESPACE::Result createVirtualBlock(const VirtualBlockCreateInfo* createInfo,
-                                                  VirtualBlock* virtualBlock);
+  VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createVirtualBlock(const VirtualBlockCreateInfo* pCreateInfo,
+                                                                       VirtualBlock* pVirtualBlock);
 
   namespace detail {
     template <typename OwnerType> class UniqueBase {
