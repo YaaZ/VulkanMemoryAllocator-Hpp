@@ -1973,6 +1973,14 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_CONSTEXPR DefragmentationPassMoveInfo(DefragmentationPassMoveInfo const &) VULKAN_HPP_NOEXCEPT = default;
     DefragmentationPassMoveInfo(VmaDefragmentationPassMoveInfo const & rhs) VULKAN_HPP_NOEXCEPT : DefragmentationPassMoveInfo(*reinterpret_cast<DefragmentationPassMoveInfo const *>(&rhs)) {}
 
+#if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
+    DefragmentationPassMoveInfo(
+        VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<DefragmentationMove> const & moves_
+    ) VULKAN_HPP_NOEXCEPT
+      : moveCount { static_cast<uint32_t>(moves_.size()) }
+      , pMoves { moves_.data() } {}
+#endif
+
     DefragmentationPassMoveInfo& operator=(DefragmentationPassMoveInfo const &) VULKAN_HPP_NOEXCEPT = default;
 #endif
 
@@ -1991,6 +1999,14 @@ namespace VMA_HPP_NAMESPACE {
       pMoves = pMoves_;
       return *this;
     }
+
+#if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
+    DefragmentationPassMoveInfo& setMoves(VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<DefragmentationMove> const & moves_) VULKAN_HPP_NOEXCEPT {
+      moveCount = static_cast<uint32_t>(moves_.size());
+      pMoves = moves_.data();
+      return *this;
+    }
+#endif
 #endif
 
     operator VmaDefragmentationPassMoveInfo const &() const VULKAN_HPP_NOEXCEPT {
