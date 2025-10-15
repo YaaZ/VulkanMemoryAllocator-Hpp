@@ -684,7 +684,7 @@ Symbols generateEnums(const Source& source) {
 
             template<> struct FlagTraits<VMA_HPP_NAMESPACE::$0> {
               using WrappedType = Vma$0;
-              static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+              static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
               static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::$0> allFlags =
                 $1;
             };
@@ -705,23 +705,6 @@ Symbols generateEnums(const Source& source) {
         entryPieces + navigate.reset;
     }
 
-    // Generate operators, some in vk:: are not found by ADL.
-    Segment opTemplate = R"(
-    template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-    VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR $1 operator$0($2) VULKAN_HPP_NOEXCEPT {
-      return $3;
-    }
-    )"_seg;
-    Segment operators = Segment(opTemplate)
-        .replace("~", "VULKAN_HPP_NAMESPACE::Flags<BitType>", "BitType bit", "~(VULKAN_HPP_NAMESPACE::Flags<BitType>(bit))");
-    opTemplate.replace("$0"_seg, "$1"_seg, "BitType lhs, BitType rhs", "VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) $0 rhs"_seg);
-    for (const auto& op : { "&", "|", "^" })
-        operators + Segment(opTemplate).replace(op, "VULKAN_HPP_NAMESPACE::Flags<BitType>");
-    operators + "#if !defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )"_seg;
-    for (const auto& op : { "<", "<=", ">", ">=", "==", "!=" })
-        operators + Segment(opTemplate).replace(op, "bool");
-    operators + "#endif"_seg;
-
     R"(
     namespace VMA_HPP_NAMESPACE {
       $0
@@ -730,11 +713,7 @@ Symbols generateEnums(const Source& source) {
     namespace VULKAN_HPP_NAMESPACE {
       $1
     }
-
-    namespace VMA_HPP_NAMESPACE {
-      $2
-    }
-    )"_seg.replace(content, flagTraits, operators).resolve(source.tree).generateHpp("enums");
+    )"_seg.replace(content, flagTraits).resolve(source.tree).generateHpp("enums");
     R"(
     namespace VMA_HPP_NAMESPACE {
       $0
@@ -1115,7 +1094,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             else signatureTransformed = true;
             (enhancedParamsDecl, enhancedParamsDef) + type + " " + param.prettyName;
             if (&param >= defaultOutputsFrom) enhancedParamsDecl + (param.pointers ?
-                        " VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT" : " VULKAN_HPP_DEFAULT_ARGUMENT_ASSIGNMENT");
+                        " = nullptr" : " = {}");
             (enhancedParamsDecl, enhancedParamsDef) + "," + n;
         }
         Segment vecAllocParams = enhancedParamsDef;
@@ -1290,7 +1269,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         forwardDecls + "class " + h.name + ";";
         handleTraits + R"(
         template <> struct isVulkanHandleType<VMA_HPP_NAMESPACE::$0> {
-          static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true, vma = true;
+          static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
         };
         )"_seg.replace(h.name);
         cppTypeTraits + R"(
@@ -1386,22 +1365,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     definitions + nn + std::move(namespaceHandle.methodDef);
     content + navigate.reset;
 
-    // Generate operators, some in vk:: are not found by ADL.
-    Segment opTemplate = R"(
-    template <typename T, typename std::enable_if<VULKAN_HPP_NAMESPACE::isVulkanHandleType<T>::vma, int>::type = 0>
-    bool operator$0($1) {
-      return $2;
-    }
-    )"_seg;
-    Segment operators;
-    operators + Segment(opTemplate).replace("==", "T const & v, std::nullptr_t", "!v");
-    operators + Segment(opTemplate).replace("==", "std::nullptr_t, T const & v", "!v");
-    operators + Segment(opTemplate).replace("!=", "T const & v, std::nullptr_t", "!!v");
-    operators + Segment(opTemplate).replace("!=", "std::nullptr_t, T const & v", "!!v");
-    opTemplate.replace("$0"_seg, "T const & lhs, T const & rhs",
-        "static_cast<typename T::NativeType>(lhs) $0 static_cast<typename T::NativeType>(rhs)"_seg);
-    for (const auto& op : { "<", "<=", ">", ">=", "==", "!=" }) operators + Segment(opTemplate).replace(op);
-
     R"(
     namespace VMA_HPP_NAMESPACE {
       $0
@@ -1459,11 +1422,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
       $5
     #endif
     }
-
-    namespace VMA_HPP_NAMESPACE {
-      $6
-    }
-    )"_seg.replace(forwardDecls, uniqueDecls, declarations, handleTraits, cppTypeTraits, uniqueTraits, operators)
+    )"_seg.replace(forwardDecls, uniqueDecls, declarations, handleTraits, cppTypeTraits, uniqueTraits)
         .resolve(source.tree).generateHpp("handles");
     R"(
     namespace VMA_HPP_NAMESPACE {
@@ -1494,7 +1453,7 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& struct
 
 void generateModule(const ConditionalTree& tree, const Symbols& enums, const Symbols& structs,
                     const Symbols& handles, const Symbols& uniqueHandles, const Symbols& functions) {
-    Segment exports, vmaPrivate, vkPrivate;
+    Segment exports, specializations;
 
     // Generate export statements.
     for (const auto* list : { &enums, &structs, &handles, &uniqueHandles, &functions })
@@ -1503,37 +1462,26 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
 
     // Some workarounds for compilation errors on MSVC...
 
-    // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc_hpp'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
-    for (const Symbol& t : handles)
-        vmaPrivate + n + navigate(t) + R"(
-        template bool operator== <$0, 0>($0 const &, std::nullptr_t);
-        template bool operator== <$0, 0>(std::nullptr_t, $0 const &);
-        template bool operator!= <$0, 0>($0 const &, std::nullptr_t);
-        template bool operator!= <$0, 0>(std::nullptr_t, $0 const &);
-        template bool operator<  <$0, 0>($0 const &, $0 const &);
-        template bool operator<= <$0, 0>($0 const &, $0 const &);
-        template bool operator>  <$0, 0>($0 const &, $0 const &);
-        template bool operator>= <$0, 0>($0 const &, $0 const &);
-        template bool operator== <$0, 0>($0 const &, $0 const &);
-        template bool operator!= <$0, 0>($0 const &, $0 const &);
-        )"_seg.replace(t.name);
-
     // error C2678: binary '|': no operator found which takes a left-hand operand of type 'const vma::AllocationCreateFlagBits' (or there is no acceptable conversion)
     for (const Symbol& t : enums)
         if (endsWith(*t.name, "FlagBits"))
-            vkPrivate + n + navigate(t) + "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" + t.name + ">;";
+            specializations + n + navigate(t) + "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" + t.name + ">;";
+
+    // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc_hpp'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
+    for (const Symbol& t : handles)
+        specializations + n + navigate(t) + "template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::" + t.name + ">;";
 
     // error C2027: use of undefined type 'vk::UniqueHandleTraits<Type,Dispatch>'
     for (const Symbol& t : uniqueHandles)
-        vkPrivate + n + navigate(t) + "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" + t.name + ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+        specializations + n + navigate(t) + "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" + t.name + ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
-    (exports, vmaPrivate, vkPrivate) + navigate.reset;
+    (exports, specializations) + navigate.reset;
 
     // Don't forget Buffer and Image.
     exports + n + "using VMA_HPP_NAMESPACE::UniqueBuffer;" +
               n + "using VMA_HPP_NAMESPACE::UniqueImage;";
-    vkPrivate + n + "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  +
-                        n + "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+    specializations + n + "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  +
+                      n + "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
     module;
@@ -1547,8 +1495,8 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
       using VMA_HPP_NAMESPACE::to_string;
     #endif
       using VMA_HPP_NAMESPACE::functionsFromDispatcher;
-      using VMA_HPP_NAMESPACE::operator|;
       using VMA_HPP_NAMESPACE::operator&;
+      using VMA_HPP_NAMESPACE::operator|;
       using VMA_HPP_NAMESPACE::operator^;
       using VMA_HPP_NAMESPACE::operator~;
       using VMA_HPP_NAMESPACE::operator<;
@@ -1561,14 +1509,11 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
     }
 
     module : private;
-    // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
-    namespace VMA_HPP_NAMESPACE {
+    namespace VULKAN_HPP_NAMESPACE {
+      // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
       $1
     }
-    namespace VULKAN_HPP_NAMESPACE {
-      $2
-    }
-    )"_seg.replace(exports, vmaPrivate, vkPrivate).resolve(tree).generate("vk_mem_alloc.cppm");
+    )"_seg.replace(exports, specializations).resolve(tree).generate("vk_mem_alloc.cppm");
 }
 
 std::string readSource() {

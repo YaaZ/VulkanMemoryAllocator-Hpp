@@ -10,8 +10,8 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::to_string;
 #endif
   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
-  using VMA_HPP_NAMESPACE::operator|;
   using VMA_HPP_NAMESPACE::operator&;
+  using VMA_HPP_NAMESPACE::operator|;
   using VMA_HPP_NAMESPACE::operator^;
   using VMA_HPP_NAMESPACE::operator~;
   using VMA_HPP_NAMESPACE::operator<;
@@ -74,76 +74,20 @@ export namespace VMA_HPP_NAMESPACE {
 }
 
 module : private;
-// This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
-namespace VMA_HPP_NAMESPACE {
-  template bool operator== <Allocator, 0>(Allocator const &, std::nullptr_t);
-  template bool operator== <Allocator, 0>(std::nullptr_t, Allocator const &);
-  template bool operator!= <Allocator, 0>(Allocator const &, std::nullptr_t);
-  template bool operator!= <Allocator, 0>(std::nullptr_t, Allocator const &);
-  template bool operator<  <Allocator, 0>(Allocator const &, Allocator const &);
-  template bool operator<= <Allocator, 0>(Allocator const &, Allocator const &);
-  template bool operator>  <Allocator, 0>(Allocator const &, Allocator const &);
-  template bool operator>= <Allocator, 0>(Allocator const &, Allocator const &);
-  template bool operator== <Allocator, 0>(Allocator const &, Allocator const &);
-  template bool operator!= <Allocator, 0>(Allocator const &, Allocator const &);
-  template bool operator== <Pool, 0>(Pool const &, std::nullptr_t);
-  template bool operator== <Pool, 0>(std::nullptr_t, Pool const &);
-  template bool operator!= <Pool, 0>(Pool const &, std::nullptr_t);
-  template bool operator!= <Pool, 0>(std::nullptr_t, Pool const &);
-  template bool operator<  <Pool, 0>(Pool const &, Pool const &);
-  template bool operator<= <Pool, 0>(Pool const &, Pool const &);
-  template bool operator>  <Pool, 0>(Pool const &, Pool const &);
-  template bool operator>= <Pool, 0>(Pool const &, Pool const &);
-  template bool operator== <Pool, 0>(Pool const &, Pool const &);
-  template bool operator!= <Pool, 0>(Pool const &, Pool const &);
-  template bool operator== <Allocation, 0>(Allocation const &, std::nullptr_t);
-  template bool operator== <Allocation, 0>(std::nullptr_t, Allocation const &);
-  template bool operator!= <Allocation, 0>(Allocation const &, std::nullptr_t);
-  template bool operator!= <Allocation, 0>(std::nullptr_t, Allocation const &);
-  template bool operator<  <Allocation, 0>(Allocation const &, Allocation const &);
-  template bool operator<= <Allocation, 0>(Allocation const &, Allocation const &);
-  template bool operator>  <Allocation, 0>(Allocation const &, Allocation const &);
-  template bool operator>= <Allocation, 0>(Allocation const &, Allocation const &);
-  template bool operator== <Allocation, 0>(Allocation const &, Allocation const &);
-  template bool operator!= <Allocation, 0>(Allocation const &, Allocation const &);
-  template bool operator== <DefragmentationContext, 0>(DefragmentationContext const &, std::nullptr_t);
-  template bool operator== <DefragmentationContext, 0>(std::nullptr_t, DefragmentationContext const &);
-  template bool operator!= <DefragmentationContext, 0>(DefragmentationContext const &, std::nullptr_t);
-  template bool operator!= <DefragmentationContext, 0>(std::nullptr_t, DefragmentationContext const &);
-  template bool operator<  <DefragmentationContext, 0>(DefragmentationContext const &, DefragmentationContext const &);
-  template bool operator<= <DefragmentationContext, 0>(DefragmentationContext const &, DefragmentationContext const &);
-  template bool operator>  <DefragmentationContext, 0>(DefragmentationContext const &, DefragmentationContext const &);
-  template bool operator>= <DefragmentationContext, 0>(DefragmentationContext const &, DefragmentationContext const &);
-  template bool operator== <DefragmentationContext, 0>(DefragmentationContext const &, DefragmentationContext const &);
-  template bool operator!= <DefragmentationContext, 0>(DefragmentationContext const &, DefragmentationContext const &);
-  template bool operator== <VirtualAllocation, 0>(VirtualAllocation const &, std::nullptr_t);
-  template bool operator== <VirtualAllocation, 0>(std::nullptr_t, VirtualAllocation const &);
-  template bool operator!= <VirtualAllocation, 0>(VirtualAllocation const &, std::nullptr_t);
-  template bool operator!= <VirtualAllocation, 0>(std::nullptr_t, VirtualAllocation const &);
-  template bool operator<  <VirtualAllocation, 0>(VirtualAllocation const &, VirtualAllocation const &);
-  template bool operator<= <VirtualAllocation, 0>(VirtualAllocation const &, VirtualAllocation const &);
-  template bool operator>  <VirtualAllocation, 0>(VirtualAllocation const &, VirtualAllocation const &);
-  template bool operator>= <VirtualAllocation, 0>(VirtualAllocation const &, VirtualAllocation const &);
-  template bool operator== <VirtualAllocation, 0>(VirtualAllocation const &, VirtualAllocation const &);
-  template bool operator!= <VirtualAllocation, 0>(VirtualAllocation const &, VirtualAllocation const &);
-  template bool operator== <VirtualBlock, 0>(VirtualBlock const &, std::nullptr_t);
-  template bool operator== <VirtualBlock, 0>(std::nullptr_t, VirtualBlock const &);
-  template bool operator!= <VirtualBlock, 0>(VirtualBlock const &, std::nullptr_t);
-  template bool operator!= <VirtualBlock, 0>(std::nullptr_t, VirtualBlock const &);
-  template bool operator<  <VirtualBlock, 0>(VirtualBlock const &, VirtualBlock const &);
-  template bool operator<= <VirtualBlock, 0>(VirtualBlock const &, VirtualBlock const &);
-  template bool operator>  <VirtualBlock, 0>(VirtualBlock const &, VirtualBlock const &);
-  template bool operator>= <VirtualBlock, 0>(VirtualBlock const &, VirtualBlock const &);
-  template bool operator== <VirtualBlock, 0>(VirtualBlock const &, VirtualBlock const &);
-  template bool operator!= <VirtualBlock, 0>(VirtualBlock const &, VirtualBlock const &);
-}
 namespace VULKAN_HPP_NAMESPACE {
+  // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocationCreateFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::PoolCreateFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::DefragmentationFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::VirtualBlockCreateFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits>;
+  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Allocator>;
+  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Pool>;
+  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Allocation>;
+  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::DefragmentationContext>;
+  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::VirtualAllocation>;
+  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::VirtualBlock>;
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocator, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::detail::Dispatcher>;
