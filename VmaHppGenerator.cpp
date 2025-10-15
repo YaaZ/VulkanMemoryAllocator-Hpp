@@ -921,8 +921,8 @@ Symbols generateStructs(const Source& source) {
     return structs;
 }
 
-std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols& structs) {
-    Symbols handles, functions;
+std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, const Symbols& structs) {
+    Symbols handles, uniqueHandles, functions;
 
     struct Handle : Symbol {
         Segment methodDecl, methodDef;
@@ -957,6 +957,7 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
         Token name = originalName.substr(3);         // E.g. Allocator
         handles.emplace_back(name, match);
         handleVector.emplace_back(handles.back());
+        if (handleVector.back().destructor) uniqueHandles.emplace_back(handles.back());
     }
 
     // Iterate VMA functions.
@@ -1000,7 +1001,7 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
                     continue;
                 }
             }
-            defaultOutputsFrom = &*params.end();
+            defaultOutputsFrom = params.data() + params.size();
         }
 
         // Convert return type.
@@ -1469,7 +1470,7 @@ std::pair<Symbols, Symbols> generateHandles(const Source& source, const Symbols&
       $0
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
-    return { handles, functions };
+    return { handles, uniqueHandles, functions };
 }
 
 void generateStaticAssertions(const ConditionalTree& tree, const Symbols& structs, const Symbols& handles) {
@@ -1491,16 +1492,48 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& struct
     ("#include <vk_mem_alloc.hpp>" + content + navigate.reset).resolve(tree).generateHpp("static_assertions");
 }
 
-void generateModule(const ConditionalTree& tree, const Symbols& enums, const Symbols& structs, const Symbols& handles, const Symbols& functions) {
-    Segment exports, specializations;
-    for (const Symbol& t : enums) {
-        exports + n + navigate(t) + "using VMA_HPP_NAMESPACE::" + t.name + ";";
+void generateModule(const ConditionalTree& tree, const Symbols& enums, const Symbols& structs,
+                    const Symbols& handles, const Symbols& uniqueHandles, const Symbols& functions) {
+    Segment exports, vmaPrivate, vkPrivate;
+
+    // Generate export statements.
+    for (const auto* list : { &enums, &structs, &handles, &uniqueHandles, &functions })
+        for (const Symbol& t : *list)
+            exports + n + navigate(t) + "using VMA_HPP_NAMESPACE::" + (list == &uniqueHandles ? "Unique" : "") + t.name + ";";
+
+    // Some workarounds for compilation errors on MSVC...
+
+    // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc_hpp'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
+    for (const Symbol& t : handles)
+        vmaPrivate + n + navigate(t) + R"(
+        template bool operator== <$0, 0>($0 const &, std::nullptr_t);
+        template bool operator== <$0, 0>(std::nullptr_t, $0 const &);
+        template bool operator!= <$0, 0>($0 const &, std::nullptr_t);
+        template bool operator!= <$0, 0>(std::nullptr_t, $0 const &);
+        template bool operator<  <$0, 0>($0 const &, $0 const &);
+        template bool operator<= <$0, 0>($0 const &, $0 const &);
+        template bool operator>  <$0, 0>($0 const &, $0 const &);
+        template bool operator>= <$0, 0>($0 const &, $0 const &);
+        template bool operator== <$0, 0>($0 const &, $0 const &);
+        template bool operator!= <$0, 0>($0 const &, $0 const &);
+        )"_seg.replace(t.name);
+
+    // error C2678: binary '|': no operator found which takes a left-hand operand of type 'const vma::AllocationCreateFlagBits' (or there is no acceptable conversion)
+    for (const Symbol& t : enums)
         if (endsWith(*t.name, "FlagBits"))
-            specializations + n + navigate(t) + "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" + t.name + ">;";
-    }
-    for (const Symbol& t : structs)
-        exports + n + navigate(t) + "using VMA_HPP_NAMESPACE::" + t.name + ";";
-    (exports, specializations) + navigate.reset;
+            vkPrivate + n + navigate(t) + "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" + t.name + ">;";
+
+    // error C2027: use of undefined type 'vk::UniqueHandleTraits<Type,Dispatch>'
+    for (const Symbol& t : uniqueHandles)
+        vkPrivate + n + navigate(t) + "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" + t.name + ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+
+    (exports, vmaPrivate, vkPrivate) + navigate.reset;
+
+    // Don't forget Buffer and Image.
+    exports + n + "using VMA_HPP_NAMESPACE::UniqueBuffer;" +
+              n + "using VMA_HPP_NAMESPACE::UniqueImage;";
+    vkPrivate + n + "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  +
+                        n + "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
     module;
@@ -1518,15 +1551,24 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
       using VMA_HPP_NAMESPACE::operator&;
       using VMA_HPP_NAMESPACE::operator^;
       using VMA_HPP_NAMESPACE::operator~;
+      using VMA_HPP_NAMESPACE::operator<;
+      using VMA_HPP_NAMESPACE::operator<=;
+      using VMA_HPP_NAMESPACE::operator>;
+      using VMA_HPP_NAMESPACE::operator>=;
+      using VMA_HPP_NAMESPACE::operator==;
+      using VMA_HPP_NAMESPACE::operator!=;
       $0
     }
 
     module : private;
-    namespace VULKAN_HPP_NAMESPACE {
-      // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
+    // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
+    namespace VMA_HPP_NAMESPACE {
       $1
     }
-    )"_seg.replace(exports, specializations).resolve(tree).generate("vk_mem_alloc.cppm");
+    namespace VULKAN_HPP_NAMESPACE {
+      $2
+    }
+    )"_seg.replace(exports, vmaPrivate, vkPrivate).resolve(tree).generate("vk_mem_alloc.cppm");
 }
 
 std::string readSource() {
@@ -1550,9 +1592,9 @@ int main(int, char**) {
 
         const auto enums = generateEnums(source);
         const auto structs = generateStructs(source);
-        const auto [handles, functions] = generateHandles(source, structs);
+        const auto [handles, uniqueHandles, functions] = generateHandles(source, structs);
         generateStaticAssertions(source.tree, structs, handles);
-        generateModule(source.tree, enums, structs, handles, functions);
+        generateModule(source.tree, enums, structs, handles, uniqueHandles, functions);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

@@ -124,6 +124,7 @@ void checkHandles() {
     if (al != ar) throw;
 
     vma::UniqueAllocator unique;
+    vma::UniqueBuffer buffer;
 }
 
 int main(int, char**) {
