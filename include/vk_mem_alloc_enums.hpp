@@ -94,7 +94,7 @@ namespace VULKAN_HPP_NAMESPACE {
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits> {
     using WrappedType = VmaAllocatorCreateFlagBits;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
     static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits> allFlags =
         VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eExternallySynchronized
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrDedicatedAllocation
@@ -110,7 +110,7 @@ namespace VULKAN_HPP_NAMESPACE {
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocationCreateFlagBits> {
     using WrappedType = VmaAllocationCreateFlagBits;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
     static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::AllocationCreateFlagBits> allFlags =
         VMA_HPP_NAMESPACE::AllocationCreateFlagBits::eDedicatedMemory
       | VMA_HPP_NAMESPACE::AllocationCreateFlagBits::eNeverAllocate
@@ -132,7 +132,7 @@ namespace VULKAN_HPP_NAMESPACE {
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::PoolCreateFlagBits> {
     using WrappedType = VmaPoolCreateFlagBits;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
     static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::PoolCreateFlagBits> allFlags =
         VMA_HPP_NAMESPACE::PoolCreateFlagBits::eIgnoreBufferImageGranularity
       | VMA_HPP_NAMESPACE::PoolCreateFlagBits::eLinearAlgorithm;
@@ -140,7 +140,7 @@ namespace VULKAN_HPP_NAMESPACE {
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::DefragmentationFlagBits> {
     using WrappedType = VmaDefragmentationFlagBits;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
     static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::DefragmentationFlagBits> allFlags =
         VMA_HPP_NAMESPACE::DefragmentationFlagBits::eFlagAlgorithmFast
       | VMA_HPP_NAMESPACE::DefragmentationFlagBits::eFlagAlgorithmBalanced
@@ -150,64 +150,19 @@ namespace VULKAN_HPP_NAMESPACE {
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::VirtualBlockCreateFlagBits> {
     using WrappedType = VmaVirtualBlockCreateFlagBits;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
     static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::VirtualBlockCreateFlagBits> allFlags =
         VMA_HPP_NAMESPACE::VirtualBlockCreateFlagBits::eLinearAlgorithm;
   };
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits> {
     using WrappedType = VmaVirtualAllocationCreateFlagBits;
-    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true, isVmaBitmask = true;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
     static VULKAN_HPP_CONST_OR_CONSTEXPR Flags<VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits> allFlags =
         VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits::eUpperAddress
       | VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits::eStrategyMinMemory
       | VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits::eStrategyMinTime
       | VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits::eStrategyMinOffset;
   };
-}
-
-namespace VMA_HPP_NAMESPACE {
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR VULKAN_HPP_NAMESPACE::Flags<BitType> operator~(BitType bit) VULKAN_HPP_NOEXCEPT {
-    return ~(VULKAN_HPP_NAMESPACE::Flags<BitType>(bit));
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR VULKAN_HPP_NAMESPACE::Flags<BitType> operator&(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) & rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR VULKAN_HPP_NAMESPACE::Flags<BitType> operator|(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) | rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR VULKAN_HPP_NAMESPACE::Flags<BitType> operator^(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) ^ rhs;
-  }
-#if !defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR bool operator<(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) < rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR bool operator<=(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) <= rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR bool operator>(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) > rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR bool operator>=(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) >= rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR bool operator==(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) == rhs;
-  }
-  template <typename BitType, typename std::enable_if<VULKAN_HPP_NAMESPACE::FlagTraits<BitType>::isVmaBitmask, bool>::type = true>
-  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR bool operator!=(BitType lhs, BitType rhs) VULKAN_HPP_NOEXCEPT {
-    return VULKAN_HPP_NAMESPACE::Flags<BitType>(lhs) != rhs;
-  }
-#endif
 }
 #endif

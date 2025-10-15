@@ -38,6 +38,19 @@ import vulkan_hpp;
 #endif
 #endif
 
+namespace VMA_HPP_NAMESPACE {
+  using VULKAN_HPP_NAMESPACE::operator&;
+  using VULKAN_HPP_NAMESPACE::operator|;
+  using VULKAN_HPP_NAMESPACE::operator^;
+  using VULKAN_HPP_NAMESPACE::operator~;
+  using VULKAN_HPP_NAMESPACE::operator<;
+  using VULKAN_HPP_NAMESPACE::operator<=;
+  using VULKAN_HPP_NAMESPACE::operator>;
+  using VULKAN_HPP_NAMESPACE::operator>=;
+  using VULKAN_HPP_NAMESPACE::operator==;
+  using VULKAN_HPP_NAMESPACE::operator!=;
+}
+
 #include "vk_mem_alloc_enums.hpp"
 
 #ifndef VULKAN_HPP_NO_TO_STRING
