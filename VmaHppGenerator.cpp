@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <array>
-#include <bitset>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -587,11 +586,12 @@ private:
 
 public:
 
-    static std::vector<Var> parse(const std::string_view& source, const long long int sourcePositionOffset = 0) {
+    template<class T = Var>
+    static std::vector<T> parse(const std::string_view& source, const long long int sourcePositionOffset = 0) {
         static std::regex pattern { Var::pattern.data(), Var::pattern.length() };
-        std::vector<Var> result;
+        std::vector<T> result;
         for (const auto& match : iterate(source, pattern))
-            result.push_back(Var(source, match, static_cast<int>(match.position() + sourcePositionOffset)));
+            result.push_back(T(source, match, static_cast<int>(match.position() + sourcePositionOffset)));
         // Find dependencies of array sizes.
         for (int i = 0; i < result.size(); ++i) {
             // Ignore void* - those should not be represented as arrays.
@@ -903,6 +903,7 @@ Symbols generateStructs(const Source& source) {
 std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, const Symbols& structs) {
     Symbols handles, uniqueHandles, functions;
 
+    // All handles.
     struct Handle : Symbol {
         Segment methodDecl, methodDef;
         Handle* owner = nullptr;
@@ -939,31 +940,52 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         if (handleVector.back().destructor) uniqueHandles.emplace_back(handles.back());
     }
 
-    // Iterate VMA functions.
+    // All functions.
+    struct Param : Var {
+        using Var::Var;
+        enum class Type {
+            INPUT, OUTPUT, OPTIONAL_OUTPUT
+        } paramType = Type::INPUT;
+    };
+    struct Function : Symbol {
+        std::string_view returnType;
+        std::vector<Param> params;
+        Handle* handle = nullptr;
+        Token methodName;
+        explicit Function(Symbol&& symbol, std::string_view&& returnType, std::vector<Param>&& params) :
+            Symbol(symbol), returnType(returnType), params(params) {}
+    };
+    std::vector<Function> functionVector;
+
+    // Find all functions.
     const std::regex funcPattern { R"(VMA_CALL_PRE\s+(.+)\s+VMA_CALL_POST\s+(vma\w+)\s*(\([\s\S]+?\)\s*;))" };
     for (const auto& match : iterate(source, funcPattern)) {
-        struct Param : Var {
-            explicit Param(Var&& v) : Var(std::move(v)) {}
-            enum class Type {
-                INPUT, OUTPUT, OPTIONAL_OUTPUT
-            } paramType = Type::INPUT;
-        };
-        std::vector<Param> params;
-        for (auto& v : Var::parse(group(source, match, 3), match.position(3))) params.emplace_back(std::move(v));
+        auto& function = functionVector.emplace_back(Symbol(group(source, match, 2), match), group(source, match, 1),
+                                                     Var::parse<Param>(group(source, match, 3), match.position(3)));
 
         // Find handle.
-        Handle* handle = params.empty() ? nullptr : findHandle(params[0]);
-        Iterable methodParams(params.begin() + !!handle, params.end());
-        if (handle && (params[0].constant || params[0].pointers))
-            throw std::runtime_error("Unexpected handle parameter: " + std::string(params[0].type));
+        if (!function.params.empty()) {
+            function.handle = findHandle(function.params[0]);
+            if (function.handle && (function.params[0].constant || function.params[0].pointers))
+                throw std::runtime_error("Unexpected handle parameter: " + std::string(function.params[0].type));
+        }
 
         // Convert name.
-        Token originalName = group(source, match, 2);       // E.g. vmaCreateAllocator
-        Token name = originalName.substr(3).capitalize(false); // E.g. createAllocator
-        if (handle && startsWith(*name, "destroy") && (*name).substr(7) == *handle->name)
-            name = "destroy"; // E.g. Allocator::destroyAllocator -> Allocator::destroy
+        Token shortName;
+        if ((*function.name).find("Destroy") != std::string_view::npos) shortName = "destroy";
+        if (shortName && function.params.size() == 1) function.methodName = shortName; // First level handle destructors are always short.
+        else function.methodName = function.name.substr(3).capitalize(false);
 
-        if (!handle) functions.emplace_back(name, match);
+        // Add function symbol.
+        if (!function.handle) functions.emplace_back(function.methodName, function);
+    }
+
+    // Iterate VMA functions.
+    for (auto& function : functionVector) {
+        auto& params = function.params;
+        auto* handle = function.handle;
+        Iterable methodParams(params.begin() + !!handle, params.end());
+        const Token& name = function.methodName;
 
         // Find output params.
         std::vector<Param*> outputs; // Mandatory only.
@@ -986,25 +1008,24 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Convert return type.
         auto returnType = [&](const Param& param) -> std::pair<Token, Token> {
             Token result = param.prettyType, unique;
-            if (auto* h = findHandle(param); h && h->destructor) {
-                std::string u { *result };
-                u.insert(u.rfind(':') + 1 /*npos overflows to 0*/, "Unique");
-                unique = u;
-                if (h) {
-                    if (!h->owner || h->owner == handle) h->owner = handle;
-                    else throw std::runtime_error("Handle owner conflict: " + std::string(h->name));
+            if (auto* h = findHandle(param); h) {
+                if (!h->owner || h->owner == handle) h->owner = handle;
+                else throw std::runtime_error("Handle owner conflict: " + std::string(h->name));
+                if (h->destructor) {
+                    std::string u { *result };
+                    u.insert(u.rfind(':') + 1 /*npos overflows to 0*/, "Unique");
+                    unique = u;
                 }
             }
             else if (*param.underlyingType == "VkBuffer") unique = "UniqueBuffer";
             else if (*param.underlyingType == "VkImage") unique = "UniqueImage";
             return { result, unique };
         };
-        auto originalReturnType = group(source, match, 1);
         Token simpleReturn, vecAllocName;
         Segment enhancedReturn, uniqueReturn;
-        if (outputs.empty() && originalReturnType == "VkBool32") enhancedReturn = simpleReturn = "VULKAN_HPP_NAMESPACE::Bool32";
-        else if (originalReturnType == "VkResult") simpleReturn = "VULKAN_HPP_NAMESPACE::Result";
-        else if (originalReturnType == "void") simpleReturn = "void";
+        if (outputs.empty() && function.returnType == "VkBool32") enhancedReturn = simpleReturn = "VULKAN_HPP_NAMESPACE::Bool32";
+        else if (function.returnType == "VkResult") simpleReturn = "VULKAN_HPP_NAMESPACE::Result";
+        else if (function.returnType == "void") simpleReturn = "void";
         if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
             auto a = returnType(*outputs[0]);
             auto b = returnType(*outputs[1]);
@@ -1019,7 +1040,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             } else (enhancedReturn, uniqueReturn) + t; // Single value.
         }
         if (!simpleReturn || (enhancedReturn.blank() && !outputs.empty()))
-            throw std::runtime_error("Unexpected output configuration for " + std::string(originalName));
+            throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
         // Generate methods.
         Segment::Vector<10> all;
@@ -1052,16 +1073,16 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Generate macros.
         if (enhancedReturn.blank()) {
             enhancedReturn + "void";
-            if (originalReturnType == "VkResult") enhanced + "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
+            if (function.returnType == "VkResult") enhanced + "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
         } else enhanced + "VULKAN_HPP_NODISCARD ";
         if (*simpleReturn != "void") simple + "VULKAN_HPP_NODISCARD ";
         definitions + "VULKAN_HPP_INLINE ";
 
         // Generate return type.
-        if (originalReturnType == "VkResult") enhanced + "typename VULKAN_HPP_NAMESPACE::ResultValueType<";
+        if (function.returnType == "VkResult") enhanced + "typename VULKAN_HPP_NAMESPACE::ResultValueType<";
         enhanced + *(enhancedReturn, uniqueReturn, enhancedReturn, uniqueReturn);
         simple + simpleReturn;
-        if (originalReturnType == "VkResult") enhanced + ">::type";
+        if (function.returnType == "VkResult") enhanced + ">::type";
 
         // Generate name.
         all + " ";
@@ -1157,7 +1178,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 enhancedDefinitions + std::tuple(enhancedReturn, "std::vector<$0>"_seg.replace(outputs[0]->prettyType)) + " " + outputName;
                 Token size;
                 if (outputs[0]->deducedArraySize == -1) { // Custom size deduction logic.
-                    if (*originalName == "vmaGetHeapBudgets" && *outputs[0]->lenIfNotNull == "\"VkPhysicalDeviceMemoryProperties::memoryHeapCount\"")
+                    if (*function.name == "vmaGetHeapBudgets" && *outputs[0]->lenIfNotNull == "\"VkPhysicalDeviceMemoryProperties::memoryHeapCount\"")
                         size = "getMemoryProperties()->memoryHeapCount";
                     else throw std::runtime_error("Could not deduce output vector size for " + std::string(name));
                 } else size = params[outputs[0]->deducedArraySize].prettyName;
@@ -1167,11 +1188,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             } else enhancedDefinitions + enhancedReturn + " " + outputName;
             enhancedDefinitions + ";";
         } else if (outputs.empty()) outputName = "result";
-        else throw std::runtime_error("Unexpected output configuration for " + std::string(originalName));
+        else throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
         // Generate a call.
         Segment simpleCall, enhancedCall;
-        (simpleCall, enhancedCall) + originalName + "(";
+        (simpleCall, enhancedCall) + function.name + "(";
         if (handle) (simpleCall, enhancedCall) + "m_" + handle->name.capitalize(false) + ", ";
         for (const auto& param : methodParams) {
             Segment pass;
@@ -1198,7 +1219,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         enhancedDefinitions + n + "  " + enhancedCall + ";";
 
         // Generate result check.
-        if (originalReturnType == "VkResult") { // TODO success codes!
+        if (function.returnType == "VkResult") { // TODO success codes!
             enhancedDefinitions + n + "  VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::";
             if (handle) enhancedDefinitions + handle->name + "::";
             enhancedDefinitions + name + "\");";
@@ -1223,20 +1244,20 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                     n + "  for (auto const& t : " + outputName + ") " + outputName + "Unique.emplace_back(t" + (handle ? ", *this" : ", {}") + ");";
             } else uniqueDef + " { " + outputs[0]->prettyName + (handle ? ", *this" : ", {}") + " };"; // Single value.
         } else if (!outputs.empty())
-            throw std::runtime_error("Unexpected output configuration for " + std::string(originalName));
+            throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
         // Generate return statement.
         if (*simpleReturn != "void") simpleDef + n + "  return result;";
         if (*simpleReturn != "void" || !outputs.empty()) {
             enhancedDefinitions + n + "  return ";
-            if (originalReturnType == "VkResult")
+            if (function.returnType == "VkResult")
                 enhancedDefinitions + "VULKAN_HPP_NAMESPACE::detail::createResultValueType(result" + (outputs.empty() ? "" : ", ");
-            if (!outputs.empty() || originalReturnType != "VkResult") {
+            if (!outputs.empty() || function.returnType != "VkResult") {
                 (uniqueDef, uniqueVecAllocDef) + "std::move(";
                 enhancedDefinitions + outputName;
                 (uniqueDef, uniqueVecAllocDef) + "Unique)";
             }
-            if (originalReturnType == "VkResult") enhancedDefinitions + ")";
+            if (function.returnType == "VkResult") enhancedDefinitions + ")";
             enhancedDefinitions + ";";
         }
         definitions + n + "}";
@@ -1245,7 +1266,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         bool hasUniqueVariant = !uniqueReturn.blank();
         auto appendMethods = [&](Segment& dst, const auto& variants) {
             auto& [simple, enhanced, unique, enhancedVecAlloc, uniqueVecAlloc] = variants;
-            dst + nn + navigate(match) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n + std::move(enhanced);
+            dst + nn + navigate(function) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n + std::move(enhanced);
             if (vecAllocName) dst + n + std::move(enhancedVecAlloc);
             if (hasUniqueVariant) {
                 dst + n + "#ifndef VULKAN_HPP_NO_SMART_HANDLE"_seg + n + std::move(unique);
@@ -1277,6 +1298,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
           using Type = VMA_HPP_NAMESPACE::$0;
         };
         )"_seg.replace(h.name);
+
+        // Generate unique handle.
         if (h.destructor) {
             Segment owner, destructor;
             if (h.owner) {
@@ -1303,6 +1326,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             };
             )"_seg.replace(h.name, owner, destructor);
         }
+
+        // Generate handle class.
+        Token memberName = h.name.capitalize(false);
         declarations + nn + navigate(h) + R"(
         class $0 {
         public:
@@ -1358,13 +1384,14 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         private:
           Vma$0 m_$1 = {};
         };
-        )"_seg.replace(h.name, h.name.capitalize(false), h.methodDecl + navigate(h));
-        definitions + nn + std::move(h.methodDef);
+        )"_seg.replace(h.name, memberName, h.methodDecl + navigate(h));
+        definitions + nn + std::move(h.methodDef + navigate(h));
     }
     declarations + nn + std::move(namespaceHandle.methodDecl);
     definitions + nn + std::move(namespaceHandle.methodDef);
     content + navigate.reset;
 
+    // Generate files.
     R"(
     namespace VMA_HPP_NAMESPACE {
       $0

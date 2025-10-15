@@ -1080,8 +1080,8 @@ namespace VMA_HPP_NAMESPACE {
     vmaFreeStatsString(m_allocator, pStatsString);
   }
 #endif
-
 #endif 
+
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
     vmaDestroyVirtualBlock(m_virtualBlock);
@@ -1218,8 +1218,8 @@ namespace VMA_HPP_NAMESPACE {
     vmaFreeVirtualBlockStatsString(m_virtualBlock, pStatsString);
   }
 #endif
-
 #endif 
+
 #ifdef VOLK_HEADER_VERSION
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VulkanFunctions>::type importVulkanFunctionsFromVolk(const AllocatorCreateInfo& allocatorCreateInfo) {
