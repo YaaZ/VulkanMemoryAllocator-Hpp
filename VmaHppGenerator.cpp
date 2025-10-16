@@ -905,24 +905,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
     // All handles.
     struct Handle : Symbol {
+        using Symbol::Symbol;
         Segment methodDecl, methodDef;
         Handle* owner = nullptr;
         Token destructor;
-        explicit Handle(const Symbol& symbol) : Symbol(symbol) {
-            static const std::unordered_map<std::string_view, std::string_view> handleDestructors {
-                { "", /*    Namespace    */ "" },
-                { "Allocator",              "destroy" },
-                { "Pool",                   "destroyPool" },
-                { "Allocation",             "freeMemory" },
-                { "DefragmentationContext", "" },
-                { "VirtualAllocation",      "virtualFree" },
-                { "VirtualBlock",           "destroy" },
-            };
-            if (const auto& d = handleDestructors.find(*name); d != handleDestructors.end()) destructor = d->second;
-            else throw std::runtime_error("No destructor for handle: " + std::string(*name));
-        }
-    } namespaceHandle {Symbol("", -1)};
+    } namespaceHandle {"", -1};
     std::vector<Handle> handleVector;
+    handleVector.reserve(16); // We use pointers, so preallocate.
     auto findHandle = [&](const Var& var) -> Handle* {
         if (var.kind == Var::Kind::VMA)
             for (Handle& handle : handleVector)
@@ -931,14 +920,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     };
 
     // Find all handles.
-    const std::regex handlePattern { R"(VK_DEFINE_(NON_DISPATCHABLE_)?HANDLE\s*\(\s*(Vma\w+)\s*\))" };
-    for (const auto& match : iterate(source, handlePattern)) {
-        auto originalName = group(source, match, 2); // E.g. VmaAllocator
-        Token name = originalName.substr(3);         // E.g. Allocator
-        handles.emplace_back(name, match);
-        handleVector.emplace_back(handles.back());
-        if (handleVector.back().destructor) uniqueHandles.emplace_back(handles.back());
-    }
+    const std::regex handlePattern { R"(VK_DEFINE_(NON_DISPATCHABLE_)?HANDLE\s*\(\s*Vma(\w+)\s*\))" };
+    for (const auto& match : iterate(source, handlePattern))
+        handles.emplace_back(handleVector.emplace_back(group(source, match, 2), match));
 
     // All functions.
     struct Param : Var {
@@ -950,7 +934,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     struct Function : Symbol {
         std::string_view returnType;
         std::vector<Param> params;
-        Handle* handle = nullptr;
+        Handle* handle = nullptr; // Top-level handle.
         Token methodName;
         explicit Function(Symbol&& symbol, std::string_view&& returnType, std::vector<Param>&& params) :
             Symbol(symbol), returnType(returnType), params(params) {}
@@ -963,27 +947,45 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         auto& function = functionVector.emplace_back(Symbol(group(source, match, 2), match), group(source, match, 1),
                                                      Var::parse<Param>(group(source, match, 3), match.position(3)));
 
-        // Find handle.
-        if (!function.params.empty()) {
-            function.handle = findHandle(function.params[0]);
-            if (function.handle && (function.params[0].constant || function.params[0].pointers))
-                throw std::runtime_error("Unexpected handle parameter: " + std::string(function.params[0].type));
+        // Find handles.
+        for (int i = 0; i < 2; ++i) {
+            Handle* h = function.params.size() > i ? findHandle(function.params[i]) : nullptr;
+            if (h == nullptr) break;
+            if (function.params[i].constant || function.params[i].pointers)
+                throw std::runtime_error("Unexpected handle parameter: " + std::string(function.params[i].type));
+            if (function.handle) { // Set owner for second-level handles.
+                if (!h->owner || h->owner == function.handle) h->owner = function.handle;
+                else throw std::runtime_error("Handle owner conflict: " + std::string(h->name));
+            }
+            function.handle = h;
         }
 
         // Convert name.
         Token shortName;
         if ((*function.name).find("Destroy") != std::string_view::npos) shortName = "destroy";
+        else if ((*function.name).find("Free") != std::string_view::npos) shortName = "free";
         if (shortName && function.params.size() == 1) function.methodName = shortName; // First level handle destructors are always short.
         else function.methodName = function.name.substr(3).capitalize(false);
+
+        // Save destructor.
+        if (shortName && function.handle && function.params.size() == 1 + !!function.handle->owner) {
+            if (function.handle->destructor)
+                throw std::runtime_error("Conflicting destructor for handle: " + std::string(*function.handle->name));
+            function.handle->destructor = function.methodName;
+        }
 
         // Add function symbol.
         if (!function.handle) functions.emplace_back(function.methodName, function);
     }
 
+    // Collect unique handles.
+    for (const auto& h : handleVector) if (h.destructor) uniqueHandles.emplace_back(h);
+
     // Iterate VMA functions.
     for (auto& function : functionVector) {
         auto& params = function.params;
         auto* handle = function.handle;
+        if (handle && handle->owner) handle = handle->owner; // Get first-level handle.
         Iterable methodParams(params.begin() + !!handle, params.end());
         const Token& name = function.methodName;
 
@@ -1008,9 +1010,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Convert return type.
         auto returnType = [&](const Param& param) -> std::pair<Token, Token> {
             Token result = param.prettyType, unique;
-            if (auto* h = findHandle(param); h) {
-                if (!h->owner || h->owner == handle) h->owner = handle;
-                else throw std::runtime_error("Handle owner conflict: " + std::string(h->name));
+            if (const auto* h = findHandle(param); h) {
                 if (h->destructor) {
                     std::string u { *result };
                     u.insert(u.rfind(':') + 1 /*npos overflows to 0*/, "Unique");
