@@ -184,6 +184,16 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void Allocator::destroy(Pool pool) const {
+    vmaDestroyPool(m_allocator, static_cast<VmaPool>(pool));
+  }
+#else
+  VULKAN_HPP_INLINE void Allocator::destroy(Pool pool) const {
+    vmaDestroyPool(m_allocator, static_cast<VmaPool>(pool));
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE Statistics Allocator::getPoolStatistics(Pool pool) const {
     Statistics poolStats;
     vmaGetPoolStatistics(m_allocator, static_cast<VmaPool>(pool), reinterpret_cast<VmaStatistics*>(&poolStats));
@@ -441,6 +451,16 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void (Allocator::free)(Allocation allocation) const {
+    vmaFreeMemory(m_allocator, static_cast<VmaAllocation>(allocation));
+  }
+#else
+  VULKAN_HPP_INLINE void (Allocator::free)(Allocation allocation) const {
+    vmaFreeMemory(m_allocator, static_cast<VmaAllocation>(allocation));
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_INLINE void Allocator::freeMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const {
     size_t allocationCount = allocations.size();
     vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(allocations.data()));
@@ -448,6 +468,17 @@ namespace VMA_HPP_NAMESPACE {
 #endif
   VULKAN_HPP_INLINE void Allocator::freeMemoryPages(size_t allocationCount,
                                                     const Allocation* pAllocations) const {
+    vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(pAllocations));
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void (Allocator::free)(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const {
+    size_t allocationCount = allocations.size();
+    vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(allocations.data()));
+  }
+#endif
+  VULKAN_HPP_INLINE void (Allocator::free)(size_t allocationCount,
+                                           const Allocation* pAllocations) const {
     vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(pAllocations));
   }
 
@@ -958,6 +989,18 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                            Allocation allocation) const {
+    vmaDestroyBuffer(m_allocator, static_cast<VkBuffer>(buffer), static_cast<VmaAllocation>(allocation));
+  }
+#else
+  VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                            Allocation allocation) const {
+    vmaDestroyBuffer(m_allocator, static_cast<VkBuffer>(buffer), static_cast<VmaAllocation>(allocation));
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image>>::type Allocator::createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                                                                                                                                                                          const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -1061,6 +1104,18 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Image image,
+                                            Allocation allocation) const {
+    vmaDestroyImage(m_allocator, static_cast<VkImage>(image), static_cast<VmaAllocation>(allocation));
+  }
+#else
+  VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Image image,
+                                            Allocation allocation) const {
+    vmaDestroyImage(m_allocator, static_cast<VkImage>(image), static_cast<VmaAllocation>(allocation));
+  }
+#endif
+
 #if VMA_STATS_STRING_ENABLED
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE char* Allocator::buildStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
@@ -1080,6 +1135,16 @@ namespace VMA_HPP_NAMESPACE {
   }
 #else
   VULKAN_HPP_INLINE void Allocator::freeStatsString(char* pStatsString) const {
+    vmaFreeStatsString(m_allocator, pStatsString);
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void (Allocator::free)(char* statsString) const {
+    vmaFreeStatsString(m_allocator, statsString);
+  }
+#else
+  VULKAN_HPP_INLINE void (Allocator::free)(char* pStatsString) const {
     vmaFreeStatsString(m_allocator, pStatsString);
   }
 #endif
@@ -1156,6 +1221,16 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void (VirtualBlock::free)(VirtualAllocation allocation) const {
+    vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
+  }
+#else
+  VULKAN_HPP_INLINE void (VirtualBlock::free)(VirtualAllocation allocation) const {
+    vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
     vmaClearVirtualBlock(m_virtualBlock);
   }
@@ -1218,6 +1293,16 @@ namespace VMA_HPP_NAMESPACE {
   }
 #else
   VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* pStatsString) const {
+    vmaFreeVirtualBlockStatsString(m_virtualBlock, pStatsString);
+  }
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  VULKAN_HPP_INLINE void (VirtualBlock::free)(char* statsString) const {
+    vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
+  }
+#else
+  VULKAN_HPP_INLINE void (VirtualBlock::free)(char* pStatsString) const {
     vmaFreeVirtualBlockStatsString(m_virtualBlock, pStatsString);
   }
 #endif

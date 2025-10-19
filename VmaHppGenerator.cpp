@@ -949,7 +949,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         std::string_view returnType;
         std::vector<Param> params;
         Handle* handle = nullptr; // Top-level handle.
-        Token methodName;
+        Token methodName, shortName;
         explicit Function(Symbol&& symbol, std::string_view&& returnType, std::vector<Param>&& params) :
             Symbol(symbol), returnType(returnType), params(params) {}
     };
@@ -979,7 +979,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         if ((*function.name).find("Destroy") != std::string_view::npos) shortName = "destroy";
         else if ((*function.name).find("Free") != std::string_view::npos) shortName = "free";
         if (shortName && function.params.size() == 1) function.methodName = shortName; // First level handle destructors are always short.
-        else function.methodName = function.name.substr(3).capitalize(false);
+        else {
+            function.methodName = function.name.substr(3).capitalize(false);
+            function.shortName = shortName;
+        }
 
         // Save destructor.
         if (shortName && function.handle && function.params.size() == 1 + !!function.handle->owner) {
@@ -1272,6 +1275,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             Segment name;
             if (variant & !declaration && handle) name + handle->name + "::";
             name + methodName;
+            if (*methodName == "free") "(" + name + ")"; // MSVC debug free workaround.
             dst + nn + navigate(function) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n +
                 buildMethod(variant & !unique & !vectorAllocator, name, enhanced);
             if (vecAllocName) dst + n +
@@ -1292,6 +1296,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         Handle& h = handle ? *handle : namespaceHandle;
         appendMethods(h.methodDecl, declaration, function.methodName);
         appendMethods(h.methodDef, !declaration, function.methodName);
+        if (function.shortName) {
+            appendMethods(h.methodDecl, declaration, function.shortName);
+            appendMethods(h.methodDef, !declaration, function.shortName);
+        }
     }
 
     // Generate handle declarations.

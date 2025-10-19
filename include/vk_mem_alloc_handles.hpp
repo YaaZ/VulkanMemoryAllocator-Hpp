@@ -174,6 +174,12 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void destroy(Pool pool) const;
+#else
+    void destroy(Pool pool) const;
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     VULKAN_HPP_NODISCARD Statistics getPoolStatistics(Pool pool) const;
 #endif
     void getPoolStatistics(Pool pool,
@@ -287,10 +293,22 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void (free)(Allocation allocation) const;
+#else
+    void (free)(Allocation allocation) const;
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void freeMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const;
 #endif
     void freeMemoryPages(size_t allocationCount,
                          const Allocation* pAllocations) const;
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void (free)(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const;
+#endif
+    void (free)(size_t allocationCount,
+                const Allocation* pAllocations) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     VULKAN_HPP_NODISCARD AllocationInfo getAllocationInfo(Allocation allocation) const;
@@ -554,6 +572,14 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void destroy(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                 Allocation allocation) const;
+#else
+    void destroy(VULKAN_HPP_NAMESPACE::Buffer buffer,
+                 Allocation allocation) const;
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image>>::type createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                                                                                                                                               const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                               VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr) const;
@@ -604,6 +630,14 @@ namespace VMA_HPP_NAMESPACE {
                       Allocation allocation) const;
 #endif
 
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void destroy(VULKAN_HPP_NAMESPACE::Image image,
+                 Allocation allocation) const;
+#else
+    void destroy(VULKAN_HPP_NAMESPACE::Image image,
+                 Allocation allocation) const;
+#endif
+
 #if VMA_STATS_STRING_ENABLED
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     VULKAN_HPP_NODISCARD char* buildStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const;
@@ -615,6 +649,12 @@ namespace VMA_HPP_NAMESPACE {
     void freeStatsString(char* statsString) const;
 #else
     void freeStatsString(char* pStatsString) const;
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void (free)(char* statsString) const;
+#else
+    void (free)(char* pStatsString) const;
 #endif
 #endif 
 
@@ -920,6 +960,12 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void (free)(VirtualAllocation allocation) const;
+#else
+    void (free)(VirtualAllocation allocation) const;
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     void clearVirtualBlock() const;
 #else
     void clearVirtualBlock() const;
@@ -954,6 +1000,12 @@ namespace VMA_HPP_NAMESPACE {
     void freeVirtualBlockStatsString(char* statsString) const;
 #else
     void freeVirtualBlockStatsString(char* pStatsString) const;
+#endif
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    void (free)(char* statsString) const;
+#else
+    void (free)(char* pStatsString) const;
 #endif
 #endif 
 
