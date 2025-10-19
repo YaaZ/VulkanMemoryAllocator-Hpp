@@ -57,18 +57,19 @@ class Segment {
     struct WildcardNode {
         int index, indent;
     };
+    struct ConditionalNode {
+        using Data = std::tuple<Segment, int /* mask */, int /* condition */>;
+        std::shared_ptr<Data> data;
+    };
     struct StringViewNode {
         const char* data;
         int length, indent;
     };
     struct StringNode {
-        struct Data {
-            std::string string;
-            int indent;
-        };
+        using Data = std::pair<std::string, int /* indent */>;
         std::shared_ptr<Data> data;
     };
-    using Node = std::variant<BreakNode, NavigateNode, WildcardNode, StringViewNode, StringNode>;
+    using Node = std::variant<BreakNode, NavigateNode, WildcardNode, ConditionalNode, StringViewNode, StringNode>;
 
     struct NodeInfo {
         std::optional<std::string_view> view;
@@ -78,7 +79,7 @@ class Segment {
         if (const auto* n = std::get_if<StringViewNode>(&node))
             return {{ std::string_view(n->data, static_cast<unsigned int>(n->length)), n->indent }};
         if (const auto* n = std::get_if<StringNode>(&node))
-            return {{ n->data->string, n->data->indent }};
+            return {{ n->data->first, n->data->second }};
         if (const auto* n = std::get_if<WildcardNode>(&node))
             return {{ std::nullopt, n->indent }};
         return std::nullopt;
@@ -101,6 +102,22 @@ class Segment {
     };
 
 public:
+    class Specialization {
+        friend class Segment;
+        int mask, condition;
+        explicit constexpr Specialization(const int mask, const int condition) : mask(mask), condition(condition) {}
+    public:
+        explicit constexpr Specialization(const int mask) : mask(mask), condition(mask) {}
+        explicit constexpr operator bool() const { return !(~mask & condition); }
+        Specialization constexpr operator!() const { return Specialization(mask, mask ^ condition); }
+        Specialization constexpr operator&(const Specialization& s) const {
+            return Specialization((s.mask|mask)^s.mask&condition^mask&s.condition, s.condition|condition);
+        }
+        template <class T> ConditionalNode operator[](T&& t) const {
+            return ConditionalNode { std::make_shared<ConditionalNode::Data>(std::forward<T>(t), mask, condition) };
+        }
+    };
+
     template<int Size, class T = Segment> class Vector : public VectorBase<Size, T, Vector> {
         template<std::size_t, class Ts, class=std::enable_if_t<!HasStdGet<Ts>::value>>
         static const auto& element(const Ts& t) { return t; }
@@ -228,42 +245,47 @@ private:
     }
 
     static void indentNode(Node& t, const int indent) {
+        if (indent == 0) return;
         if (auto* n = std::get_if<WildcardNode>(&t)) n->indent += indent;
         else if (auto* n = std::get_if<StringViewNode>(&t)) n->indent += indent;
         else if (auto* n = std::get_if<StringNode>(&t)) n->data = std::make_shared<StringNode::Data>(
-            StringNode::Data { n->data->string, n->data->indent + indent });
+            StringNode::Data { n->data->first, n->data->second + indent });
+        else if (auto* n = std::get_if<ConditionalNode>(&t))
+            for (Node& i : std::get<0>(*(n->data = std::make_shared<ConditionalNode::Data>(*n->data))).nodes)
+                indentNode(i, indent);
     }
-    int replaceNode(const int i, const int indent, const Token& replacement) {
+    static void replaceNode(int& i, const int, const std::nullopt_t&) { i++; }
+    void replaceNode(const int i, const int indent, const Token& replacement) {
         indentNode(nodes[i] = replacement, indent);
-        return i;
     }
-    int replaceNode(const int i, const int indent, const Segment& replacement) {
+    void replaceNode(const int i, const int indent, const Segment& replacement) {
         if (!replacement.nodes.empty()) {
             nodes[i] = replacement.nodes[0];
             if (replacement.nodes.size() > 1)
                 nodes.insert(nodes.begin() + i + 1, replacement.nodes.begin() + 1, replacement.nodes.end());
-            for (int j = 0; j < replacement.nodes.size(); ++j) indentNode(nodes[i + j], indent);
+            if (indent != 0) for (int j = 0; j < replacement.nodes.size(); ++j) indentNode(nodes[i + j], indent);
         } else nodes.erase(nodes.begin() + i);
-        return i + replacement.nodes.size() - 1;
     }
 
-    template<class T>
-    void replaceWildcards(const int index, const T& replacement) {
-        for (int i = 0; i < nodes.size(); ++i)
-            if (const auto* n = std::get_if<WildcardNode>(&nodes[i]))
-                if (n->index == index) i  = replaceNode(i, n->indent, replacement);
-    }
-
-    void replaceImpl(const int) {}
     template<class... Args>
-    void replaceImpl(const int index, const Token& replacement, const Args&... args) {
-        replaceWildcards(index, replacement);
-        replaceImpl(index + 1, args...);
-    }
-    template<class... Args>
-    void replaceImpl(const int index, const Segment& replacement, const Args&... args) {
-        replaceWildcards(index, replacement);
-        replaceImpl(index + 1, args...);
+    void replaceImpl(const std::optional<Specialization> specialization, const Args&... args) {
+        using Replacer = void (*)(Segment&, int&, int, const void*);
+        const void* replacement[] { &args... };
+        Replacer replacers[] { ([](Segment& segment, int& i, int indent, const void* ptr) {
+            segment.replaceNode(i, indent, *static_cast<const Args *>(ptr));
+            i--;
+        })... };
+        for (int i = 0, indent = 0; i < nodes.size(); ++i) {
+            if (const auto* n = std::get_if<WildcardNode>(&nodes[i]); n && n->index < sizeof...(Args))
+                replacers[n->index](*this, i, std::max(n->indent, indent), replacement[n->index]);
+            else if (const auto* n = std::get_if<ConditionalNode>(&nodes[i]); n && specialization)
+                replaceNode(i--, 0, *specialization & Specialization(std::get<1>(*n->data), std::get<2>(*n->data)) ? std::get<0>(*n->data) : Segment());
+            else if (std::holds_alternative<BreakNode>(nodes[i])) indent = 0;
+            else if (const auto t = info(nodes[i])) {
+                if (indent < t->indent) indent = t->indent;
+                if (t->view) indent += static_cast<int>(t->view->length());
+            }
+        }
     }
 
 public:
@@ -277,7 +299,9 @@ public:
     friend Segment operator ""_seg(const char* data, const std::size_t size) { return Segment(data, size); }
 
     Segment& clear() { nodes.clear(); return *this; }
-    Segment& pop() { if (!nodes.empty()) nodes.pop_back(); return *this; }
+    Segment&& pop() && { if (!nodes.empty()) nodes.pop_back(); return std::move(*this); }
+    Segment& pop() & { if (!nodes.empty()) nodes.pop_back(); return *this; }
+
     /**
      * Has no text or wildcard tokens (navigation and breaks are ignored).
      */
@@ -287,30 +311,18 @@ public:
     }
 
     Vector<2, Segment&> operator,(Segment& o) { return { *this, o }; }
-    friend Segment& operator+(Segment& s, const Token& o) { s.nodes.emplace_back(o); return s; }
-    friend Segment& operator+(const Token& o, Segment& s) { s.nodes.emplace(s.nodes.begin(), o); return s; }
-    friend Segment& operator+(Segment& s, const Node& o) { s.nodes.emplace_back(o); return s; }
-    friend Segment& operator+(const Node& o, Segment& s) { s.nodes.emplace(s.nodes.begin(), o); return s; }
+    friend Segment&& operator+(Segment&& s, const Token& o) { s.nodes.emplace_back(o); return std::move(s); }
+    friend Segment&& operator+(Segment&& s, const Node& o) { s.nodes.emplace_back(o); return std::move(s); }
+    friend Segment&  operator+(Segment& s, const Token& o) { s.nodes.emplace_back(o); return s; }
+    friend Segment&  operator+(Segment& s, const Node& o) { s.nodes.emplace_back(o); return s; }
+    friend Segment&& operator+(const Token& o, Segment&& s) { s.nodes.emplace(s.nodes.begin(), o); return std::move(s); }
+    friend Segment&& operator+(const Node& o, Segment&& s) { s.nodes.emplace(s.nodes.begin(), o); return std::move(s); }
+    friend Segment&  operator+(const Token& o, Segment& s) { s.nodes.emplace(s.nodes.begin(), o); return s; }
+    friend Segment&  operator+(const Node& o, Segment& s) { s.nodes.emplace(s.nodes.begin(), o); return s; }
 
     friend Segment& operator+(Segment& s, Segment&& o) {
-        // Calculate the length of the current line.
-        int indent = 0, length = 0, fill = 0;
-        for (int j = s.nodes.size() - 1; j >= 0; --j) {
-            const auto i = info(s.nodes[j]);
-            if (!i) break;
-            const int l = i->view ? static_cast<int>(i->view->length()) : 0;
-            fill += indent - i->indent - l;
-            length += l;
-            indent = i->indent;
-            if (fill < 0) fill = 0;
-        }
-        indent += length + fill;
-        length = static_cast<int>(s.nodes.size());
-        // Append nodes.
         s.nodes.reserve(s.nodes.size() + o.nodes.size());
         std::move(o.nodes.begin(), o.nodes.end(), std::back_inserter(s.nodes));
-        // Indent new nodes.
-        for (int j = length; j < s.nodes.size(); ++j) indentNode(s.nodes[j], indent);
         return s;
     }
     friend Segment& operator+(Segment&& o, Segment& s) {
@@ -319,8 +331,10 @@ public:
         return s;
     }
 
-    template<class... Args> Segment&& replace(const Args&... args) && { replaceImpl(0, args...); return std::move(*this); }
-    template<class... Args> Segment& replace(const Args&... args) & { replaceImpl(0, args...); return *this; }
+    template<class... Args> Segment&& replace(const Args&... args) && { replaceImpl(std::nullopt, args...); return std::move(*this); }
+    template<class... Args> Segment& replace(const Args&... args) & { replaceImpl(std::nullopt, args...); return *this; }
+    template<class... Args> Segment&& replace(Specialization spec, const Args&... args) && { replaceImpl(spec, args...); return std::move(*this); }
+    template<class... Args> Segment& replace(Specialization spec, const Args&... args) & { replaceImpl(spec, args...); return *this; }
 
     Segment& resolve(const ConditionalTree& tree, int startPosition = 0);
 
@@ -478,7 +492,7 @@ Segment& Segment::resolve(const ConditionalTree& tree, const int startPosition) 
     auto traverse = tree.traverse(startPosition);
     for (int i = 0; i < nodes.size(); ++i)
         if (const auto* n = std::get_if<NavigateNode>(&nodes[i]))
-            i  = replaceNode(i, std::numeric_limits<int>::min(), traverse.navigate(n->sourcePosition));
+            replaceNode(i--, std::numeric_limits<int>::min(), traverse.navigate(n->sourcePosition));
     return *this;
 }
 
@@ -987,17 +1001,31 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         auto* handle = function.handle;
         if (handle && handle->owner) handle = handle->owner; // Get first-level handle.
         Iterable methodParams(params.begin() + !!handle, params.end());
-        const Token& name = function.methodName;
 
         // Find output params.
-        std::vector<Param*> outputs; // Mandatory only.
+        struct Output {
+            Token uniqueType;
+            Param* param;
+            Param* operator->() const { return param; }
+            Output(Param& param, const Handle* handle) : param(&param) {
+                if (handle && handle->destructor) {
+                    std::string u { *param.prettyType };
+                    u.insert(u.rfind(':') + 1 /*npos overflows to 0*/, "Unique");
+                    uniqueType = u;
+                }
+                else if (*param.underlyingType == "VkBuffer") uniqueType = "UniqueBuffer";
+                else if (*param.underlyingType == "VkImage") uniqueType = "UniqueImage";
+            }
+        };
+        std::vector<Output> outputs; // Mandatory only.
         const Param* defaultOutputsFrom = nullptr;
+        bool hasUniqueVariant = false;
         for (auto& param : methodParams) {
             // Ignore void* and char* - those are not outputs.
             if (!param.constant && param.pointers && (param.pointers > 1 || (param.kind != Var::Kind::VOID && param.kind != Var::Kind::CHAR))) {
                 if (param.tag == Var::Tag::NOT_NULL) {
-                    outputs.push_back(&param);
                     param.paramType = Param::Type::OUTPUT;
+                    if (outputs.emplace_back(param, findHandle(param)).uniqueType) hasUniqueVariant = true;
                 } else {
                     param.paramType = Param::Type::OPTIONAL_OUTPUT;
                     if (defaultOutputsFrom > &param) defaultOutputsFrom = &param;
@@ -1007,94 +1035,107 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             defaultOutputsFrom = params.data() + params.size();
         }
 
-        // Convert return type.
-        auto returnType = [&](const Param& param) -> std::pair<Token, Token> {
-            Token result = param.prettyType, unique;
-            if (const auto* h = findHandle(param); h) {
-                if (h->destructor) {
-                    std::string u { *result };
-                    u.insert(u.rfind(':') + 1 /*npos overflows to 0*/, "Unique");
-                    unique = u;
+        // Generate methods.
+        struct Method {
+            Segment ret, params, body;
+        } simple, enhanced;
+        Segment::Specialization declaration(1), unique(2), vectorAllocator(4);
+
+        // Convert simple return type.
+        enum class ResultValue {
+            NONE, VALUE, VALUE_TYPE
+        } resultValue = ResultValue::NONE;
+        Token simpleReturn, vecAllocType, vecAllocName, enhancedOutput = "result";
+        Segment enhancedReturn, enhancedOutputs, uniqueWrap, resultCheck;
+        if (function.returnType == "VkBool32") enhancedReturn = simpleReturn = "VULKAN_HPP_NAMESPACE::Bool32";
+        else if (function.returnType == "void") simpleReturn = "void";
+        else if (function.returnType == "VkResult") {
+            simpleReturn = "VULKAN_HPP_NAMESPACE::Result";
+            resultCheck = "VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::$0\""_seg + ");";
+            resultValue = ResultValue::VALUE_TYPE;
+            // TODO success codes.
+        }
+
+        // Convert enhanced outputs.
+        if (enhancedReturn.blank()) {
+            if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
+                enhancedReturn + "std::pair<$2, $1>"_seg; // Pair order is reversed.
+                enhancedOutput = "pair";
+                enhancedOutputs + n + "std::pair<" + outputs[1]->prettyType + ", " + outputs[0]->prettyType + "> pair;" +
+                    n + outputs[0]->prettyType + "& " + outputs[0]->prettyName + " = pair.second;" +
+                    n + outputs[1]->prettyType + "& " + outputs[1]->prettyName + " = pair.first;";
+                if (hasUniqueVariant) {
+                    uniqueWrap + " {";
+                    for (auto& output : Iterable(outputs.rbegin(), outputs.rend())) {
+                        uniqueWrap + n + "  ";
+                        if (output.uniqueType) uniqueWrap + output.uniqueType + "(" + output->prettyName + (handle ? ", *this" : ", {}") + ")";
+                        else uniqueWrap + output->prettyName;
+                        uniqueWrap + ",";
+                    }
+                    uniqueWrap.pop() + n + "};";
+                }
+            } else if (outputs.size() == 1) {
+                enhancedOutput = outputs[0]->prettyName;
+                if (outputs[0]->lenIfNotNull) { // Vector.
+                    vecAllocName = (vecAllocType = outputs[0]->prettyType).capitalize(false);
+                    enhancedReturn + "std::vector<$1, $0Allocator>"_seg.replace(vecAllocType);
+                    // Generate template for vector allocator.
+                    enhanced.ret + "template <typename " + vecAllocType + "Allocator" +
+                        (declaration & !vectorAllocator)[" = std::allocator<$1>"_seg] +
+                        vectorAllocator[R"(,
+                                  typename std::enable_if<std::is_same<typename $0Allocator::value_type, $1>::value, int>::type
+                        )"_seg.pop().replace(vecAllocType)] +
+                        (declaration & vectorAllocator)[" = 0"]  + ">" + n;
+                    // Unique variants should use a default allocator for the intermediate vector.
+                    enhancedOutputs + n + "std::vector<" + outputs[0]->prettyType +
+                        (!unique)[", $0Allocator"_seg.replace(vecAllocType)] + "> " + enhancedOutput;
+                    Token size;
+                    if (outputs[0]->deducedArraySize == -1) { // Custom size deduction logic.
+                        if (*function.name == "vmaGetHeapBudgets" && *outputs[0]->lenIfNotNull == "\"VkPhysicalDeviceMemoryProperties::memoryHeapCount\"")
+                            size = "getMemoryProperties()->memoryHeapCount";
+                        else throw std::runtime_error("Could not deduce output vector size for " + std::string(function.name));
+                    } else size = params[outputs[0]->deducedArraySize].prettyName;
+                    enhancedOutputs + "(" + size + (!unique & vectorAllocator)[", "_seg + vecAllocName + "Allocator"] + ");";
+                    if (hasUniqueVariant) {
+                        uniqueWrap + vectorAllocator["($0Allocator)"_seg.replace(vecAllocName)] + ";" + n +
+                            enhancedOutput + "Unique.reserve(" + enhancedOutput + ".size());" + n +
+                            "for (auto const& t : " + enhancedOutput + ") " + enhancedOutput + "Unique.emplace_back(t" + (handle ? ", *this" : ", {}") + ");";
+                    }
+                } else { // Single value.
+                    enhancedReturn + "$1"_seg;
+                    enhancedOutputs + n + "$0 $1;"_seg.replace(outputs[0]->prettyType, enhancedOutput);
+                    if (hasUniqueVariant) uniqueWrap + " { " + enhancedOutput + (handle ? ", *this" : ", {}") + " };";
                 }
             }
-            else if (*param.underlyingType == "VkBuffer") unique = "UniqueBuffer";
-            else if (*param.underlyingType == "VkImage") unique = "UniqueImage";
-            return { result, unique };
-        };
-        Token simpleReturn, vecAllocName;
-        Segment enhancedReturn, uniqueReturn;
-        if (outputs.empty() && function.returnType == "VkBool32") enhancedReturn = simpleReturn = "VULKAN_HPP_NAMESPACE::Bool32";
-        else if (function.returnType == "VkResult") simpleReturn = "VULKAN_HPP_NAMESPACE::Result";
-        else if (function.returnType == "void") simpleReturn = "void";
-        if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
-            auto a = returnType(*outputs[0]);
-            auto b = returnType(*outputs[1]);
-            (enhancedReturn, uniqueReturn) + "std::pair<" + b + ", " + a + ">"; // Pair order is reversed.
-            if (!a.second && !b.second) uniqueReturn = {};
-        } else if (outputs.size() == 1) {
-            auto t = returnType(*outputs[0]);
-            if (outputs[0]->lenIfNotNull) { // Vector.
-                vecAllocName = std::string(*t.first) + "Allocator";
-                (enhancedReturn, uniqueReturn) + "std::vector<" + t + ", " + vecAllocName + ">";
-                if (!t.second) uniqueReturn = {};
-            } else (enhancedReturn, uniqueReturn) + t; // Single value.
-        }
+        } else if (!outputs.empty()) simpleReturn = {}; // Trigger error.
+        if (!uniqueWrap.blank()) Segment(enhancedReturn) + " " + enhancedOutput + "Unique" + uniqueWrap;
+
+        // Verify that conversion succeeded.
         if (!simpleReturn || (enhancedReturn.blank() && !outputs.empty()))
             throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
-        // Generate methods.
-        Segment::Vector<10> all;
-        auto& [
-            // Simple variant (returning error code).
-            simpleDecl, simpleDef,
-            // Enhanced variant (augmented parameters and result code checks) + UniqueHandles.
-            enhancedDecl, enhancedDef, uniqueDecl, uniqueDef,
-            // Enhanced variants with custom vector allocator.
-            enhancedVecAllocDecl, enhancedVecAllocDef, uniqueVecAllocDecl, uniqueVecAllocDef
-        ] = *all;
-        auto declarations = (simpleDecl, enhancedDecl, uniqueDecl, enhancedVecAllocDecl, uniqueVecAllocDecl);
-        auto definitions = (simpleDef, enhancedDef, uniqueDef, enhancedVecAllocDef, uniqueVecAllocDef);
-        auto simple = (simpleDecl, simpleDef);
-        auto enhanced = ((enhancedDecl, enhancedDef), (uniqueDecl, uniqueDef),
-                         (enhancedVecAllocDecl, enhancedVecAllocDef), (uniqueVecAllocDecl, uniqueVecAllocDef));
-        auto enhancedDefinitions = ((enhancedDef, enhancedVecAllocDef), (uniqueDef, uniqueVecAllocDef));
-
-        // Generate template for vector allocator.
-        if (vecAllocName) {
-            auto t = returnType(*outputs[0]);
-            enhanced + "template <typename " + vecAllocName;
-            (enhancedDecl, uniqueDecl) + " = std::allocator<" + t + ">";
-            ((enhancedVecAllocDecl, enhancedVecAllocDef), (uniqueVecAllocDecl, uniqueVecAllocDef)) + "," + n +
-                "          typename std::enable_if<std::is_same<typename " + vecAllocName + "::value_type, " + t + ">::value, int>::type";
-            (enhancedVecAllocDecl, uniqueVecAllocDecl) + " = 0";
-            enhanced + ">" + n;
-        }
-
         // Generate macros.
-        if (enhancedReturn.blank()) {
-            enhancedReturn + "void";
-            if (function.returnType == "VkResult") enhanced + "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
-        } else enhanced + "VULKAN_HPP_NODISCARD ";
-        if (*simpleReturn != "void") simple + "VULKAN_HPP_NODISCARD ";
-        definitions + "VULKAN_HPP_INLINE ";
+        if (resultValue == ResultValue::VALUE || !enhancedReturn.blank()) enhanced.ret + "VULKAN_HPP_NODISCARD ";
+        else if (resultValue == ResultValue::VALUE_TYPE) enhanced.ret + "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
+        if (*simpleReturn != "void") simple.ret + "VULKAN_HPP_NODISCARD ";
+        (simple.ret, enhanced.ret) + (!declaration)["VULKAN_HPP_INLINE "];
 
         // Generate return type.
-        if (function.returnType == "VkResult") enhanced + "typename VULKAN_HPP_NAMESPACE::ResultValueType<";
-        enhanced + *(enhancedReturn, uniqueReturn, enhancedReturn, uniqueReturn);
-        simple + simpleReturn;
-        if (function.returnType == "VkResult") enhanced + ">::type";
-
-        // Generate name.
-        all + " ";
-        if (handle) definitions + handle->name + "::";
-        all + name;
-        (uniqueDecl, uniqueDef, uniqueVecAllocDecl, uniqueVecAllocDef) + "Unique";
+        if (resultValue == ResultValue::VALUE) {
+            if (enhancedReturn.blank()) enhancedReturn + simpleReturn;
+            else "VULKAN_HPP_NAMESPACE::ResultValue<" + enhancedReturn + ">";
+        } else {
+            if (enhancedReturn.blank()) enhancedReturn + "void";
+            if (resultValue == ResultValue::VALUE_TYPE)
+                "typename VULKAN_HPP_NAMESPACE::ResultValueType<" + enhancedReturn + ">::type";
+        }
+        simple.ret + simpleReturn;
+        enhanced.ret + Segment(enhancedReturn);
 
         // Generate parameter list.
         bool signatureTransformed = false;
-        Segment simpleParams, enhancedParamsDecl, enhancedParamsDef;
         for (const auto& param : methodParams) {
-            simpleParams + param.type + " " + param.name + "," + n;
+            simple.params + param.type + " " + param.name + "," + n;
             if (param.paramType == Param::Type::OUTPUT || !param.deducedArrays.empty()) { // Skip outputs and deduced array sizes.
                 signatureTransformed = true;
                 continue;
@@ -1113,33 +1154,24 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             }
             if (type.blank()) type = param.type;
             else signatureTransformed = true;
-            (enhancedParamsDecl, enhancedParamsDef) + type + " " + param.prettyName;
-            if (&param >= defaultOutputsFrom) enhancedParamsDecl + (param.pointers ?
-                        " = nullptr" : " = {}");
-            (enhancedParamsDecl, enhancedParamsDef) + "," + n;
+            enhanced.params + std::move(type) + " " + param.prettyName;
+            if (&param >= defaultOutputsFrom) enhanced.params +
+                (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
+            enhanced.params + "," + n;
         }
-        Segment vecAllocParams = enhancedParamsDef;
-        vecAllocParams + vecAllocName + "& " + vecAllocName.capitalize(false);
-        (simpleParams, enhancedParamsDecl, enhancedParamsDef).pop().pop();
-        all + "(";
-        simple + simpleParams;
-        (enhancedDecl, uniqueDecl) + enhancedParamsDecl;
-        (enhancedDef, uniqueDef) + enhancedParamsDef;
-        (enhancedVecAllocDecl, enhancedVecAllocDef, uniqueVecAllocDecl, uniqueVecAllocDef) + vecAllocParams;
-        all + ")";
-        if (handle) all + " const";
-        declarations + ";";
-        definitions + " {";
+        (simple.params, enhanced.params).pop().pop();
+        enhanced.params + vectorAllocator[(enhanced.params.blank() ? ""_seg : ",\n"_seg) +
+            vecAllocType + "Allocator& " + vecAllocName + "Allocator"];
 
         // Generate deduction statements.
         for (const auto& param : methodParams) {
             if (param.deducedArrays.empty()) continue;
-            Segment statement, assertChecks, exceptionChecks;
-            statement + param.type + " " + param.prettyName + " = ";
+            Segment assertChecks, exceptionChecks;
+            enhanced.body + n + param.type + " " + param.prettyName + " = ";
             for (int i : param.deducedArrays) {
                 const auto& t = params[i];
                 if (t.paramType == Param::Type::OUTPUT) continue;
-                statement + t.prettyName + ".size()" + " | ";
+                enhanced.body + t.prettyName + ".size()" + " | ";
                 assertChecks + n + "VULKAN_HPP_ASSERT(";
                 exceptionChecks + n + "if (";
                 if (t.tag != Var::Tag::NOT_NULL) {
@@ -1148,47 +1180,19 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 }
                 assertChecks + t.prettyName + ".size() == " + param.prettyName + ");";
                 exceptionChecks + t.prettyName + ".size() != " + param.prettyName +
-                    ") throw VULKAN_HPP_NAMESPACE::LogicError(VMA_HPP_NAMESPACE_STRING \"::";
-                if (handle) exceptionChecks + handle->name + "::";
-                exceptionChecks + name + ": " + t.prettyName + ".size() != " + param.prettyName + "\");";
+                    ") throw VULKAN_HPP_NAMESPACE::LogicError(VMA_HPP_NAMESPACE_STRING \"::$0: "_seg +
+                    t.prettyName + ".size() != " + param.prettyName + "\");";
             }
-            enhancedDefinitions + n + "  " + statement.pop() + ";";
+            enhanced.body.pop() + ";";
             if (param.deducedArrays.size() > 1) // No need to cross-check array sizes when there is only one.
-                enhancedDefinitions + n + R"(
+                enhanced.body + n + R"(
                 #ifdef VULKAN_HPP_NO_EXCEPTIONS
-                  $0
+                $1
                 #else
-                  $1
+                $2
                 #endif
-                )"_seg.replace(assertChecks, exceptionChecks);
+                )"_seg.replace(std::nullopt, assertChecks, exceptionChecks);
         }
-
-        // Generate output variable declarations.
-        Token outputName;
-        if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
-            outputName = "pair";
-            enhancedDefinitions + n + "  " + enhancedReturn + " pair;" + // Pair order is reversed.
-                n + "  " + outputs[0]->prettyType + "& " + outputs[0]->prettyName + " = pair.second;" +
-                n + "  " + outputs[1]->prettyType + "& " + outputs[1]->prettyName + " = pair.first;";
-        } else if (outputs.size() == 1) {
-            outputName = outputs[0]->prettyName;
-            enhancedDefinitions + n + "  ";
-            if (outputs[0]->lenIfNotNull) { // Vector.
-                // Unique variants should use a default allocator for the intermediate vector.
-                enhancedDefinitions + std::tuple(enhancedReturn, "std::vector<$0>"_seg.replace(outputs[0]->prettyType)) + " " + outputName;
-                Token size;
-                if (outputs[0]->deducedArraySize == -1) { // Custom size deduction logic.
-                    if (*function.name == "vmaGetHeapBudgets" && *outputs[0]->lenIfNotNull == "\"VkPhysicalDeviceMemoryProperties::memoryHeapCount\"")
-                        size = "getMemoryProperties()->memoryHeapCount";
-                    else throw std::runtime_error("Could not deduce output vector size for " + std::string(name));
-                } else size = params[outputs[0]->deducedArraySize].prettyName;
-                enhancedDefinitions + "(" + size;
-                enhancedVecAllocDef + ", " + vecAllocName.capitalize(false); // Only for non-unique variant.
-                enhancedDefinitions + ")";
-            } else enhancedDefinitions + enhancedReturn + " " + outputName;
-            enhancedDefinitions + ";";
-        } else if (outputs.empty()) outputName = "result";
-        else throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
         // Generate a call.
         Segment simpleCall, enhancedCall;
@@ -1215,70 +1219,71 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         (simpleCall, enhancedCall).pop() + ")";
         if (*simpleReturn != "void")
             simpleReturn + (" result = static_cast<" + (simpleReturn + (">( " + (simpleCall, enhancedCall) + " )")));
-        simpleDef + n + "  " + std::move(simpleCall) + ";";
-        enhancedDefinitions + n + "  " + enhancedCall + ";";
+        simple.body + n + std::move(simpleCall) + ";";
+        enhanced.body + std::move(enhancedOutputs) + n + std::move(enhancedCall) + ";";
 
         // Generate result check.
-        if (function.returnType == "VkResult") { // TODO success codes!
-            enhancedDefinitions + n + "  VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::";
-            if (handle) enhancedDefinitions + handle->name + "::";
-            enhancedDefinitions + name + "\");";
-        }
+        if (!resultCheck.blank()) enhanced.body + n + std::move(resultCheck);
 
         // Generate unique conversion.
-        (uniqueDef, uniqueVecAllocDef) + n + "  " + uniqueReturn + " " + outputName + "Unique";
-        if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
-            uniqueDef + " {";
-            for (auto* param : Iterable(outputs.rbegin(), outputs.rend())) {
-                auto [type, unique] = returnType(*param);
-                uniqueDef + n + "    ";
-                if (unique) uniqueDef + unique + "(" + param->prettyName + (handle ? ", *this" : ", {}") + ")";
-                else uniqueDef + param->prettyName;
-                uniqueDef + ",";
-            }
-            uniqueDef.pop() + n + "  };";
-        } else if (outputs.size() == 1) {
-            if (outputs[0]->lenIfNotNull) { // Vector.
-                uniqueVecAllocDef + "(" + vecAllocName.capitalize(false) + ")";
-                (uniqueDef, uniqueVecAllocDef) + ";" + n + "  " + outputName + "Unique.reserve(" + outputName + ".size());" +
-                    n + "  for (auto const& t : " + outputName + ") " + outputName + "Unique.emplace_back(t" + (handle ? ", *this" : ", {}") + ");";
-            } else uniqueDef + " { " + outputs[0]->prettyName + (handle ? ", *this" : ", {}") + " };"; // Single value.
-        } else if (!outputs.empty())
-            throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
+        if (!uniqueWrap.blank()) enhanced.body + unique[n + std::move(uniqueWrap)];
 
         // Generate return statement.
-        if (*simpleReturn != "void") simpleDef + n + "  return result;";
+        if (*simpleReturn != "void") simple.body + n + "return result;";
         if (*simpleReturn != "void" || !outputs.empty()) {
-            enhancedDefinitions + n + "  return ";
-            if (function.returnType == "VkResult")
-                enhancedDefinitions + "VULKAN_HPP_NAMESPACE::detail::createResultValueType(result" + (outputs.empty() ? "" : ", ");
-            if (!outputs.empty() || function.returnType != "VkResult") {
-                (uniqueDef, uniqueVecAllocDef) + "std::move(";
-                enhancedDefinitions + outputName;
-                (uniqueDef, uniqueVecAllocDef) + "Unique)";
+            enhanced.body + n + "return ";
+            if (resultValue == ResultValue::VALUE && outputs.empty()) enhanced.body + "result";
+            else {
+                if (resultValue == ResultValue::VALUE) enhanced.body + Segment(enhancedReturn) + "(result, ";
+                else if (resultValue == ResultValue::VALUE_TYPE)
+                    enhanced.body + "VULKAN_HPP_NAMESPACE::detail::createResultValueType(result" + (outputs.empty() ? "" : ", ");
+                if (!outputs.empty() || resultValue == ResultValue::NONE) {
+                    if (hasUniqueVariant) enhanced.body + unique["std::move("];
+                    enhanced.body + enhancedOutput;
+                    if (hasUniqueVariant) enhanced.body + unique["Unique)"];
+                }
+                if (resultValue != ResultValue::NONE) enhanced.body + ")";
             }
-            if (function.returnType == "VkResult") enhancedDefinitions + ")";
-            enhancedDefinitions + ";";
+            enhanced.body + ";";
         }
-        definitions + n + "}";
 
         // Append methods to the handle
-        bool hasUniqueVariant = !uniqueReturn.blank();
-        auto appendMethods = [&](Segment& dst, const auto& variants) {
-            auto& [simple, enhanced, unique, enhancedVecAlloc, uniqueVecAlloc] = variants;
-            dst + nn + navigate(function) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n + std::move(enhanced);
-            if (vecAllocName) dst + n + std::move(enhancedVecAlloc);
+        auto buildMethod = [&](const Segment::Specialization variant, const Segment& name, const Method& method) {
+            auto outputType = [&](const int i) {
+                return i >= outputs.size() ? Token() :
+                    variant & unique && outputs[i].uniqueType ? outputs[i].uniqueType : outputs[i]->prettyType;
+            };
+            Segment result = method.ret;
+            result + " $0($3)"_seg;
+            if (handle) result + " const";
+            if (variant & declaration) result + ";";
+            else result + " {\n  $4\n}"_seg;
+            return std::move(result.replace(variant, name, outputType(0), outputType(1), method.params, method.body));
+        };
+        auto appendMethods = [&](Segment& dst, const Segment::Specialization variant, const Token& methodName) {
+            Segment name;
+            if (variant & !declaration && handle) name + handle->name + "::";
+            name + methodName;
+            dst + nn + navigate(function) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n +
+                buildMethod(variant & !unique & !vectorAllocator, name, enhanced);
+            if (vecAllocName) dst + n +
+                buildMethod(variant & !unique & vectorAllocator, name, enhanced);
             if (hasUniqueVariant) {
-                dst + n + "#ifndef VULKAN_HPP_NO_SMART_HANDLE"_seg + n + std::move(unique);
-                if (vecAllocName) dst + n + std::move(uniqueVecAlloc);
+                name + "Unique";
+                dst + n + "#ifndef VULKAN_HPP_NO_SMART_HANDLE"_seg + n +
+                    buildMethod(variant & unique & !vectorAllocator, name, enhanced);
+                if (vecAllocName) dst + n +
+                    buildMethod(variant & unique & vectorAllocator, name, enhanced);
                 dst + n + "#endif"_seg;
+                name.pop();
             }
-            dst + n + (signatureTransformed ? "#endif"_seg : "#else"_seg) + n + std::move(simple);
+            dst + n + (signatureTransformed ? "#endif"_seg : "#else"_seg) + n +
+                buildMethod(variant, name, simple);
             if (!signatureTransformed) dst + n + "#endif"_seg;
         };
         Handle& h = handle ? *handle : namespaceHandle;
-        appendMethods(h.methodDecl, *declarations);
-        appendMethods(h.methodDef, *definitions);
+        appendMethods(h.methodDecl, declaration, function.methodName);
+        appendMethods(h.methodDef, !declaration, function.methodName);
     }
 
     // Generate handle declarations.
