@@ -5,88 +5,104 @@
 namespace VMA_HPP_NAMESPACE {
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy() const {
     vmaDestroyAllocator(m_allocator);
   }
 #else
+  // wrapper function for command vmaDestroyAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy() const {
     vmaDestroyAllocator(m_allocator);
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetAllocatorInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE AllocatorInfo Allocator::getAllocatorInfo() const {
     AllocatorInfo allocatorInfo;
     vmaGetAllocatorInfo(m_allocator, reinterpret_cast<VmaAllocatorInfo*>(&allocatorInfo));
     return allocatorInfo;
   }
 #endif
+  // wrapper function for command vmaGetAllocatorInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getAllocatorInfo(AllocatorInfo* pAllocatorInfo) const {
     vmaGetAllocatorInfo(m_allocator, reinterpret_cast<VmaAllocatorInfo*>(pAllocatorInfo));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetPhysicalDeviceProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties* Allocator::getPhysicalDeviceProperties() const {
     const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties* pPhysicalDeviceProperties;
     vmaGetPhysicalDeviceProperties(m_allocator, reinterpret_cast<const VkPhysicalDeviceProperties**>(&pPhysicalDeviceProperties));
     return pPhysicalDeviceProperties;
   }
 #endif
+  // wrapper function for command vmaGetPhysicalDeviceProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getPhysicalDeviceProperties(const VULKAN_HPP_NAMESPACE::PhysicalDeviceProperties** ppPhysicalDeviceProperties) const {
     vmaGetPhysicalDeviceProperties(m_allocator, reinterpret_cast<const VkPhysicalDeviceProperties**>(ppPhysicalDeviceProperties));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetMemoryProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties* Allocator::getMemoryProperties() const {
     const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties* pPhysicalDeviceMemoryProperties;
     vmaGetMemoryProperties(m_allocator, reinterpret_cast<const VkPhysicalDeviceMemoryProperties**>(&pPhysicalDeviceMemoryProperties));
     return pPhysicalDeviceMemoryProperties;
   }
 #endif
+  // wrapper function for command vmaGetMemoryProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getMemoryProperties(const VULKAN_HPP_NAMESPACE::PhysicalDeviceMemoryProperties** ppPhysicalDeviceMemoryProperties) const {
     vmaGetMemoryProperties(m_allocator, reinterpret_cast<const VkPhysicalDeviceMemoryProperties**>(ppPhysicalDeviceMemoryProperties));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetMemoryTypeProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::MemoryPropertyFlags Allocator::getMemoryTypeProperties(uint32_t memoryTypeIndex) const {
     VULKAN_HPP_NAMESPACE::MemoryPropertyFlags flags;
     vmaGetMemoryTypeProperties(m_allocator, memoryTypeIndex, reinterpret_cast<VkMemoryPropertyFlags*>(&flags));
     return flags;
   }
 #endif
+  // wrapper function for command vmaGetMemoryTypeProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getMemoryTypeProperties(uint32_t memoryTypeIndex,
                                                             VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* pFlags) const {
     vmaGetMemoryTypeProperties(m_allocator, memoryTypeIndex, reinterpret_cast<VkMemoryPropertyFlags*>(pFlags));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaSetCurrentFrameIndex, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setCurrentFrameIndex(uint32_t frameIndex) const {
     vmaSetCurrentFrameIndex(m_allocator, frameIndex);
   }
 #else
+  // wrapper function for command vmaSetCurrentFrameIndex, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setCurrentFrameIndex(uint32_t frameIndex) const {
     vmaSetCurrentFrameIndex(m_allocator, frameIndex);
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCalculateStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE TotalStatistics Allocator::calculateStatistics() const {
     TotalStatistics stats;
     vmaCalculateStatistics(m_allocator, reinterpret_cast<VmaTotalStatistics*>(&stats));
     return stats;
   }
 #endif
+  // wrapper function for command vmaCalculateStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::calculateStatistics(TotalStatistics* pStats) const {
     vmaCalculateStatistics(m_allocator, reinterpret_cast<VmaTotalStatistics*>(pStats));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetHeapBudgets, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename BudgetAllocator>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE std::vector<Budget, BudgetAllocator> Allocator::getHeapBudgets() const {
     std::vector<Budget, BudgetAllocator> budgets(getMemoryProperties()->memoryHeapCount);
     vmaGetHeapBudgets(m_allocator, reinterpret_cast<VmaBudget*>(budgets.data()));
     return budgets;
   }
+  // wrapper function for command vmaGetHeapBudgets, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename BudgetAllocator,
             typename std::enable_if<std::is_same<typename BudgetAllocator::value_type, Budget>::value, int>::type>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE std::vector<Budget, BudgetAllocator> Allocator::getHeapBudgets(BudgetAllocator& budgetAllocator) const {
@@ -95,11 +111,13 @@ namespace VMA_HPP_NAMESPACE {
     return budgets;
   }
 #endif
+  // wrapper function for command vmaGetHeapBudgets, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getHeapBudgets(Budget* pBudgets) const {
     vmaGetHeapBudgets(m_allocator, reinterpret_cast<VmaBudget*>(pBudgets));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFindMemoryTypeIndex, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type Allocator::findMemoryTypeIndex(uint32_t memoryTypeBits,
                                                                                                                                        const AllocationCreateInfo& allocationCreateInfo) const {
     uint32_t memoryTypeIndex;
@@ -109,6 +127,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, memoryTypeIndex);
   }
 #endif
+  // wrapper function for command vmaFindMemoryTypeIndex, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::findMemoryTypeIndex(uint32_t memoryTypeBits,
                                                                                                      const AllocationCreateInfo* pAllocationCreateInfo,
                                                                                                      uint32_t* pMemoryTypeIndex) const {
@@ -117,6 +136,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFindMemoryTypeIndexForBufferInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type Allocator::findMemoryTypeIndexForBufferInfo(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
                                                                                                                                                     const AllocationCreateInfo& allocationCreateInfo) const {
     uint32_t memoryTypeIndex;
@@ -126,6 +146,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, memoryTypeIndex);
   }
 #endif
+  // wrapper function for command vmaFindMemoryTypeIndexForBufferInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::findMemoryTypeIndexForBufferInfo(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
                                                                                                                   const AllocationCreateInfo* pAllocationCreateInfo,
                                                                                                                   uint32_t* pMemoryTypeIndex) const {
@@ -134,6 +155,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFindMemoryTypeIndexForImageInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<uint32_t>::type Allocator::findMemoryTypeIndexForImageInfo(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                                                                                                                                                    const AllocationCreateInfo& allocationCreateInfo) const {
     uint32_t memoryTypeIndex;
@@ -143,6 +165,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, memoryTypeIndex);
   }
 #endif
+  // wrapper function for command vmaFindMemoryTypeIndexForImageInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::findMemoryTypeIndexForImageInfo(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
                                                                                                                  const AllocationCreateInfo* pAllocationCreateInfo,
                                                                                                                  uint32_t* pMemoryTypeIndex) const {
@@ -151,6 +174,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreatePool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Pool>::type Allocator::createPool(const PoolCreateInfo& createInfo) const {
     Pool pool;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreatePool(m_allocator, reinterpret_cast<const VmaPoolCreateInfo*>(&createInfo), reinterpret_cast<VmaPool*>(&pool)) );
@@ -158,6 +182,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pool);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreatePool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniquePool>::type Allocator::createPoolUnique(const PoolCreateInfo& createInfo) const {
     Pool pool;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreatePool(m_allocator, reinterpret_cast<const VmaPoolCreateInfo*>(&createInfo), reinterpret_cast<VmaPool*>(&pool)) );
@@ -167,6 +192,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreatePool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createPool(const PoolCreateInfo* pCreateInfo,
                                                                                             Pool* pPool) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreatePool(m_allocator, reinterpret_cast<const VmaPoolCreateInfo*>(pCreateInfo), reinterpret_cast<VmaPool*>(pPool)) );
@@ -174,56 +200,66 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyPool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroyPool(Pool pool) const {
     vmaDestroyPool(m_allocator, static_cast<VmaPool>(pool));
   }
 #else
+  // wrapper function for command vmaDestroyPool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroyPool(Pool pool) const {
     vmaDestroyPool(m_allocator, static_cast<VmaPool>(pool));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyPool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy(Pool pool) const {
     vmaDestroyPool(m_allocator, static_cast<VmaPool>(pool));
   }
 #else
+  // wrapper function for command vmaDestroyPool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy(Pool pool) const {
     vmaDestroyPool(m_allocator, static_cast<VmaPool>(pool));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetPoolStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE Statistics Allocator::getPoolStatistics(Pool pool) const {
     Statistics poolStats;
     vmaGetPoolStatistics(m_allocator, static_cast<VmaPool>(pool), reinterpret_cast<VmaStatistics*>(&poolStats));
     return poolStats;
   }
 #endif
+  // wrapper function for command vmaGetPoolStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getPoolStatistics(Pool pool,
                                                       Statistics* pPoolStats) const {
     vmaGetPoolStatistics(m_allocator, static_cast<VmaPool>(pool), reinterpret_cast<VmaStatistics*>(pPoolStats));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCalculatePoolStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE DetailedStatistics Allocator::calculatePoolStatistics(Pool pool) const {
     DetailedStatistics poolStats;
     vmaCalculatePoolStatistics(m_allocator, static_cast<VmaPool>(pool), reinterpret_cast<VmaDetailedStatistics*>(&poolStats));
     return poolStats;
   }
 #endif
+  // wrapper function for command vmaCalculatePoolStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::calculatePoolStatistics(Pool pool,
                                                             DetailedStatistics* pPoolStats) const {
     vmaCalculatePoolStatistics(m_allocator, static_cast<VmaPool>(pool), reinterpret_cast<VmaDetailedStatistics*>(pPoolStats));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCheckPoolCorruption, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::checkPoolCorruption(Pool pool) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCheckPoolCorruption(m_allocator, static_cast<VmaPool>(pool)) );
     VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::checkPoolCorruption");
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaCheckPoolCorruption, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::checkPoolCorruption(Pool pool) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCheckPoolCorruption(m_allocator, static_cast<VmaPool>(pool)) );
     return result;
@@ -231,23 +267,27 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetPoolName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE const char* Allocator::getPoolName(Pool pool) const {
     const char* pName;
     vmaGetPoolName(m_allocator, static_cast<VmaPool>(pool), &pName);
     return pName;
   }
 #endif
+  // wrapper function for command vmaGetPoolName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getPoolName(Pool pool,
                                                 const char** ppName) const {
     vmaGetPoolName(m_allocator, static_cast<VmaPool>(pool), ppName);
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaSetPoolName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setPoolName(Pool pool,
                                                 const char* name) const {
     vmaSetPoolName(m_allocator, static_cast<VmaPool>(pool), name);
   }
 #else
+  // wrapper function for command vmaSetPoolName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setPoolName(Pool pool,
                                                 const char* pName) const {
     vmaSetPoolName(m_allocator, static_cast<VmaPool>(pool), pName);
@@ -255,6 +295,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaAllocateMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type Allocator::allocateMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
                                                                                                                                     const AllocationCreateInfo& createInfo,
                                                                                                                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -264,6 +305,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocation);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaAllocateMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type Allocator::allocateMemoryUnique(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
                                                                                                                                                 const AllocationCreateInfo& createInfo,
                                                                                                                                                 VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -275,6 +317,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaAllocateMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::allocateMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements* pVkMemoryRequirements,
                                                                                                 const AllocationCreateInfo* pCreateInfo,
                                                                                                 Allocation* pAllocation,
@@ -284,6 +327,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename AllocationAllocator>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, AllocationAllocator>>::type Allocator::allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
                                                                                                                                                                            VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> const & createInfo,
@@ -303,6 +347,7 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::allocateMemoryPages");
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocations);
   }
+  // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename AllocationAllocator,
             typename std::enable_if<std::is_same<typename AllocationAllocator::value_type, Allocation>::value, int>::type>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, AllocationAllocator>>::type Allocator::allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
@@ -325,6 +370,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocations);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename AllocationAllocator>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<UniqueAllocation, AllocationAllocator>>::type Allocator::allocateMemoryPagesUnique(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
                                                                                                                                                                                        VULKAN_HPP_NAMESPACE::ArrayProxy<const AllocationCreateInfo> const & createInfo,
@@ -347,6 +393,7 @@ namespace VMA_HPP_NAMESPACE {
     for (auto const& t : allocations) allocationsUnique.emplace_back(t, *this);
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, std::move(allocationsUnique));
   }
+  // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename AllocationAllocator,
             typename std::enable_if<std::is_same<typename AllocationAllocator::value_type, UniqueAllocation>::value, int>::type>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<UniqueAllocation, AllocationAllocator>>::type Allocator::allocateMemoryPagesUnique(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
@@ -373,6 +420,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::allocateMemoryPages(const VULKAN_HPP_NAMESPACE::MemoryRequirements* pVkMemoryRequirements,
                                                                                                      const AllocationCreateInfo* pCreateInfo,
                                                                                                      size_t allocationCount,
@@ -383,6 +431,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type Allocator::allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                                                                                                                              const AllocationCreateInfo& createInfo,
                                                                                                                                              VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -392,6 +441,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocation);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type Allocator::allocateMemoryForBufferUnique(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                                                                                                                                          const AllocationCreateInfo& createInfo,
                                                                                                                                                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -403,6 +453,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                                                                                          const AllocationCreateInfo* pCreateInfo,
                                                                                                          Allocation* pAllocation,
@@ -412,6 +463,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type Allocator::allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
                                                                                                                                             const AllocationCreateInfo& createInfo,
                                                                                                                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -421,6 +473,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocation);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type Allocator::allocateMemoryForImageUnique(VULKAN_HPP_NAMESPACE::Image image,
                                                                                                                                                         const AllocationCreateInfo& createInfo,
                                                                                                                                                         VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -432,6 +485,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
                                                                                                         const AllocationCreateInfo* pCreateInfo,
                                                                                                         Allocation* pAllocation,
@@ -441,77 +495,91 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::freeMemory(Allocation allocation) const {
     vmaFreeMemory(m_allocator, static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaFreeMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::freeMemory(Allocation allocation) const {
     vmaFreeMemory(m_allocator, static_cast<VmaAllocation>(allocation));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (Allocator::free)(Allocation allocation) const {
     vmaFreeMemory(m_allocator, static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaFreeMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (Allocator::free)(Allocation allocation) const {
     vmaFreeMemory(m_allocator, static_cast<VmaAllocation>(allocation));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::freeMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const {
     size_t allocationCount = allocations.size();
     vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(allocations.data()));
   }
 #endif
+  // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::freeMemoryPages(size_t allocationCount,
                                                     const Allocation* pAllocations) const {
     vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(pAllocations));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (Allocator::free)(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations) const {
     size_t allocationCount = allocations.size();
     vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(allocations.data()));
   }
 #endif
+  // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (Allocator::free)(size_t allocationCount,
                                            const Allocation* pAllocations) const {
     vmaFreeMemoryPages(m_allocator, allocationCount, reinterpret_cast<const VmaAllocation*>(pAllocations));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE AllocationInfo Allocator::getAllocationInfo(Allocation allocation) const {
     AllocationInfo allocationInfo;
     vmaGetAllocationInfo(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VmaAllocationInfo*>(&allocationInfo));
     return allocationInfo;
   }
 #endif
+  // wrapper function for command vmaGetAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getAllocationInfo(Allocation allocation,
                                                       AllocationInfo* pAllocationInfo) const {
     vmaGetAllocationInfo(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VmaAllocationInfo*>(pAllocationInfo));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetAllocationInfo2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE AllocationInfo2 Allocator::getAllocationInfo2(Allocation allocation) const {
     AllocationInfo2 allocationInfo;
     vmaGetAllocationInfo2(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VmaAllocationInfo2*>(&allocationInfo));
     return allocationInfo;
   }
 #endif
+  // wrapper function for command vmaGetAllocationInfo2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getAllocationInfo2(Allocation allocation,
                                                        AllocationInfo2* pAllocationInfo) const {
     vmaGetAllocationInfo2(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VmaAllocationInfo2*>(pAllocationInfo));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaSetAllocationUserData, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setAllocationUserData(Allocation allocation,
                                                           void* userData) const {
     vmaSetAllocationUserData(m_allocator, static_cast<VmaAllocation>(allocation), userData);
   }
 #else
+  // wrapper function for command vmaSetAllocationUserData, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setAllocationUserData(Allocation allocation,
                                                           void* pUserData) const {
     vmaSetAllocationUserData(m_allocator, static_cast<VmaAllocation>(allocation), pUserData);
@@ -519,11 +587,13 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaSetAllocationName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setAllocationName(Allocation allocation,
                                                       const char* name) const {
     vmaSetAllocationName(m_allocator, static_cast<VmaAllocation>(allocation), name);
   }
 #else
+  // wrapper function for command vmaSetAllocationName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::setAllocationName(Allocation allocation,
                                                       const char* pName) const {
     vmaSetAllocationName(m_allocator, static_cast<VmaAllocation>(allocation), pName);
@@ -531,12 +601,14 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetAllocationMemoryProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::MemoryPropertyFlags Allocator::getAllocationMemoryProperties(Allocation allocation) const {
     VULKAN_HPP_NAMESPACE::MemoryPropertyFlags flags;
     vmaGetAllocationMemoryProperties(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VkMemoryPropertyFlags*>(&flags));
     return flags;
   }
 #endif
+  // wrapper function for command vmaGetAllocationMemoryProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::getAllocationMemoryProperties(Allocation allocation,
                                                                   VULKAN_HPP_NAMESPACE::MemoryPropertyFlags* pFlags) const {
     vmaGetAllocationMemoryProperties(m_allocator, static_cast<VmaAllocation>(allocation), reinterpret_cast<VkMemoryPropertyFlags*>(pFlags));
@@ -544,6 +616,7 @@ namespace VMA_HPP_NAMESPACE {
 
 #if VMA_EXTERNAL_MEMORY_WIN32
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetMemoryWin32Handle, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<HANDLE>::type Allocator::getMemoryWin32Handle(Allocation allocation,
                                                                                                                                       HANDLE hTargetProcess) const {
     HANDLE handle;
@@ -552,6 +625,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, handle);
   }
 #endif
+  // wrapper function for command vmaGetMemoryWin32Handle, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::getMemoryWin32Handle(Allocation allocation,
                                                                                                       HANDLE hTargetProcess,
                                                                                                       HANDLE* pHandle) const {
@@ -561,6 +635,7 @@ namespace VMA_HPP_NAMESPACE {
 
 #endif 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaMapMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void*>::type Allocator::mapMemory(Allocation allocation) const {
     void* pData;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaMapMemory(m_allocator, static_cast<VmaAllocation>(allocation), &pData) );
@@ -568,6 +643,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pData);
   }
 #endif
+  // wrapper function for command vmaMapMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::mapMemory(Allocation allocation,
                                                                                            void** ppData) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaMapMemory(m_allocator, static_cast<VmaAllocation>(allocation), ppData) );
@@ -575,16 +651,19 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaUnmapMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::unmapMemory(Allocation allocation) const {
     vmaUnmapMemory(m_allocator, static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaUnmapMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::unmapMemory(Allocation allocation) const {
     vmaUnmapMemory(m_allocator, static_cast<VmaAllocation>(allocation));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFlushAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::flushAllocation(Allocation allocation,
                                                                                                                                                   VULKAN_HPP_NAMESPACE::DeviceSize offset,
                                                                                                                                                   VULKAN_HPP_NAMESPACE::DeviceSize size) const {
@@ -593,6 +672,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaFlushAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::flushAllocation(Allocation allocation,
                                                                                                  VULKAN_HPP_NAMESPACE::DeviceSize offset,
                                                                                                  VULKAN_HPP_NAMESPACE::DeviceSize size) const {
@@ -602,6 +682,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaInvalidateAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::invalidateAllocation(Allocation allocation,
                                                                                                                                                        VULKAN_HPP_NAMESPACE::DeviceSize offset,
                                                                                                                                                        VULKAN_HPP_NAMESPACE::DeviceSize size) const {
@@ -610,6 +691,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaInvalidateAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::invalidateAllocation(Allocation allocation,
                                                                                                       VULKAN_HPP_NAMESPACE::DeviceSize offset,
                                                                                                       VULKAN_HPP_NAMESPACE::DeviceSize size) const {
@@ -619,6 +701,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFlushAllocations, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::flushAllocations(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations,
                                                                                                                                                    VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & offsets,
                                                                                                                                                    VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & sizes) const {
@@ -637,6 +720,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #endif
+  // wrapper function for command vmaFlushAllocations, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::flushAllocations(uint32_t allocationCount,
                                                                                                   const Allocation* allocations,
                                                                                                   const VULKAN_HPP_NAMESPACE::DeviceSize* offsets,
@@ -646,6 +730,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaInvalidateAllocations, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::invalidateAllocations(VULKAN_HPP_NAMESPACE::ArrayProxy<const Allocation> const & allocations,
                                                                                                                                                         VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & offsets,
                                                                                                                                                         VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::DeviceSize> const & sizes) const {
@@ -664,6 +749,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #endif
+  // wrapper function for command vmaInvalidateAllocations, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::invalidateAllocations(uint32_t allocationCount,
                                                                                                        const Allocation* allocations,
                                                                                                        const VULKAN_HPP_NAMESPACE::DeviceSize* offsets,
@@ -673,6 +759,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCopyMemoryToAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::copyMemoryToAllocation(const void* srcHostPointer,
                                                                                                                                                          Allocation dstAllocation,
                                                                                                                                                          VULKAN_HPP_NAMESPACE::DeviceSize dstAllocationLocalOffset,
@@ -682,6 +769,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaCopyMemoryToAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::copyMemoryToAllocation(const void* pSrcHostPointer,
                                                                                                         Allocation dstAllocation,
                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize dstAllocationLocalOffset,
@@ -692,6 +780,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCopyAllocationToMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::copyAllocationToMemory(Allocation srcAllocation,
                                                                                                                                                          VULKAN_HPP_NAMESPACE::DeviceSize srcAllocationLocalOffset,
                                                                                                                                                          void* dstHostPointer,
@@ -701,6 +790,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaCopyAllocationToMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::copyAllocationToMemory(Allocation srcAllocation,
                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize srcAllocationLocalOffset,
                                                                                                         void* pDstHostPointer,
@@ -711,12 +801,14 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCheckCorruption, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::checkCorruption(uint32_t memoryTypeBits) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCheckCorruption(m_allocator, memoryTypeBits) );
     VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::checkCorruption");
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaCheckCorruption, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::checkCorruption(uint32_t memoryTypeBits) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCheckCorruption(m_allocator, memoryTypeBits) );
     return result;
@@ -724,6 +816,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBeginDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationContext>::type Allocator::beginDefragmentation(const DefragmentationInfo& info) const {
     DefragmentationContext context;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBeginDefragmentation(m_allocator, reinterpret_cast<const VmaDefragmentationInfo*>(&info), reinterpret_cast<VmaDefragmentationContext*>(&context)) );
@@ -731,6 +824,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, context);
   }
 #endif
+  // wrapper function for command vmaBeginDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::beginDefragmentation(const DefragmentationInfo* pInfo,
                                                                                                       DefragmentationContext* pContext) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBeginDefragmentation(m_allocator, reinterpret_cast<const VmaDefragmentationInfo*>(pInfo), reinterpret_cast<VmaDefragmentationContext*>(pContext)) );
@@ -738,17 +832,20 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaEndDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::endDefragmentation(DefragmentationContext context,
                                                        VULKAN_HPP_NAMESPACE::Optional<DefragmentationStats> stats) const {
     vmaEndDefragmentation(m_allocator, static_cast<VmaDefragmentationContext>(context), reinterpret_cast<VmaDefragmentationStats*>(static_cast<DefragmentationStats*>(stats)));
   }
 #endif
+  // wrapper function for command vmaEndDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::endDefragmentation(DefragmentationContext context,
                                                        DefragmentationStats* pStats) const {
     vmaEndDefragmentation(m_allocator, static_cast<VmaDefragmentationContext>(context), reinterpret_cast<VmaDefragmentationStats*>(pStats));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBeginDefragmentationPass, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo> Allocator::beginDefragmentationPass(DefragmentationContext context) const {
     DefragmentationPassMoveInfo passInfo;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBeginDefragmentationPass(m_allocator, static_cast<VmaDefragmentationContext>(context), reinterpret_cast<VmaDefragmentationPassMoveInfo*>(&passInfo)) );
@@ -756,6 +853,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo>(result, passInfo);
   }
 #endif
+  // wrapper function for command vmaBeginDefragmentationPass, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::beginDefragmentationPass(DefragmentationContext context,
                                                                                                           DefragmentationPassMoveInfo* pPassInfo) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBeginDefragmentationPass(m_allocator, static_cast<VmaDefragmentationContext>(context), reinterpret_cast<VmaDefragmentationPassMoveInfo*>(pPassInfo)) );
@@ -763,6 +861,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaEndDefragmentationPass, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo> Allocator::endDefragmentationPass(DefragmentationContext context) const {
     DefragmentationPassMoveInfo passInfo;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaEndDefragmentationPass(m_allocator, static_cast<VmaDefragmentationContext>(context), reinterpret_cast<VmaDefragmentationPassMoveInfo*>(&passInfo)) );
@@ -770,6 +869,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo>(result, passInfo);
   }
 #endif
+  // wrapper function for command vmaEndDefragmentationPass, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::endDefragmentationPass(DefragmentationContext context,
                                                                                                         DefragmentationPassMoveInfo* pPassInfo) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaEndDefragmentationPass(m_allocator, static_cast<VmaDefragmentationContext>(context), reinterpret_cast<VmaDefragmentationPassMoveInfo*>(pPassInfo)) );
@@ -777,6 +877,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBindBufferMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::bindBufferMemory(Allocation allocation,
                                                                                                                                                    VULKAN_HPP_NAMESPACE::Buffer buffer) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBindBufferMemory(m_allocator, static_cast<VmaAllocation>(allocation), static_cast<VkBuffer>(buffer)) );
@@ -784,6 +885,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaBindBufferMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::bindBufferMemory(Allocation allocation,
                                                                                                   VULKAN_HPP_NAMESPACE::Buffer buffer) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBindBufferMemory(m_allocator, static_cast<VmaAllocation>(allocation), static_cast<VkBuffer>(buffer)) );
@@ -792,6 +894,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::bindBufferMemory2(Allocation allocation,
                                                                                                                                                     VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                     VULKAN_HPP_NAMESPACE::Buffer buffer,
@@ -801,6 +904,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::bindBufferMemory2(Allocation allocation,
                                                                                                    VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                    VULKAN_HPP_NAMESPACE::Buffer buffer,
@@ -811,6 +915,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::bindImageMemory(Allocation allocation,
                                                                                                                                                   VULKAN_HPP_NAMESPACE::Image image) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBindImageMemory(m_allocator, static_cast<VmaAllocation>(allocation), static_cast<VkImage>(image)) );
@@ -818,6 +923,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::bindImageMemory(Allocation allocation,
                                                                                                  VULKAN_HPP_NAMESPACE::Image image) const {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaBindImageMemory(m_allocator, static_cast<VmaAllocation>(allocation), static_cast<VkImage>(image)) );
@@ -826,6 +932,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocator::bindImageMemory2(Allocation allocation,
                                                                                                                                                    VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                    VULKAN_HPP_NAMESPACE::Image image,
@@ -835,6 +942,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result);
   }
 #else
+  // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::bindImageMemory2(Allocation allocation,
                                                                                                   VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                   VULKAN_HPP_NAMESPACE::Image image,
@@ -845,6 +953,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type Allocator::createBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
                                                                                                                                                                            const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                            VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -856,6 +965,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pair);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type Allocator::createBufferUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
                                                                                                                                                                        const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                        VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -872,6 +982,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
                                                                                               const AllocationCreateInfo* pAllocationCreateInfo,
                                                                                               VULKAN_HPP_NAMESPACE::Buffer* pBuffer,
@@ -882,6 +993,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateBufferWithAlignment, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type Allocator::createBufferWithAlignment(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
                                                                                                                                                                                         const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
@@ -894,6 +1006,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pair);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateBufferWithAlignment, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type Allocator::createBufferWithAlignmentUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
                                                                                                                                                                                     const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                                     VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
@@ -911,6 +1024,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateBufferWithAlignment, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createBufferWithAlignment(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
                                                                                                            const AllocationCreateInfo* pAllocationCreateInfo,
                                                                                                            VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
@@ -922,6 +1036,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type Allocator::createAliasingBuffer(Allocation allocation,
                                                                                                                                                             const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const {
     VULKAN_HPP_NAMESPACE::Buffer buffer;
@@ -930,6 +1045,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, buffer);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueBuffer>::type Allocator::createAliasingBufferUnique(Allocation allocation,
                                                                                                                                                   const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const {
     VULKAN_HPP_NAMESPACE::Buffer buffer;
@@ -940,6 +1056,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createAliasingBuffer(Allocation allocation,
                                                                                                       const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
                                                                                                       VULKAN_HPP_NAMESPACE::Buffer* pBuffer) const {
@@ -948,6 +1065,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type Allocator::createAliasingBuffer2(Allocation allocation,
                                                                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                              const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const {
@@ -957,6 +1075,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, buffer);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueBuffer>::type Allocator::createAliasingBuffer2Unique(Allocation allocation,
                                                                                                                                                    VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                    const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const {
@@ -968,6 +1087,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createAliasingBuffer2(Allocation allocation,
                                                                                                        VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                        const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
@@ -977,11 +1097,13 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroyBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                                   Allocation allocation) const {
     vmaDestroyBuffer(m_allocator, static_cast<VkBuffer>(buffer), static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaDestroyBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroyBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                                   Allocation allocation) const {
     vmaDestroyBuffer(m_allocator, static_cast<VkBuffer>(buffer), static_cast<VmaAllocation>(allocation));
@@ -989,11 +1111,13 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                             Allocation allocation) const {
     vmaDestroyBuffer(m_allocator, static_cast<VkBuffer>(buffer), static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaDestroyBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Buffer buffer,
                                             Allocation allocation) const {
     vmaDestroyBuffer(m_allocator, static_cast<VkBuffer>(buffer), static_cast<VmaAllocation>(allocation));
@@ -1001,6 +1125,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image>>::type Allocator::createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                                                                                                                                                                          const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -1012,6 +1137,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pair);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueImage>>::type Allocator::createImageUnique(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                                                                                                                                                                      const AllocationCreateInfo& allocationCreateInfo,
                                                                                                                                                                      VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) const {
@@ -1028,6 +1154,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
                                                                                              const AllocationCreateInfo* pAllocationCreateInfo,
                                                                                              VULKAN_HPP_NAMESPACE::Image* pImage,
@@ -1038,6 +1165,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Image>::type Allocator::createAliasingImage(Allocation allocation,
                                                                                                                                                           const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const {
     VULKAN_HPP_NAMESPACE::Image image;
@@ -1046,6 +1174,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, image);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueImage>::type Allocator::createAliasingImageUnique(Allocation allocation,
                                                                                                                                                 const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const {
     VULKAN_HPP_NAMESPACE::Image image;
@@ -1056,6 +1185,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createAliasingImage(Allocation allocation,
                                                                                                      const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
                                                                                                      VULKAN_HPP_NAMESPACE::Image* pImage) const {
@@ -1064,6 +1194,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Image>::type Allocator::createAliasingImage2(Allocation allocation,
                                                                                                                                                            VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                            const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const {
@@ -1073,6 +1204,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, image);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueImage>::type Allocator::createAliasingImage2Unique(Allocation allocation,
                                                                                                                                                  VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                  const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const {
@@ -1084,6 +1216,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createAliasingImage2(Allocation allocation,
                                                                                                       VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                       const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
@@ -1093,11 +1226,13 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroyImage(VULKAN_HPP_NAMESPACE::Image image,
                                                  Allocation allocation) const {
     vmaDestroyImage(m_allocator, static_cast<VkImage>(image), static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaDestroyImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroyImage(VULKAN_HPP_NAMESPACE::Image image,
                                                  Allocation allocation) const {
     vmaDestroyImage(m_allocator, static_cast<VkImage>(image), static_cast<VmaAllocation>(allocation));
@@ -1105,11 +1240,13 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Image image,
                                             Allocation allocation) const {
     vmaDestroyImage(m_allocator, static_cast<VkImage>(image), static_cast<VmaAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaDestroyImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::destroy(VULKAN_HPP_NAMESPACE::Image image,
                                             Allocation allocation) const {
     vmaDestroyImage(m_allocator, static_cast<VkImage>(image), static_cast<VmaAllocation>(allocation));
@@ -1118,32 +1255,38 @@ namespace VMA_HPP_NAMESPACE {
 
 #if VMA_STATS_STRING_ENABLED
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBuildStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE char* Allocator::buildStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
     char* pStatsString;
     vmaBuildStatsString(m_allocator, &pStatsString, static_cast<VkBool32>(detailedMap));
     return pStatsString;
   }
 #endif
+  // wrapper function for command vmaBuildStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::buildStatsString(char** ppStatsString,
                                                      VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
     vmaBuildStatsString(m_allocator, ppStatsString, static_cast<VkBool32>(detailedMap));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::freeStatsString(char* statsString) const {
     vmaFreeStatsString(m_allocator, statsString);
   }
 #else
+  // wrapper function for command vmaFreeStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void Allocator::freeStatsString(char* pStatsString) const {
     vmaFreeStatsString(m_allocator, pStatsString);
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (Allocator::free)(char* statsString) const {
     vmaFreeStatsString(m_allocator, statsString);
   }
 #else
+  // wrapper function for command vmaFreeStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (Allocator::free)(char* pStatsString) const {
     vmaFreeStatsString(m_allocator, pStatsString);
   }
@@ -1151,21 +1294,25 @@ namespace VMA_HPP_NAMESPACE {
 #endif 
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaDestroyVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
     vmaDestroyVirtualBlock(m_virtualBlock);
   }
 #else
+  // wrapper function for command vmaDestroyVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::destroy() const {
     vmaDestroyVirtualBlock(m_virtualBlock);
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaIsVirtualBlockEmpty, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Bool32 VirtualBlock::isVirtualBlockEmpty() const {
     VULKAN_HPP_NAMESPACE::Bool32 result = static_cast<VULKAN_HPP_NAMESPACE::Bool32>( vmaIsVirtualBlockEmpty(m_virtualBlock) );
     return result;
   }
 #else
+  // wrapper function for command vmaIsVirtualBlockEmpty, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Bool32 VirtualBlock::isVirtualBlockEmpty() const {
     VULKAN_HPP_NAMESPACE::Bool32 result = static_cast<VULKAN_HPP_NAMESPACE::Bool32>( vmaIsVirtualBlockEmpty(m_virtualBlock) );
     return result;
@@ -1173,18 +1320,21 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetVirtualAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VirtualAllocationInfo VirtualBlock::getVirtualAllocationInfo(VirtualAllocation allocation) const {
     VirtualAllocationInfo virtualAllocInfo;
     vmaGetVirtualAllocationInfo(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), reinterpret_cast<VmaVirtualAllocationInfo*>(&virtualAllocInfo));
     return virtualAllocInfo;
   }
 #endif
+  // wrapper function for command vmaGetVirtualAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::getVirtualAllocationInfo(VirtualAllocation allocation,
                                                                 VirtualAllocationInfo* pVirtualAllocInfo) const {
     vmaGetVirtualAllocationInfo(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), reinterpret_cast<VmaVirtualAllocationInfo*>(pVirtualAllocInfo));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaVirtualAllocate, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualAllocation>::type VirtualBlock::virtualAllocate(const VirtualAllocationCreateInfo& createInfo,
                                                                                                                                                VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) const {
     VirtualAllocation allocation;
@@ -1193,6 +1343,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocation);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaVirtualAllocate, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualAllocation>::type VirtualBlock::virtualAllocateUnique(const VirtualAllocationCreateInfo& createInfo,
                                                                                                                                                            VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) const {
     VirtualAllocation allocation;
@@ -1203,6 +1354,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaVirtualAllocate, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result VirtualBlock::virtualAllocate(const VirtualAllocationCreateInfo* pCreateInfo,
                                                                                                     VirtualAllocation* pAllocation,
                                                                                                     VULKAN_HPP_NAMESPACE::DeviceSize* pOffset) const {
@@ -1211,41 +1363,49 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaVirtualFree, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::virtualFree(VirtualAllocation allocation) const {
     vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaVirtualFree, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::virtualFree(VirtualAllocation allocation) const {
     vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaVirtualFree, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (VirtualBlock::free)(VirtualAllocation allocation) const {
     vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
   }
 #else
+  // wrapper function for command vmaVirtualFree, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (VirtualBlock::free)(VirtualAllocation allocation) const {
     vmaVirtualFree(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation));
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaClearVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
     vmaClearVirtualBlock(m_virtualBlock);
   }
 #else
+  // wrapper function for command vmaClearVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::clearVirtualBlock() const {
     vmaClearVirtualBlock(m_virtualBlock);
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaSetVirtualAllocationUserData, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::setVirtualAllocationUserData(VirtualAllocation allocation,
                                                                     void* userData) const {
     vmaSetVirtualAllocationUserData(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), userData);
   }
 #else
+  // wrapper function for command vmaSetVirtualAllocationUserData, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::setVirtualAllocationUserData(VirtualAllocation allocation,
                                                                     void* pUserData) const {
     vmaSetVirtualAllocationUserData(m_virtualBlock, static_cast<VmaVirtualAllocation>(allocation), pUserData);
@@ -1253,55 +1413,65 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetVirtualBlockStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE Statistics VirtualBlock::getVirtualBlockStatistics() const {
     Statistics stats;
     vmaGetVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaStatistics*>(&stats));
     return stats;
   }
 #endif
+  // wrapper function for command vmaGetVirtualBlockStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::getVirtualBlockStatistics(Statistics* pStats) const {
     vmaGetVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaStatistics*>(pStats));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCalculateVirtualBlockStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE DetailedStatistics VirtualBlock::calculateVirtualBlockStatistics() const {
     DetailedStatistics stats;
     vmaCalculateVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaDetailedStatistics*>(&stats));
     return stats;
   }
 #endif
+  // wrapper function for command vmaCalculateVirtualBlockStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::calculateVirtualBlockStatistics(DetailedStatistics* pStats) const {
     vmaCalculateVirtualBlockStatistics(m_virtualBlock, reinterpret_cast<VmaDetailedStatistics*>(pStats));
   }
 
 #if VMA_STATS_STRING_ENABLED
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaBuildVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE char* VirtualBlock::buildVirtualBlockStatsString(VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
     char* pStatsString;
     vmaBuildVirtualBlockStatsString(m_virtualBlock, &pStatsString, static_cast<VkBool32>(detailedMap));
     return pStatsString;
   }
 #endif
+  // wrapper function for command vmaBuildVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::buildVirtualBlockStatsString(char** ppStatsString,
                                                                     VULKAN_HPP_NAMESPACE::Bool32 detailedMap) const {
     vmaBuildVirtualBlockStatsString(m_virtualBlock, ppStatsString, static_cast<VkBool32>(detailedMap));
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* statsString) const {
     vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
   }
 #else
+  // wrapper function for command vmaFreeVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void VirtualBlock::freeVirtualBlockStatsString(char* pStatsString) const {
     vmaFreeVirtualBlockStatsString(m_virtualBlock, pStatsString);
   }
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaFreeVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (VirtualBlock::free)(char* statsString) const {
     vmaFreeVirtualBlockStatsString(m_virtualBlock, statsString);
   }
 #else
+  // wrapper function for command vmaFreeVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_INLINE void (VirtualBlock::free)(char* pStatsString) const {
     vmaFreeVirtualBlockStatsString(m_virtualBlock, pStatsString);
   }
@@ -1310,6 +1480,7 @@ namespace VMA_HPP_NAMESPACE {
 
 #ifdef VOLK_HEADER_VERSION
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaImportVulkanFunctionsFromVolk, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VulkanFunctions>::type importVulkanFunctionsFromVolk(const AllocatorCreateInfo& allocatorCreateInfo) {
     VulkanFunctions dstVulkanFunctions;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaImportVulkanFunctionsFromVolk(reinterpret_cast<const VmaAllocatorCreateInfo*>(&allocatorCreateInfo), reinterpret_cast<VmaVulkanFunctions*>(&dstVulkanFunctions)) );
@@ -1317,6 +1488,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, dstVulkanFunctions);
   }
 #endif
+  // wrapper function for command vmaImportVulkanFunctionsFromVolk, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result importVulkanFunctionsFromVolk(const AllocatorCreateInfo* pAllocatorCreateInfo,
                                                                                                     VulkanFunctions* pDstVulkanFunctions) {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaImportVulkanFunctionsFromVolk(reinterpret_cast<const VmaAllocatorCreateInfo*>(pAllocatorCreateInfo), reinterpret_cast<VmaVulkanFunctions*>(pDstVulkanFunctions)) );
@@ -1325,6 +1497,7 @@ namespace VMA_HPP_NAMESPACE {
 
 #endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type createAllocator(const AllocatorCreateInfo& createInfo) {
     Allocator allocator;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateAllocator(reinterpret_cast<const VmaAllocatorCreateInfo*>(&createInfo), reinterpret_cast<VmaAllocator*>(&allocator)) );
@@ -1332,6 +1505,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocator);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocator>::type createAllocatorUnique(const AllocatorCreateInfo& createInfo) {
     Allocator allocator;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateAllocator(reinterpret_cast<const VmaAllocatorCreateInfo*>(&createInfo), reinterpret_cast<VmaAllocator*>(&allocator)) );
@@ -1341,6 +1515,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result createAllocator(const AllocatorCreateInfo* pCreateInfo,
                                                                                       Allocator* pAllocator) {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateAllocator(reinterpret_cast<const VmaAllocatorCreateInfo*>(pCreateInfo), reinterpret_cast<VmaAllocator*>(pAllocator)) );
@@ -1348,6 +1523,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VirtualBlock>::type createVirtualBlock(const VirtualBlockCreateInfo& createInfo) {
     VirtualBlock virtualBlock;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateVirtualBlock(reinterpret_cast<const VmaVirtualBlockCreateInfo*>(&createInfo), reinterpret_cast<VmaVirtualBlock*>(&virtualBlock)) );
@@ -1355,6 +1531,7 @@ namespace VMA_HPP_NAMESPACE {
     return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, virtualBlock);
   }
 #ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueVirtualBlock>::type createVirtualBlockUnique(const VirtualBlockCreateInfo& createInfo) {
     VirtualBlock virtualBlock;
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateVirtualBlock(reinterpret_cast<const VmaVirtualBlockCreateInfo*>(&createInfo), reinterpret_cast<VmaVirtualBlock*>(&virtualBlock)) );
@@ -1364,6 +1541,7 @@ namespace VMA_HPP_NAMESPACE {
   }
 #endif
 #endif
+  // wrapper function for command vmaCreateVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result createVirtualBlock(const VirtualBlockCreateInfo* pCreateInfo,
                                                                                          VirtualBlock* pVirtualBlock) {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateVirtualBlock(reinterpret_cast<const VmaVirtualBlockCreateInfo*>(pCreateInfo), reinterpret_cast<VmaVirtualBlock*>(pVirtualBlock)) );

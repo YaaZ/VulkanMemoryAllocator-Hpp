@@ -41,6 +41,15 @@ std::string_view trim(std::string_view string) {
 char capitalize(const char c, const bool upper) {
     return static_cast<char>(upper ? std::toupper(c) : std::tolower(c));
 }
+std::string docLink(const std::string_view& s) {
+    std::string result;
+    for (int i = 0; i < s.length(); ++i) {
+        const char c = capitalize(s[i], false);
+        if (i > 0 && c != s[i]) result += '_';
+        result += c;
+    }
+    return result;
+}
 
 template<class, class=void> struct HasStdGet : std::bool_constant<false> {};
 template<class T> struct HasStdGet<T, std::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::bool_constant<true> {};
@@ -640,8 +649,6 @@ Symbols generateEnums(const Source& source) {
 
         Segment::Vector<4> entryPieces;
         auto& [entries, entryToString, allFlags, flagsToString] = *entryPieces;
-        Segment declaration = name;
-        if (flagBits) declaration + " : Vma" + flagBits;
 
         const auto begin = match.position() + match.length();
         const auto body = source.substr(begin, source.find("}", begin) - begin);
@@ -680,11 +687,14 @@ Symbols generateEnums(const Source& source) {
         (content, toString) + nn + navigate(match);
 
         content + R"(
-        enum class $0 {
-          $1
+        // wrapper class for enum Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
+        enum class $0$1 {
+          $2
         };
-        )"_seg.replace(declaration, entries);
-        if (flagBits) content + "using " + flagBits + " = VULKAN_HPP_NAMESPACE::Flags<" + name + ">;";
+        )"_seg.replace(name, flagBits ? " : Vma"_seg + flagBits : ""_seg, entries);
+        if (flagBits) content + "// wrapper using for bitmask Vma" + flagBits +
+            ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html" +
+            n + "using " + flagBits + " = VULKAN_HPP_NAMESPACE::Flags<" + name + ">;";
 
         toString + R""(
         VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR_20 std::string to_string($0 value) {
@@ -857,11 +867,12 @@ Symbols generateStructs(const Source& source) {
         }
 
         content + nn + navigate(match) + R"(
+        // wrapper struct for struct Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$1.html
         struct $0 {
           using NativeType = Vma$0;
 
         #if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
-          $1
+          $2
 
           $0& operator=($0 const &) VULKAN_HPP_NOEXCEPT = default;
         #endif
@@ -872,7 +883,7 @@ Symbols generateStructs(const Source& source) {
           }
 
         #if !defined( VULKAN_HPP_NO_SETTERS ) && !defined( VULKAN_HPP_NO_STRUCT_SETTERS )
-          $2
+          $3
         #endif
 
           operator Vma$0 const &() const VULKAN_HPP_NOEXCEPT {
@@ -892,18 +903,18 @@ Symbols generateStructs(const Source& source) {
           }
 
         #if defined( VULKAN_HPP_USE_REFLECT )
-          std::tuple<$3>
+          std::tuple<$4>
           reflect() const VULKAN_HPP_NOEXCEPT {
-            return std::tie($4);
+            return std::tie($5);
           }
         #endif
 
-        $5
+        $6
 
         public:
-          $6
+          $7
         };
-        )"_seg.replace(name, constructors, setters, reflectTypes, reflectTie, comparison, fields);
+        )"_seg.replace(name, docLink(*name), constructors, setters, reflectTypes, reflectTie, comparison, fields);
     }
 
     R"(
@@ -1264,8 +1275,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 return i >= outputs.size() ? Token() :
                     variant & unique && outputs[i].uniqueType ? outputs[i].uniqueType : outputs[i]->prettyType;
             };
-            Segment result = method.ret;
-            result + " $0($3)"_seg;
+            Segment result = "// wrapper function for command "_seg + function.name +
+                ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html";
+            result + n + Segment(method.ret) + " $0($3)"_seg;
             if (handle) result + " const";
             if (variant & declaration) result + ";";
             else result + " {\n  $4\n}"_seg;
@@ -1351,6 +1363,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Generate handle class.
         Token memberName = h.name.capitalize(false);
         declarations + nn + navigate(h) + R"(
+        // wrapper class for handle Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$2.html
         class $0 {
         public:
           using CType      = Vma$0;
@@ -1400,12 +1413,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             return m_$1 == VK_NULL_HANDLE;
           }
 
-          $2
+          $3
 
         private:
           Vma$0 m_$1 = {};
         };
-        )"_seg.replace(h.name, memberName, h.methodDecl + navigate(h));
+        )"_seg.replace(h.name, memberName, docLink(*h.name), h.methodDecl + navigate(h));
         definitions + nn + std::move(h.methodDef + navigate(h));
     }
     declarations + nn + std::move(namespaceHandle.methodDecl);

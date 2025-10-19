@@ -4,6 +4,7 @@
 
 namespace VMA_HPP_NAMESPACE {
 
+  // wrapper struct for struct VmaDeviceMemoryCallbacks, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_device_memory_callbacks.html
   struct DeviceMemoryCallbacks {
     using NativeType = VmaDeviceMemoryCallbacks;
 
@@ -91,6 +92,7 @@ namespace VMA_HPP_NAMESPACE {
     void* pUserData = {};
   };
 
+  // wrapper struct for struct VmaVulkanFunctions, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_vulkan_functions.html
   struct VulkanFunctions {
     using NativeType = VmaVulkanFunctions;
 
@@ -534,6 +536,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
   };
 
+  // wrapper struct for struct VmaAllocatorCreateInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocator_create_info.html
   struct AllocatorCreateInfo {
     using NativeType = VmaAllocatorCreateInfo;
 
@@ -731,6 +734,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif 
   };
 
+  // wrapper struct for struct VmaAllocatorInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocator_info.html
   struct AllocatorInfo {
     using NativeType = VmaAllocatorInfo;
 
@@ -822,6 +826,7 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_NAMESPACE::Device device = {};
   };
 
+  // wrapper struct for struct VmaStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_statistics.html
   struct Statistics {
     using NativeType = VmaStatistics;
 
@@ -924,6 +929,7 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_NAMESPACE::DeviceSize allocationBytes = {};
   };
 
+  // wrapper struct for struct VmaDetailedStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_detailed_statistics.html
   struct DetailedStatistics {
     using NativeType = VmaDetailedStatistics;
 
@@ -1048,6 +1054,7 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_NAMESPACE::DeviceSize unusedRangeSizeMax = {};
   };
 
+  // wrapper struct for struct VmaTotalStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_total_statistics.html
   struct TotalStatistics {
     using NativeType = VmaTotalStatistics;
 
@@ -1139,6 +1146,7 @@ namespace VMA_HPP_NAMESPACE {
     DetailedStatistics total = {};
   };
 
+  // wrapper struct for struct VmaBudget, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_budget.html
   struct Budget {
     using NativeType = VmaBudget;
 
@@ -1230,6 +1238,7 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_NAMESPACE::DeviceSize budget = {};
   };
 
+  // wrapper struct for struct VmaAllocationCreateInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocation_create_info.html
   struct AllocationCreateInfo {
     using NativeType = VmaAllocationCreateInfo;
 
@@ -1376,6 +1385,7 @@ namespace VMA_HPP_NAMESPACE {
     float priority = {};
   };
 
+  // wrapper struct for struct VmaPoolCreateInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_pool_create_info.html
   struct PoolCreateInfo {
     using NativeType = VmaPoolCreateInfo;
 
@@ -1522,6 +1532,7 @@ namespace VMA_HPP_NAMESPACE {
     void* pMemoryAllocateNext = {};
   };
 
+  // wrapper struct for struct VmaAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocation_info.html
   struct AllocationInfo {
     using NativeType = VmaAllocationInfo;
 
@@ -1657,6 +1668,7 @@ namespace VMA_HPP_NAMESPACE {
     const char* pName = {};
   };
 
+  // wrapper struct for struct VmaAllocationInfo2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocation_info2.html
   struct AllocationInfo2 {
     using NativeType = VmaAllocationInfo2;
 
@@ -1748,6 +1760,7 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_NAMESPACE::Bool32 dedicatedMemory = {};
   };
 
+  // wrapper struct for struct VmaDefragmentationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_defragmentation_info.html
   struct DefragmentationInfo {
     using NativeType = VmaDefragmentationInfo;
 
@@ -1868,6 +1881,7 @@ namespace VMA_HPP_NAMESPACE {
     void* pBreakCallbackUserData = {};
   };
 
+  // wrapper struct for struct VmaDefragmentationMove, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_defragmentation_move.html
   struct DefragmentationMove {
     using NativeType = VmaDefragmentationMove;
 
@@ -1959,6 +1973,7 @@ namespace VMA_HPP_NAMESPACE {
     Allocation dstTmpAllocation = {};
   };
 
+  // wrapper struct for struct VmaDefragmentationPassMoveInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_defragmentation_pass_move_info.html
   struct DefragmentationPassMoveInfo {
     using NativeType = VmaDefragmentationPassMoveInfo;
 
@@ -2055,6 +2070,7 @@ namespace VMA_HPP_NAMESPACE {
     DefragmentationMove* pMoves = {};
   };
 
+  // wrapper struct for struct VmaDefragmentationStats, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_defragmentation_stats.html
   struct DefragmentationStats {
     using NativeType = VmaDefragmentationStats;
 
@@ -2157,6 +2173,7 @@ namespace VMA_HPP_NAMESPACE {
     uint32_t deviceMemoryBlocksFreed = {};
   };
 
+  // wrapper struct for struct VmaVirtualBlockCreateInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_virtual_block_create_info.html
   struct VirtualBlockCreateInfo {
     using NativeType = VmaVirtualBlockCreateInfo;
 
@@ -2248,6 +2265,7 @@ namespace VMA_HPP_NAMESPACE {
     const VULKAN_HPP_NAMESPACE::AllocationCallbacks* pAllocationCallbacks = {};
   };
 
+  // wrapper struct for struct VmaVirtualAllocationCreateInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_virtual_allocation_create_info.html
   struct VirtualAllocationCreateInfo {
     using NativeType = VmaVirtualAllocationCreateInfo;
 
@@ -2350,6 +2368,7 @@ namespace VMA_HPP_NAMESPACE {
     void* pUserData = {};
   };
 
+  // wrapper struct for struct VmaVirtualAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_virtual_allocation_info.html
   struct VirtualAllocationInfo {
     using NativeType = VmaVirtualAllocationInfo;
 

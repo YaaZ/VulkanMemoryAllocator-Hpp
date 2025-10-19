@@ -4,6 +4,7 @@
 
 namespace VMA_HPP_NAMESPACE {
 
+  // wrapper class for enum VmaAllocatorCreateFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class AllocatorCreateFlagBits : VmaAllocatorCreateFlags {
     eExternallySynchronized = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT,
     eKhrDedicatedAllocation = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT,
@@ -16,8 +17,10 @@ namespace VMA_HPP_NAMESPACE {
     eKhrMaintenance5 = VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT,
     eKhrExternalMemoryWin32 = VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT
   };
+  // wrapper using for bitmask VmaAllocatorCreateFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using AllocatorCreateFlags = VULKAN_HPP_NAMESPACE::Flags<AllocatorCreateFlagBits>;
 
+  // wrapper class for enum VmaMemoryUsage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class MemoryUsage {
     eUnknown = VMA_MEMORY_USAGE_UNKNOWN,
     eGpuOnly = VMA_MEMORY_USAGE_GPU_ONLY,
@@ -31,6 +34,7 @@ namespace VMA_HPP_NAMESPACE {
     eAutoPreferHost = VMA_MEMORY_USAGE_AUTO_PREFER_HOST
   };
 
+  // wrapper class for enum VmaAllocationCreateFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class AllocationCreateFlagBits : VmaAllocationCreateFlags {
     eDedicatedMemory = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
     eNeverAllocate = VMA_ALLOCATION_CREATE_NEVER_ALLOCATE_BIT,
@@ -50,15 +54,19 @@ namespace VMA_HPP_NAMESPACE {
     eStrategyFirstFit = VMA_ALLOCATION_CREATE_STRATEGY_FIRST_FIT_BIT,
     eStrategyMask = VMA_ALLOCATION_CREATE_STRATEGY_MASK
   };
+  // wrapper using for bitmask VmaAllocationCreateFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using AllocationCreateFlags = VULKAN_HPP_NAMESPACE::Flags<AllocationCreateFlagBits>;
 
+  // wrapper class for enum VmaPoolCreateFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class PoolCreateFlagBits : VmaPoolCreateFlags {
     eIgnoreBufferImageGranularity = VMA_POOL_CREATE_IGNORE_BUFFER_IMAGE_GRANULARITY_BIT,
     eLinearAlgorithm = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT,
     eAlgorithmMask = VMA_POOL_CREATE_ALGORITHM_MASK
   };
+  // wrapper using for bitmask VmaPoolCreateFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using PoolCreateFlags = VULKAN_HPP_NAMESPACE::Flags<PoolCreateFlagBits>;
 
+  // wrapper class for enum VmaDefragmentationFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class DefragmentationFlagBits : VmaDefragmentationFlags {
     eFlagAlgorithmFast = VMA_DEFRAGMENTATION_FLAG_ALGORITHM_FAST_BIT,
     eFlagAlgorithmBalanced = VMA_DEFRAGMENTATION_FLAG_ALGORITHM_BALANCED_BIT,
@@ -66,20 +74,25 @@ namespace VMA_HPP_NAMESPACE {
     eFlagAlgorithmExtensive = VMA_DEFRAGMENTATION_FLAG_ALGORITHM_EXTENSIVE_BIT,
     eFlagAlgorithmMask = VMA_DEFRAGMENTATION_FLAG_ALGORITHM_MASK
   };
+  // wrapper using for bitmask VmaDefragmentationFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using DefragmentationFlags = VULKAN_HPP_NAMESPACE::Flags<DefragmentationFlagBits>;
 
+  // wrapper class for enum VmaDefragmentationMoveOperation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class DefragmentationMoveOperation {
     eCopy = VMA_DEFRAGMENTATION_MOVE_OPERATION_COPY,
     eIgnore = VMA_DEFRAGMENTATION_MOVE_OPERATION_IGNORE,
     eDestroy = VMA_DEFRAGMENTATION_MOVE_OPERATION_DESTROY
   };
 
+  // wrapper class for enum VmaVirtualBlockCreateFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class VirtualBlockCreateFlagBits : VmaVirtualBlockCreateFlags {
     eLinearAlgorithm = VMA_VIRTUAL_BLOCK_CREATE_LINEAR_ALGORITHM_BIT,
     eAlgorithmMask = VMA_VIRTUAL_BLOCK_CREATE_ALGORITHM_MASK
   };
+  // wrapper using for bitmask VmaVirtualBlockCreateFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using VirtualBlockCreateFlags = VULKAN_HPP_NAMESPACE::Flags<VirtualBlockCreateFlagBits>;
 
+  // wrapper class for enum VmaVirtualAllocationCreateFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class VirtualAllocationCreateFlagBits : VmaVirtualAllocationCreateFlags {
     eUpperAddress = VMA_VIRTUAL_ALLOCATION_CREATE_UPPER_ADDRESS_BIT,
     eStrategyMinMemory = VMA_VIRTUAL_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT,
@@ -87,6 +100,7 @@ namespace VMA_HPP_NAMESPACE {
     eStrategyMinOffset = VMA_VIRTUAL_ALLOCATION_CREATE_STRATEGY_MIN_OFFSET_BIT,
     eStrategyMask = VMA_VIRTUAL_ALLOCATION_CREATE_STRATEGY_MASK
   };
+  // wrapper using for bitmask VmaVirtualAllocationCreateFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using VirtualAllocationCreateFlags = VULKAN_HPP_NAMESPACE::Flags<VirtualAllocationCreateFlagBits>;
 }
 
