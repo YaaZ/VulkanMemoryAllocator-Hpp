@@ -43,10 +43,22 @@ char capitalize(const char c, const bool upper) {
 }
 std::string docLink(const std::string_view& s) {
     std::string result;
+    result.reserve(s.length());
     for (int i = 0; i < s.length(); ++i) {
         const char c = capitalize(s[i], false);
         if (i > 0 && c != s[i]) result += '_';
         result += c;
+    }
+    return result;
+}
+std::string camelCase(const std::string_view& s) {
+    std::string result;
+    result.reserve(s.length());
+    for (int i = 0, u = 1; i < s.length(); ++i) {
+        if (const char c = s[i]; c != '_') {
+            result += capitalize(c, u);
+            u = 0;
+        } else u = 1;
     }
     return result;
 }
@@ -591,6 +603,7 @@ private:
         while (!(arr = trim(arr)).empty()) {
             const auto i = arr.find_last_of('['); // assert(i != npos);
             std::string dim { trim(arr.substr(i + 1, arr.length() - i - 2)) };
+            if (startsWith(dim, "VK_")) dim = "VULKAN_HPP_NAMESPACE::" + camelCase(dim.substr(3));
             type = "std::array<" + type + ", " + dim + ">";
             arr = arr.substr(0, i);
             kind = Kind::ARRAY;
@@ -658,15 +671,7 @@ Symbols generateEnums(const Source& source) {
             bool bitEntry = endsWith(originalEntry, "_BIT"); // assert(!bitEntry || flagBits)
 
             Token entry = [&] {
-                std::string e;
-                // Convert to CamelCase.
-                e.reserve(originalEntry.length()); // Not precise.
-                for (int i = /*VMA_*/4, u = 1; i < originalEntry.length() - (bitEntry ? 4/*_BIT*/ : 0); ++i) {
-                    if (const char c = originalEntry[i]; c != '_') {
-                        e += capitalize(c, u);
-                        u = 0;
-                    } else u = 1;
-                }
+                std::string e = camelCase(originalEntry.substr(4/*VMA_*/, originalEntry.length() - 4 - (bitEntry ? 4/*_BIT*/ : 0)));
                 // Strip base enum name.
                 if (!startsWith(e, *baseName)) throw std::runtime_error("Unexpected enum value: " + std::string(e));
                 e.erase(e.begin(), e.begin() + static_cast<int>(baseName.length()));

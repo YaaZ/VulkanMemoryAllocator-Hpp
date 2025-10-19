@@ -1060,8 +1060,8 @@ namespace VMA_HPP_NAMESPACE {
 
 #if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR_14 TotalStatistics(
-        std::array<DetailedStatistics, VK_MAX_MEMORY_TYPES> memoryType_ = {}
-      , std::array<DetailedStatistics, VK_MAX_MEMORY_HEAPS> memoryHeap_ = {}
+        std::array<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryTypes> memoryType_ = {}
+      , std::array<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryHeaps> memoryHeap_ = {}
       , DetailedStatistics total_ = {}
     ) VULKAN_HPP_NOEXCEPT
       : memoryType { memoryType_ }
@@ -1080,12 +1080,12 @@ namespace VMA_HPP_NAMESPACE {
     }
 
 #if !defined( VULKAN_HPP_NO_SETTERS ) && !defined( VULKAN_HPP_NO_STRUCT_SETTERS )
-    VULKAN_HPP_CONSTEXPR_14 TotalStatistics& setMemoryType(std::array<DetailedStatistics, VK_MAX_MEMORY_TYPES> memoryType_) VULKAN_HPP_NOEXCEPT {
+    VULKAN_HPP_CONSTEXPR_14 TotalStatistics& setMemoryType(std::array<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryTypes> memoryType_) VULKAN_HPP_NOEXCEPT {
       memoryType = memoryType_;
       return *this;
     }
 
-    VULKAN_HPP_CONSTEXPR_14 TotalStatistics& setMemoryHeap(std::array<DetailedStatistics, VK_MAX_MEMORY_HEAPS> memoryHeap_) VULKAN_HPP_NOEXCEPT {
+    VULKAN_HPP_CONSTEXPR_14 TotalStatistics& setMemoryHeap(std::array<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryHeaps> memoryHeap_) VULKAN_HPP_NOEXCEPT {
       memoryHeap = memoryHeap_;
       return *this;
     }
@@ -1113,8 +1113,8 @@ namespace VMA_HPP_NAMESPACE {
     }
 
 #if defined( VULKAN_HPP_USE_REFLECT )
-    std::tuple<VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VK_MAX_MEMORY_TYPES> const &
-             , VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VK_MAX_MEMORY_HEAPS> const &
+    std::tuple<VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryTypes> const &
+             , VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryHeaps> const &
              , DetailedStatistics const &>
     reflect() const VULKAN_HPP_NOEXCEPT {
       return std::tie(memoryType
@@ -1141,8 +1141,8 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 
   public:
-    VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VK_MAX_MEMORY_TYPES> memoryType = {};
-    VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VK_MAX_MEMORY_HEAPS> memoryHeap = {};
+    VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryTypes> memoryType = {};
+    VULKAN_HPP_NAMESPACE::ArrayWrapper1D<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryHeaps> memoryHeap = {};
     DetailedStatistics total = {};
   };
 
