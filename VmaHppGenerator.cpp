@@ -1053,7 +1053,15 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             simpleReturn = "VULKAN_HPP_NAMESPACE::Result";
             resultCheck = "VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::$0\""_seg + ");";
             resultValue = ResultValue::VALUE_TYPE;
-            // TODO success codes.
+            // Custom result checks.
+            if (*function.name == "vmaBeginDefragmentationPass" ||
+                *function.name == "vmaEndDefragmentationPass") {
+                resultValue = ResultValue::VALUE;
+                resultCheck.pop() + ", { VULKAN_HPP_NAMESPACE::Result::eSuccess, VULKAN_HPP_NAMESPACE::Result::eIncomplete });";
+            } else if (*function.name == "vmaFindMemoryTypeIndex" ||
+                *function.name == "vmaFindMemoryTypeIndexForBufferInfo" ||
+                *function.name == "vmaFindMemoryTypeIndexForImageInfo")
+                "if (result == VULKAN_HPP_NAMESPACE::Result::eErrorFeatureNotPresent) memoryTypeIndex = VULKAN_HPP_NAMESPACE::MaxMemoryTypes;\nelse "_seg + resultCheck;
         }
 
         // Convert enhanced outputs.

@@ -432,13 +432,13 @@ namespace VMA_HPP_NAMESPACE {
                             DefragmentationStats* pStats) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationPassMoveInfo>::type beginDefragmentationPass(DefragmentationContext context) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo> beginDefragmentationPass(DefragmentationContext context) const;
 #endif
     VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result beginDefragmentationPass(DefragmentationContext context,
                                                                                DefragmentationPassMoveInfo* pPassInfo) const;
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-    VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<DefragmentationPassMoveInfo>::type endDefragmentationPass(DefragmentationContext context) const;
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo> endDefragmentationPass(DefragmentationContext context) const;
 #endif
     VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result endDefragmentationPass(DefragmentationContext context,
                                                                              DefragmentationPassMoveInfo* pPassInfo) const;
