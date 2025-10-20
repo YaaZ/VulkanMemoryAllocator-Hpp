@@ -938,7 +938,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         using Symbol::Symbol;
         Segment methodDecl, methodDef;
         Handle* owner = nullptr;
-        Token destructor;
+        Token memberName, destructor;
     } namespaceHandle {"", -1};
     std::vector<Handle> handleVector;
     handleVector.reserve(16); // We use pointers, so preallocate.
@@ -951,8 +951,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
     // Find all handles.
     const std::regex handlePattern { R"(VK_DEFINE_(NON_DISPATCHABLE_)?HANDLE\s*\(\s*Vma(\w+)\s*\))" };
-    for (const auto& match : iterate(source, handlePattern))
+    for (const auto& match : iterate(source, handlePattern)) {
         handles.emplace_back(handleVector.emplace_back(group(source, match, 2), match));
+        handleVector.back().memberName = handleVector.back().name.capitalize(false);
+    }
 
     // All functions.
     struct Param : Var {
@@ -1224,7 +1226,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Generate a call.
         Segment simpleCall, enhancedCall;
         (simpleCall, enhancedCall) + function.name + "(";
-        if (handle) (simpleCall, enhancedCall) + "m_" + handle->name.capitalize(false) + ", ";
+        if (handle) (simpleCall, enhancedCall) + "m_" + handle->memberName + ", ";
         for (const auto& param : methodParams) {
             Segment pass;
             if (param.pointers > 1 || param.kind != Var::Kind::VOID) {
@@ -1368,7 +1370,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         }
 
         // Generate handle class.
-        Token memberName = h.name.capitalize(false);
         declarations + nn + navigate(h) + R"(
         // wrapper class for handle Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$2.html
         class $0 {
@@ -1425,8 +1426,107 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         private:
           Vma$0 m_$1 = {};
         };
-        )"_seg.replace(h.name, memberName, docLink(*h.name), h.methodDecl + navigate(h));
+        )"_seg.replace(h.name, h.memberName, docLink(*h.name), h.methodDecl + navigate(h));
         definitions + nn + std::move(h.methodDef + navigate(h));
+    }
+
+    // Generate RAII handle declarations.
+    Segment raiiForward, raiiDeclarations;
+    for (Handle& h : handleVector) {
+        raiiForward + n + navigate(h) + "class " + h.name + ";";
+        struct Member {
+            Segment type;
+            Token name;
+        };
+        std::vector<Member> members;
+        Segment constructorParams;
+        if (*h.name == "Allocator") { // Custom members for Allocator.
+            members = {
+                Member { "VULKAN_HPP_NAMESPACE::Device"_seg, "device" },
+                Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" },
+                Member { "const VULKAN_HPP_NAMESPACE::AllocationCallbacks *"_seg, "allocationCallbacks" },
+                Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" }
+            };
+            constructorParams = R"(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Device const & device,
+                                   VmaAllocator allocator,
+                                   Optional<const VULKAN_HPP_NAMESPACE::AllocationCallbacks> allocationCallbacks = nullptr
+                                   )"_seg.pop();
+        } else {
+            if (h.owner) {
+                members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.owner->name, h.owner->memberName });
+                constructorParams + h.owner->name + " const & " + h.owner->memberName + ", ";
+            }
+            members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.name, h.memberName });
+            constructorParams + "Vma" + h.name + " " + h.memberName;
+        }
+
+        Segment memberDecls, moveInit, swap, clear = "// TODO destroy"_seg, release, getters;
+        for (const auto&[type, name] : members) {
+            memberDecls + Segment(type) + " m_" + name + ";" + n;
+            moveInit + (moveInit.blank() ? ": m_" : ", m_") + name + "(exchange(rhs.m_" + name + ", {}))" + n;
+            swap + "std::swap(m_" + name + ", rhs.m_" + name + ");" + n;
+            clear + n + "m_" + name + " = nullptr;";
+            if (*h.memberName != *name) {
+                release + n + "m_" + name + " = nullptr;";
+                getters + nn + Segment(type) + " get" + name.capitalize() + "() const { return m_" + name + "; }";
+            }
+        }
+        release = R"(
+        CppType release() {
+          $0
+          return exchange(m_$1, nullptr);
+        }
+        )"_seg.replace(release, h.memberName);
+        raiiDeclarations + nn + navigate(h) + R"(
+        // wrapper class for handle Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$2.html
+        class $0 {
+        public:
+          using CType   = Vma$0;
+          using CppType = VMA_HPP_NAMESPACE::$0;
+
+        public:
+        #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+          // TODO constructors
+        #endif
+
+          // TODO raw constructor???
+
+          $0(std::nullptr_t) {}
+          ~$0() { clear(); }
+
+          $0() = delete;
+          $0($0 const &) = delete;
+
+          $0($0 && rhs) VULKAN_HPP_NOEXCEPT
+            $3 {}
+
+          $0& operator=($0 const &) = delete;
+          $0& operator=($0 && rhs) VULKAN_HPP_NOEXCEPT {
+            if (this != &rhs) {
+              $4
+            }
+            return *this;
+          }
+
+          CppType const & operator*() const & VULKAN_HPP_NOEXCEPT { return m_$1; }
+          CppType const && operator*() const && VULKAN_HPP_NOEXCEPT { return std::move(m_$1); }
+          operator CppType() const VULKAN_HPP_NOEXCEPT { return m_$1; }
+
+          void clear() VULKAN_HPP_NOEXCEPT {
+            $5
+          }
+
+          $6
+
+          void swap($0 & rhs) VULKAN_HPP_NOEXCEPT {
+            $4
+          }
+
+        private:
+          $7
+        };
+        )"_seg.replace(h.name, h.memberName, docLink(*h.name), moveInit.pop(), swap.pop(),
+                       clear, release + std::move(getters), memberDecls);
     }
     declarations + nn + std::move(namespaceHandle.methodDecl);
     definitions + nn + std::move(namespaceHandle.methodDef);
@@ -1497,6 +1597,16 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
       $0
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
+    R"(
+    namespace VMA_HPP_NAMESPACE {
+      namespace VMA_HPP_RAII_NAMESPACE {
+        $0
+        using VULKAN_HPP_NAMESPACE::exchange;
+
+        $1
+      }
+    }
+    )"_seg.replace(raiiForward, raiiDeclarations).resolve(source.tree).generateHpp("raii");
     return { handles, uniqueHandles, functions };
 }
 
@@ -1555,7 +1665,7 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
     module;
     #define VMA_IMPLEMENTATION
     #include <vk_mem_alloc.hpp>
-    //#include <vk_mem_alloc_raii.hpp> TODO
+    #include <vk_mem_alloc_raii.hpp>
     export module vk_mem_alloc_hpp;
 
     export namespace VMA_HPP_NAMESPACE {

@@ -2,7 +2,7 @@
 module;
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>
-//#include <vk_mem_alloc_raii.hpp> TODO
+#include <vk_mem_alloc_raii.hpp>
 export module vk_mem_alloc_hpp;
 
 export namespace VMA_HPP_NAMESPACE {
