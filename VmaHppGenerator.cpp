@@ -1431,102 +1431,175 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     }
 
     // Generate RAII handle declarations.
+    handleVector.emplace_back("Buffer", -1).memberName = "buffer";
+    handleVector.emplace_back("Image", -1).memberName = "image";
     Segment raiiForward, raiiDeclarations;
     for (Handle& h : handleVector) {
         raiiForward + n + navigate(h) + "class " + h.name + ";";
-        struct Member {
-            Segment type;
-            Token name;
-        };
-        std::vector<Member> members;
-        Segment constructorParams;
-        if (*h.name == "Allocator") { // Custom members for Allocator.
-            members = {
-                Member { "VULKAN_HPP_NAMESPACE::Device"_seg, "device" },
-                Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" },
-                Member { "const VULKAN_HPP_NAMESPACE::AllocationCallbacks *"_seg, "allocationCallbacks" },
-                Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" }
+
+        // Generate body pieces.
+        Segment classTemplate, memberDecls, constructors, moveInit, swap, operators, clear, release, getters;
+        if (*h.name == "Buffer" || *h.name == "Image") {
+            classTemplate = R"(
+            // wrapper class for handle Vk$0 combined with VmaAllocation
+            // see https://registry.khronos.org/vulkan/specs/latest/man/html/Vk$0.html
+            // see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocation.html
+            class $0 : public VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0 {
+            public:
+              using CType   = Vk$0;
+              using CppType = VULKAN_HPP_NAMESPACE::$0;
+
+            public:
+              $1
+
+            private:
+              Allocation m_allocation;
             };
-            constructorParams = R"(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Device const & device,
-                                   VmaAllocator allocator,
-                                   Optional<const VULKAN_HPP_NAMESPACE::AllocationCallbacks> allocationCallbacks = nullptr
-                                   )"_seg.pop();
+            )"_seg;
+            constructors = R"(
+            $0(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(nullptr), m_allocation(nullptr) {}
+            )"_seg;
+            moveInit + R"(
+            : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(exchange(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(rhs), nullptr))
+            , m_allocation(exchange(rhs.m_allocation, nullptr))
+            )"_seg;
+            swap + R"(
+            std::swap(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(*this), static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(rhs));
+            std::swap(m_allocation, rhs.m_allocation);
+            )"_seg;
+            clear + R"(
+            if (*m_allocation) {
+              const auto allocator = m_allocation.getAllocator();
+              const auto pair = release();
+              allocator.destroy$0(pair.second, pair.first);
+            }
+            )"_seg;
+            release = R"(
+            std::pair<Allocation, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0> split() VULKAN_HPP_NOEXCEPT {
+              return { std::move(m_allocation), static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&&>(*this) };
+            }
+
+            std::pair<VMA_HPP_NAMESPACE::Allocation, VULKAN_HPP_NAMESPACE::$0> release() {
+              return { m_allocation.release(), VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0::release() };
+            }
+            )"_seg;
+            getters = R"(
+            const Allocation& getAllocation() const { return m_allocation; }
+            )"_seg;
         } else {
-            if (h.owner) {
-                members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.owner->name, h.owner->memberName });
-                constructorParams + h.owner->name + " const & " + h.owner->memberName + ", ";
+            // Generate members and constructors.
+            struct Member {
+                Segment type;
+                Token name;
+            };
+            std::vector<Member> members;
+            // Segment constructorParams; // TODO constructor params?
+            if (*h.name == "DefragmentationContext") h.destructor = "endDefragmentation"; // Custom destructor for DefragmentationContext.
+            if (*h.name == "Allocator") { // Custom members for Allocator.
+                members = {
+                    Member { "VULKAN_HPP_NAMESPACE::Device"_seg, "device" },
+                    Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" },
+                    Member { "const VULKAN_HPP_NAMESPACE::AllocationCallbacks *"_seg, "allocationCallbacks" },
+                    Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" }
+                };
+                // constructorParams = R"(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Device const & device,
+                //                        VmaAllocator allocator,
+                //                        Optional<const VULKAN_HPP_NAMESPACE::AllocationCallbacks> allocationCallbacks = nullptr
+                //                        )"_seg.pop();
+            } else {
+                if (h.owner) {
+                    members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.owner->name, h.owner->memberName });
+                    // constructorParams + h.owner->name + " const & " + h.owner->memberName + ", ";
+                }
+                members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.name, h.memberName });
+                // constructorParams + "Vma" + h.name + " " + h.memberName;
             }
-            members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.name, h.memberName });
-            constructorParams + "Vma" + h.name + " " + h.memberName;
+
+            classTemplate = R"(
+            // wrapper class for handle Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$3.html
+            class $0 {
+            public:
+              using CType   = Vma$0;
+              using CppType = VMA_HPP_NAMESPACE::$0;
+
+            public:
+              $1
+
+            private:
+              $2
+            };
+            )"_seg.replace(std::nullopt, std::nullopt, std::nullopt, docLink(*h.name));
+            operators = R"(
+            CppType const & operator*() const & VULKAN_HPP_NOEXCEPT { return m_$0; }
+            CppType const && operator*() const && VULKAN_HPP_NOEXCEPT { return std::move(m_$0); }
+            operator CppType() const VULKAN_HPP_NOEXCEPT { return m_$0; }
+            )"_seg.replace(h.memberName);
+            clear + "if (m_" + h.memberName + ") m_" + (h.owner ? h.owner->memberName : h.memberName) + "." + h.destructor + "(";
+            if (h.owner) clear + "m_" + h.memberName;
+            clear + ");";
+            for (const auto& [type, name] : members) {
+                memberDecls + Segment(type) + " m_" + name + ";" + n;
+                moveInit + (moveInit.blank() ? ": m_" : ", m_") + name + "(exchange(rhs.m_" + name + ", {}))" + n;
+                swap + "std::swap(m_" + name + ", rhs.m_" + name + ");" + n;
+                clear + n + "m_" + name + " = nullptr;";
+                if (*h.memberName != *name) {
+                    release + n + "m_" + name + " = nullptr;";
+                    getters + nn + Segment(type) + " get" + name.capitalize() + "() const { return m_" + name + "; }";
+                }
+            }
+            constructors = R"(
+            $0(std::nullptr_t) {}
+            )"_seg;
+            release = R"(
+            CppType release() {
+              $0
+              return exchange(m_$1, nullptr);
+            }
+            )"_seg.replace(release, h.memberName);
         }
 
-        Segment memberDecls, moveInit, swap, clear = "// TODO destroy"_seg, release, getters;
-        for (const auto&[type, name] : members) {
-            memberDecls + Segment(type) + " m_" + name + ";" + n;
-            moveInit + (moveInit.blank() ? ": m_" : ", m_") + name + "(exchange(rhs.m_" + name + ", {}))" + n;
-            swap + "std::swap(m_" + name + ", rhs.m_" + name + ");" + n;
-            clear + n + "m_" + name + " = nullptr;";
-            if (*h.memberName != *name) {
-                release + n + "m_" + name + " = nullptr;";
-                getters + nn + Segment(type) + " get" + name.capitalize() + "() const { return m_" + name + "; }";
-            }
-        }
-        release = R"(
-        CppType release() {
-          $0
-          return exchange(m_$1, nullptr);
-        }
-        )"_seg.replace(release, h.memberName);
-        raiiDeclarations + nn + navigate(h) + R"(
-        // wrapper class for handle Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$2.html
-        class $0 {
-        public:
-          using CType   = Vma$0;
-          using CppType = VMA_HPP_NAMESPACE::$0;
-
-        public:
+        // Generate class body.
+        Segment body = R"(
         #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-          // TODO constructors
+        // TODO constructors
         #endif
 
-          // TODO raw constructor???
+        // TODO raw constructor???
 
-          $0(std::nullptr_t) {}
-          ~$0() { clear(); }
+        $1
+        ~$0() { clear(); }
 
-          $0() = delete;
-          $0($0 const &) = delete;
+        $0() = delete;
+        $0($0 const &) = delete;
 
-          $0($0 && rhs) VULKAN_HPP_NOEXCEPT
-            $3 {}
+        $0($0 && rhs) VULKAN_HPP_NOEXCEPT
+          $2 {}
 
-          $0& operator=($0 const &) = delete;
-          $0& operator=($0 && rhs) VULKAN_HPP_NOEXCEPT {
-            if (this != &rhs) {
-              $4
-            }
-            return *this;
+        $0& operator=($0 const &) = delete;
+        $0& operator=($0 && rhs) VULKAN_HPP_NOEXCEPT {
+          if (this != &rhs) {
+            $3
           }
+          return *this;
+        }
 
-          CppType const & operator*() const & VULKAN_HPP_NOEXCEPT { return m_$1; }
-          CppType const && operator*() const && VULKAN_HPP_NOEXCEPT { return std::move(m_$1); }
-          operator CppType() const VULKAN_HPP_NOEXCEPT { return m_$1; }
+        $4
 
-          void clear() VULKAN_HPP_NOEXCEPT {
-            $5
-          }
+        void clear() VULKAN_HPP_NOEXCEPT {
+          $5
+        }
 
-          $6
+        $6
 
-          void swap($0 & rhs) VULKAN_HPP_NOEXCEPT {
-            $4
-          }
+        $7
 
-        private:
-          $7
-        };
-        )"_seg.replace(h.name, h.memberName, docLink(*h.name), moveInit.pop(), swap.pop(),
-                       clear, release + std::move(getters), memberDecls);
+        void swap($0 & rhs) VULKAN_HPP_NOEXCEPT {
+          $3
+        }
+        )"_seg.replace(std::nullopt, constructors, moveInit.pop(), swap.pop(), operators, clear, release, getters);
+
+        // Generate handle class.
+        raiiDeclarations + nn + navigate(h) + std::move(classTemplate).replace(h.name, body, memberDecls);
     }
     declarations + nn + std::move(namespaceHandle.methodDecl);
     definitions + nn + std::move(namespaceHandle.methodDef);
