@@ -1284,6 +1284,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html";
             result + n + Segment(method.ret) + " $0($3)"_seg;
             if (handle) result + " const";
+            if (resultValue == ResultValue::NONE || &method == &simple) result + " VULKAN_HPP_NOEXCEPT";
+            else result + " VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS";
             if (variant & declaration) result + ";";
             else result + " {\n  $4\n}"_seg;
             return std::move(result.replace(variant, name, outputType(0), outputType(1), method.params, method.body));
