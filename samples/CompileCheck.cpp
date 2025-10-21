@@ -16,6 +16,7 @@ import vk_mem_alloc_hpp;
 #else
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>
+#include <vk_mem_alloc_raii.hpp>
 #endif
 
 #include <vk_mem_alloc_imported.hpp>

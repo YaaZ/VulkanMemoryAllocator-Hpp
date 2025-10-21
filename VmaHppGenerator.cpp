@@ -970,6 +970,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         Token methodName, shortName;
         explicit Function(Symbol&& symbol, std::string_view&& returnType, std::vector<Param>&& params) :
             Symbol(symbol), returnType(returnType), params(params) {}
+        Iterable<std::vector<Param>::iterator> methodParams() { return Iterable(params.begin() + !!handle, params.end()); }
     };
     std::vector<Function> functionVector;
 
@@ -979,17 +980,21 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         auto& function = functionVector.emplace_back(Symbol(group(source, match, 2), match), group(source, match, 1),
                                                      Var::parse<Param>(group(source, match, 3), match.position(3)));
 
-        // Find handles.
-        for (int i = 0; i < 2; ++i) {
-            Handle* h = function.params.size() > i ? findHandle(function.params[i]) : nullptr;
-            if (h == nullptr) break;
-            if (function.params[i].constant || function.params[i].pointers)
-                throw std::runtime_error("Unexpected handle parameter: " + std::string(function.params[i].type));
-            if (function.handle) { // Set owner for second-level handles.
+        // Find the first-order handle.
+        if (Handle* h = findHandle(function.params[0])) {
+            if (function.params[0].pointers)
+                throw std::runtime_error("Unexpected handle parameter: " + std::string(function.params[0].type));
+            function.handle = h;
+
+            // Find the second-order handle.
+            for (auto& param : function.methodParams()) {
+                Handle* h = findHandle(param);
+                if (h == nullptr || param.pointers) continue;
+                // Set the owner for the second-level handle.
                 if (!h->owner || h->owner == function.handle) h->owner = function.handle;
                 else throw std::runtime_error("Handle owner conflict: " + std::string(h->name));
+                function.handle = h;
             }
-            function.handle = h;
         }
 
         // Convert name.
@@ -1020,8 +1025,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     for (auto& function : functionVector) {
         auto& params = function.params;
         auto* handle = function.handle;
-        if (handle && handle->owner) handle = handle->owner; // Get first-level handle.
-        Iterable methodParams(params.begin() + !!handle, params.end());
+        if (handle && handle->owner) handle = handle->owner; // Get the first-level handle.
 
         // Find output params.
         struct Output {
@@ -1041,7 +1045,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         std::vector<Output> outputs; // Mandatory only.
         const Param* defaultOutputsFrom = nullptr;
         bool hasUniqueVariant = false;
-        for (auto& param : methodParams) {
+        for (auto& param : function.methodParams()) {
             // Ignore void* and char* - those are not outputs.
             if (!param.constant && param.pointers && (param.pointers > 1 || (param.kind != Var::Kind::VOID && param.kind != Var::Kind::CHAR))) {
                 if (param.tag == Var::Tag::NOT_NULL) {
@@ -1163,7 +1167,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
         // Generate parameter list.
         bool signatureTransformed = false;
-        for (const auto& param : methodParams) {
+        for (const auto& param : function.methodParams()) {
             simple.params + param.type + " " + param.name + "," + n;
             if (param.paramType == Param::Type::OUTPUT || !param.deducedArrays.empty()) { // Skip outputs and deduced array sizes.
                 signatureTransformed = true;
@@ -1193,7 +1197,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             vecAllocType + "Allocator& " + vecAllocName + "Allocator"];
 
         // Generate deduction statements.
-        for (const auto& param : methodParams) {
+        for (const auto& param : function.methodParams()) {
             if (param.deducedArrays.empty()) continue;
             Segment assertChecks, exceptionChecks;
             enhanced.body + n + param.type + " " + param.prettyName + " = ";
@@ -1227,7 +1231,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         Segment simpleCall, enhancedCall;
         (simpleCall, enhancedCall) + function.name + "(";
         if (handle) (simpleCall, enhancedCall) + "m_" + handle->memberName + ", ";
-        for (const auto& param : methodParams) {
+        for (const auto& param : function.methodParams()) {
             Segment pass;
             if (param.pointers > 1 || param.kind != Var::Kind::VOID) {
                 if (param.pointers && param.lenIfNotNull && param.kind != Var::Kind::VOID) // Array.
@@ -1429,10 +1433,18 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         )"_seg.replace(h.name, h.memberName, docLink(*h.name), h.methodDecl + navigate(h));
         definitions + nn + std::move(h.methodDef + navigate(h));
     }
+    declarations + nn + std::move(namespaceHandle.methodDecl);
+    definitions + nn + std::move(namespaceHandle.methodDef);
+    content + navigate.reset;
 
     // Generate RAII handle declarations.
-    handleVector.emplace_back("Buffer", -1).memberName = "buffer";
-    handleVector.emplace_back("Image", -1).memberName = "image";
+    handleVector.emplace_back("Buffer", -1);
+    handleVector.emplace_back("Image", -1);
+    handleVector.emplace_back("StatsString", [&] { // Use the source position of vmaBuildStatsString.
+        for (auto& function : functionVector)
+            if (*function.name == "vmaBuildStatsString") return function.sourcePosition;
+        throw std::runtime_error("Could not find vmaBuildStatsString");
+    }());
     Segment raiiForward, raiiDeclarations;
     for (Handle& h : handleVector) {
         raiiForward + n + navigate(h) + "class " + h.name + ";";
@@ -1450,14 +1462,20 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
               using CppType = VULKAN_HPP_NAMESPACE::$0;
 
             public:
+            #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+              // TODO constructors
+            #endif
+
+              // TODO raw constructor???
+
               $1
 
             private:
-              Allocation m_allocation;
+              Allocation m_allocation = nullptr;
             };
             )"_seg;
             constructors = R"(
-            $0(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(nullptr), m_allocation(nullptr) {}
+            $0(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(nullptr) {}
             )"_seg;
             moveInit + R"(
             : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(exchange(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(rhs), nullptr))
@@ -1485,6 +1503,62 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             )"_seg;
             getters = R"(
             const Allocation& getAllocation() const { return m_allocation; }
+            )"_seg;
+        } else if (*h.name == "StatsString") {
+            classTemplate = R"(
+            // wrapper class for the stats string
+            class $0 {
+            public:
+              using CType   = char*;
+              using CppType = char*;
+
+            public:
+              $1
+
+            private:
+              uint64_t m_owner  = 0;
+              char   * m_string = nullptr;
+              void  (* m_destructor)(uint64_t, char*) = nullptr;
+            };
+            )"_seg;
+            constructors = R"(
+            template<class Owner, void (*destructor)(Owner, char*)>
+            static StatsString create(Owner owner, char* string) VULKAN_HPP_NOEXCEPT {
+              StatsString result = nullptr;
+              result.m_owner = static_cast<uint64_t>(owner);
+              result.m_string = string;
+              result.m_destructor = [](uint64_t owner, char* string) { destructor(static_cast<Owner>(owner), string); };
+              return result;
+            }
+
+            $0(std::nullptr_t) {}
+            )"_seg;
+            moveInit + R"(
+            : m_owner(exchange(rhs.m_owner, 0))
+            , m_string(exchange(rhs.m_string, nullptr))
+            , m_destructor(exchange(rhs.m_destructor, nullptr))
+            )"_seg;
+            swap + R"(
+            std::swap(m_owner, rhs.m_owner);
+            std::swap(m_string, rhs.m_string);
+            std::swap(m_destructor, rhs.m_destructor);
+            )"_seg;
+            operators = R"(
+            char* operator*() const VULKAN_HPP_NOEXCEPT { return m_string; }
+            operator char*() const VULKAN_HPP_NOEXCEPT { return m_string; }
+            )"_seg.replace(h.memberName);
+            clear + R"(
+            if (m_string) m_destructor(m_owner, m_string);
+            m_owner = 0;
+            m_string = nullptr;
+            m_destructor = nullptr;
+            )"_seg;
+            release = R"(
+            char* release() {
+              m_owner = 0;
+              m_destructor = nullptr;
+              return exchange(m_string, nullptr);
+            }
             )"_seg;
         } else {
             // Generate members and constructors.
@@ -1523,6 +1597,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
               using CppType = VMA_HPP_NAMESPACE::$0;
 
             public:
+            #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+              // TODO constructors
+            #endif
+
+              // TODO raw constructor???
+
               $1
 
             private:
@@ -1538,7 +1618,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (h.owner) clear + "m_" + h.memberName;
             clear + ");";
             for (const auto& [type, name] : members) {
-                memberDecls + Segment(type) + " m_" + name + ";" + n;
+                memberDecls + Segment(type) + " m_" + name + " = {};" + n;
                 moveInit + (moveInit.blank() ? ": m_" : ", m_") + name + "(exchange(rhs.m_" + name + ", {}))" + n;
                 swap + "std::swap(m_" + name + ", rhs.m_" + name + ");" + n;
                 clear + n + "m_" + name + " = nullptr;";
@@ -1560,12 +1640,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
         // Generate class body.
         Segment body = R"(
-        #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-        // TODO constructors
-        #endif
-
-        // TODO raw constructor???
-
         $1
         ~$0() { clear(); }
 
@@ -1601,9 +1675,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Generate handle class.
         raiiDeclarations + nn + navigate(h) + std::move(classTemplate).replace(h.name, body, memberDecls);
     }
-    declarations + nn + std::move(namespaceHandle.methodDecl);
-    definitions + nn + std::move(namespaceHandle.methodDef);
-    content + navigate.reset;
+    (raiiForward, raiiDeclarations) + navigate.reset;
 
     // Generate files.
     R"(

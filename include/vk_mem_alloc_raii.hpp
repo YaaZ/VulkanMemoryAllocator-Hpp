@@ -12,6 +12,9 @@ namespace VMA_HPP_NAMESPACE {
     class VirtualBlock;
     class Buffer;
     class Image;
+#if VMA_STATS_STRING_ENABLED
+    class StatsString;
+#endif 
     using VULKAN_HPP_NAMESPACE::exchange;
 
     // wrapper class for handle VmaAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocator.html
@@ -83,10 +86,10 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      VULKAN_HPP_NAMESPACE::Device m_device;
-      VMA_HPP_NAMESPACE::Allocator m_allocator;
-      const VULKAN_HPP_NAMESPACE::AllocationCallbacks * m_allocationCallbacks;
-      VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const * m_dispatcher;
+      VULKAN_HPP_NAMESPACE::Device m_device = {};
+      VMA_HPP_NAMESPACE::Allocator m_allocator = {};
+      const VULKAN_HPP_NAMESPACE::AllocationCallbacks * m_allocationCallbacks = {};
+      VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const * m_dispatcher = {};
     };
 
     // wrapper class for handle VmaPool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_pool.html
@@ -144,8 +147,8 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      VMA_HPP_NAMESPACE::Allocator m_allocator;
-      VMA_HPP_NAMESPACE::Pool m_pool;
+      VMA_HPP_NAMESPACE::Allocator m_allocator = {};
+      VMA_HPP_NAMESPACE::Pool m_pool = {};
     };
 
     // wrapper class for handle VmaAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocation.html
@@ -203,8 +206,8 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      VMA_HPP_NAMESPACE::Allocator m_allocator;
-      VMA_HPP_NAMESPACE::Allocation m_allocation;
+      VMA_HPP_NAMESPACE::Allocator m_allocator = {};
+      VMA_HPP_NAMESPACE::Allocation m_allocation = {};
     };
 
     // wrapper class for handle VmaDefragmentationContext, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_defragmentation_context.html
@@ -262,8 +265,8 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      VMA_HPP_NAMESPACE::Allocator m_allocator;
-      VMA_HPP_NAMESPACE::DefragmentationContext m_defragmentationContext;
+      VMA_HPP_NAMESPACE::Allocator m_allocator = {};
+      VMA_HPP_NAMESPACE::DefragmentationContext m_defragmentationContext = {};
     };
 
     // wrapper class for handle VmaVirtualAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_virtual_allocation.html
@@ -321,8 +324,8 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      VMA_HPP_NAMESPACE::VirtualBlock m_virtualBlock;
-      VMA_HPP_NAMESPACE::VirtualAllocation m_virtualAllocation;
+      VMA_HPP_NAMESPACE::VirtualBlock m_virtualBlock = {};
+      VMA_HPP_NAMESPACE::VirtualAllocation m_virtualAllocation = {};
     };
 
     // wrapper class for handle VmaVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_virtual_block.html
@@ -373,7 +376,7 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      VMA_HPP_NAMESPACE::VirtualBlock m_virtualBlock;
+      VMA_HPP_NAMESPACE::VirtualBlock m_virtualBlock = {};
     };
 
     // wrapper class for handle VkBuffer combined with VmaAllocation
@@ -391,7 +394,7 @@ namespace VMA_HPP_NAMESPACE {
 
       // TODO raw constructor???
 
-      Buffer(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(nullptr), m_allocation(nullptr) {}
+      Buffer(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(nullptr) {}
       ~Buffer() { clear(); }
 
       Buffer() = delete;
@@ -434,7 +437,7 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      Allocation m_allocation;
+      Allocation m_allocation = nullptr;
     };
 
     // wrapper class for handle VkImage combined with VmaAllocation
@@ -452,7 +455,7 @@ namespace VMA_HPP_NAMESPACE {
 
       // TODO raw constructor???
 
-      Image(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(nullptr), m_allocation(nullptr) {}
+      Image(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(nullptr) {}
       ~Image() { clear(); }
 
       Image() = delete;
@@ -495,8 +498,75 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      Allocation m_allocation;
+      Allocation m_allocation = nullptr;
     };
+
+#if VMA_STATS_STRING_ENABLED
+    // wrapper class for the stats string
+    class StatsString {
+    public:
+      using CType   = char*;
+      using CppType = char*;
+
+    public:
+      template<class Owner, void (*destructor)(Owner, char*)>
+      static StatsString create(Owner owner, char* string) VULKAN_HPP_NOEXCEPT {
+        StatsString result = nullptr;
+        result.m_owner = static_cast<uint64_t>(owner);
+        result.m_string = string;
+        result.m_destructor = [](uint64_t owner, char* string) { destructor(static_cast<Owner>(owner), string); };
+        return result;
+      }
+
+      StatsString(std::nullptr_t) {}
+      ~StatsString() { clear(); }
+
+      StatsString() = delete;
+      StatsString(StatsString const &) = delete;
+
+      StatsString(StatsString && rhs) VULKAN_HPP_NOEXCEPT
+        : m_owner(exchange(rhs.m_owner, 0))
+        , m_string(exchange(rhs.m_string, nullptr))
+        , m_destructor(exchange(rhs.m_destructor, nullptr)) {}
+
+      StatsString& operator=(StatsString const &) = delete;
+      StatsString& operator=(StatsString && rhs) VULKAN_HPP_NOEXCEPT {
+        if (this != &rhs) {
+          std::swap(m_owner, rhs.m_owner);
+          std::swap(m_string, rhs.m_string);
+          std::swap(m_destructor, rhs.m_destructor);
+        }
+        return *this;
+      }
+
+      char* operator*() const VULKAN_HPP_NOEXCEPT { return m_string; }
+      operator char*() const VULKAN_HPP_NOEXCEPT { return m_string; }
+
+      void clear() VULKAN_HPP_NOEXCEPT {
+        if (m_string) m_destructor(m_owner, m_string);
+        m_owner = 0;
+        m_string = nullptr;
+        m_destructor = nullptr;
+      }
+
+      char* release() {
+        m_owner = 0;
+        m_destructor = nullptr;
+        return exchange(m_string, nullptr);
+      }
+
+      void swap(StatsString & rhs) VULKAN_HPP_NOEXCEPT {
+        std::swap(m_owner, rhs.m_owner);
+        std::swap(m_string, rhs.m_string);
+        std::swap(m_destructor, rhs.m_destructor);
+      }
+
+    private:
+      uint64_t m_owner  = 0;
+      char   * m_string = nullptr;
+      void  (* m_destructor)(uint64_t, char*) = nullptr;
+    };
+#endif 
   }
 }
 #endif
