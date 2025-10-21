@@ -85,6 +85,80 @@ namespace VMA_HPP_NAMESPACE {
         std::swap(m_dispatcher, rhs.m_dispatcher);
       }
 
+      // wrapper function for command vmaGetAllocatorInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getInfo() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetPhysicalDeviceProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getPhysicalDeviceProperties() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetMemoryProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getMemoryProperties() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetMemoryTypeProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getMemoryTypeProperties() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaSetCurrentFrameIndex, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void setCurrentFrameIndex() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaCalculateStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void calculateStatistics() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetHeapBudgets, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getHeapBudgets() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaFindMemoryTypeIndex, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void findMemoryTypeIndex() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaFindMemoryTypeIndexForBufferInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void findMemoryTypeIndexForBufferInfo() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaFindMemoryTypeIndexForImageInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void findMemoryTypeIndexForImageInfo() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreatePool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createPool() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaAllocateMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void allocateMemory() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void allocateMemoryPages() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void allocateMemoryForBuffer() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void allocateMemoryForImage() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void freeMemoryPages() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaFlushAllocations, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void flushAllocations() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaInvalidateAllocations, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void invalidateAllocations() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCheckCorruption, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void checkCorruption() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBeginDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void beginDefragmentation() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createBuffer() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateBufferWithAlignment, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createBufferWithAlignment() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createImage() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+#if VMA_STATS_STRING_ENABLED
+      // wrapper function for command vmaBuildStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void buildStatsString() const VULKAN_HPP_NOEXCEPT;
+#endif 
+
     private:
       VULKAN_HPP_NAMESPACE::Device m_device = {};
       VMA_HPP_NAMESPACE::Allocator m_allocator = {};
@@ -146,6 +220,21 @@ namespace VMA_HPP_NAMESPACE {
         std::swap(m_pool, rhs.m_pool);
       }
 
+      // wrapper function for command vmaGetPoolStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getStatistics() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaCalculatePoolStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void calculateStatistics() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaCheckPoolCorruption, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void checkCorruption() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaGetPoolName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getName() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaSetPoolName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void setName() const VULKAN_HPP_NOEXCEPT;
+
     private:
       VMA_HPP_NAMESPACE::Allocator m_allocator = {};
       VMA_HPP_NAMESPACE::Pool m_pool = {};
@@ -204,6 +293,68 @@ namespace VMA_HPP_NAMESPACE {
         std::swap(m_allocator, rhs.m_allocator);
         std::swap(m_allocation, rhs.m_allocation);
       }
+
+      // wrapper function for command vmaGetAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getInfo() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetAllocationInfo2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getInfo2() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaSetAllocationUserData, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void setUserData() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaSetAllocationName, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void setName() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetAllocationMemoryProperties, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getMemoryProperties() const VULKAN_HPP_NOEXCEPT;
+
+#if VMA_EXTERNAL_MEMORY_WIN32
+      // wrapper function for command vmaGetMemoryWin32Handle, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getWin32Handle() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+#endif 
+      // wrapper function for command vmaMapMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void map() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaUnmapMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void unmap() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaFlushAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void flush() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaInvalidateAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void invalidate() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCopyMemoryToAllocation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void copyFromMemory() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCopyAllocationToMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void copyToMemory() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBindBufferMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void bindBuffer() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void bindBuffer2() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void bindImage() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void bindImage2() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createAliasingBuffer() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createAliasingBuffer2() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createAliasingImage() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void createAliasingImage2() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
     private:
       VMA_HPP_NAMESPACE::Allocator m_allocator = {};
@@ -264,6 +415,15 @@ namespace VMA_HPP_NAMESPACE {
         std::swap(m_defragmentationContext, rhs.m_defragmentationContext);
       }
 
+      // wrapper function for command vmaEndDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void endDefragmentation() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaBeginDefragmentationPass, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void beginDefragmentationPass() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaEndDefragmentationPass, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void endDefragmentationPass() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
     private:
       VMA_HPP_NAMESPACE::Allocator m_allocator = {};
       VMA_HPP_NAMESPACE::DefragmentationContext m_defragmentationContext = {};
@@ -323,6 +483,12 @@ namespace VMA_HPP_NAMESPACE {
         std::swap(m_virtualAllocation, rhs.m_virtualAllocation);
       }
 
+      // wrapper function for command vmaGetVirtualAllocationInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getInfo() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaSetVirtualAllocationUserData, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void setUserData() const VULKAN_HPP_NOEXCEPT;
+
     private:
       VMA_HPP_NAMESPACE::VirtualBlock m_virtualBlock = {};
       VMA_HPP_NAMESPACE::VirtualAllocation m_virtualAllocation = {};
@@ -374,6 +540,26 @@ namespace VMA_HPP_NAMESPACE {
       void swap(VirtualBlock & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(m_virtualBlock, rhs.m_virtualBlock);
       }
+
+      // wrapper function for command vmaIsVirtualBlockEmpty, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void isEmpty() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaVirtualAllocate, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void allocate() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaClearVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void clearBlock() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaGetVirtualBlockStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void getStatistics() const VULKAN_HPP_NOEXCEPT;
+
+      // wrapper function for command vmaCalculateVirtualBlockStatistics, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void calculateStatistics() const VULKAN_HPP_NOEXCEPT;
+
+#if VMA_STATS_STRING_ENABLED
+      // wrapper function for command vmaBuildVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      void buildStatsString() const VULKAN_HPP_NOEXCEPT;
+#endif 
 
     private:
       VMA_HPP_NAMESPACE::VirtualBlock m_virtualBlock = {};
@@ -567,6 +753,13 @@ namespace VMA_HPP_NAMESPACE {
       void  (* m_destructor)(uint64_t, char*) = nullptr;
     };
 #endif 
+
+    // wrapper function for command vmaCreateAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    void createAllocator() VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+    // wrapper function for command vmaCreateVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    void createVirtualBlock() VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
   }
 }
 #endif

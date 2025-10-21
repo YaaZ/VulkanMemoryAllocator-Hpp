@@ -936,7 +936,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     // All handles.
     struct Handle : Symbol {
         using Symbol::Symbol;
-        Segment methodDecl, methodDef;
+        Segment methodDecl, methodDef, raiiDecl, raiiDef;
         Handle* owner = nullptr;
         Token memberName, destructor;
     } namespaceHandle {"", -1};
@@ -967,7 +967,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         std::string_view returnType;
         std::vector<Param> params;
         Handle* handle = nullptr; // Top-level handle.
-        Token methodName, shortName;
+        Token methodName, shortName, raiiName;
         explicit Function(Symbol&& symbol, std::string_view&& returnType, std::vector<Param>&& params) :
             Symbol(symbol), returnType(returnType), params(params) {}
         Iterable<std::vector<Param>::iterator> methodParams() { return Iterable(params.begin() + !!handle, params.end()); }
@@ -1001,10 +1001,34 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         Token shortName;
         if ((*function.name).find("Destroy") != std::string_view::npos) shortName = "destroy";
         else if ((*function.name).find("Free") != std::string_view::npos) shortName = "free";
-        if (shortName && function.params.size() == 1) function.methodName = shortName; // First level handle destructors are always short.
+        if (shortName && function.handle && !function.handle->owner &&
+            function.params.size() == 1) function.methodName = shortName; // First level handle destructors are always short.
         else {
             function.methodName = function.name.substr(3).capitalize(false);
             function.shortName = shortName;
+            // Convert RAII name.
+            auto replace = [&](const std::initializer_list<std::string_view> aliases) {
+                for (const auto& alias : aliases) {
+                    if (const auto pos = (*function.name).find(alias); pos != std::string_view::npos) {
+                        std::string result;
+                        result.reserve(alias.length());
+                        result += (*function.name).substr(3, pos - 3);
+                        result += (*function.name).substr(pos + alias.length());
+                        result[0] = capitalize(result[0], false);
+                        return Token(result);
+                    }
+                }
+                return function.methodName;
+            };
+            std::string_view handle = function.handle ? *function.handle->name : "";
+            if (*function.name == "vmaFreeStatsString" || *function.name == "vmaFreeVirtualBlockStatsString" ||
+                *function.name == "vmaDestroyBuffer" || *function.name == "vmaDestroyImage") function.raiiName = {}; // No RAII variant.
+            else if (*function.name == "vmaCopyMemoryToAllocation") function.raiiName = "copyFromMemory";
+            else if (*function.name == "vmaClearVirtualBlock")      function.raiiName = "clearBlock";
+            else if (handle == "Allocation")   function.raiiName = replace({"Allocation", "Memory"});
+            else if (handle == "VirtualBlock") function.raiiName = replace({"VirtualBlock", "Virtual"});
+            else if (function.handle) function.raiiName = replace({ handle });
+            else function.raiiName = function.methodName;
         }
 
         // Save destructor.
@@ -1012,6 +1036,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (function.handle->destructor)
                 throw std::runtime_error("Conflicting destructor for handle: " + std::string(*function.handle->name));
             function.handle->destructor = function.methodName;
+            function.raiiName = {}; // Destructors do not have separate methods in RAII.
         }
 
         // Add function symbol.
@@ -1063,7 +1088,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Generate methods.
         struct Method {
             Segment ret, params, body;
-        } simple, enhanced;
+        } simple, enhanced, raii;
         Segment::Specialization declaration(1), unique(2), vectorAllocator(4);
 
         // Convert simple return type.
@@ -1325,6 +1350,14 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             appendMethods(h.methodDecl, declaration, function.shortName);
             appendMethods(h.methodDef, !declaration, function.shortName);
         }
+        if (function.raiiName && (function.handle || hasUniqueVariant)) { // TODO
+            Handle& r = function.handle ? *function.handle : namespaceHandle;
+            if (raii.ret.blank()) raii.ret + "void"; // TODO
+            r.raiiDecl + nn + navigate(function) + buildMethod(declaration, function.raiiName, raii);
+            if (!raii.body.blank()) { // TODO
+                r.raiiDef + nn + navigate(function) + buildMethod(!declaration, function.raiiName, raii);
+            }
+        }
     }
 
     // Generate handle declarations.
@@ -1445,10 +1478,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (*function.name == "vmaBuildStatsString") return function.sourcePosition;
         throw std::runtime_error("Could not find vmaBuildStatsString");
     }());
-    Segment raiiForward, raiiDeclarations;
+    Segment raiiContent;
+    for (Handle& h : handleVector) raiiContent + n + navigate(h) + "class " + h.name + ";";
+    raiiContent + navigate.reset + n + "using VULKAN_HPP_NAMESPACE::exchange;";
     for (Handle& h : handleVector) {
-        raiiForward + n + navigate(h) + "class " + h.name + ";";
-
         // Generate body pieces.
         Segment classTemplate, memberDecls, constructors, moveInit, swap, operators, clear, release, getters;
         if (*h.name == "Buffer" || *h.name == "Image") {
@@ -1673,9 +1706,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         )"_seg.replace(std::nullopt, constructors, moveInit.pop(), swap.pop(), operators, clear, release, getters);
 
         // Generate handle class.
-        raiiDeclarations + nn + navigate(h) + std::move(classTemplate).replace(h.name, body, memberDecls);
+        raiiContent + nn + navigate(h) + std::move(classTemplate).replace(h.name, body + std::move(h.raiiDecl + navigate(h)), memberDecls);
     }
-    (raiiForward, raiiDeclarations) + navigate.reset;
+    raiiContent + navigate.reset + nn + std::move(namespaceHandle.raiiDecl);
+    for (Handle& h : handleVector) raiiContent + nn + std::move(h.raiiDef);
+    raiiContent + nn + std::move(namespaceHandle.raiiDef) + navigate.reset;
 
     // Generate files.
     R"(
@@ -1746,12 +1781,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     namespace VMA_HPP_NAMESPACE {
       namespace VMA_HPP_RAII_NAMESPACE {
         $0
-        using VULKAN_HPP_NAMESPACE::exchange;
-
-        $1
       }
     }
-    )"_seg.replace(raiiForward, raiiDeclarations).resolve(source.tree).generateHpp("raii");
+    )"_seg.replace(raiiContent).resolve(source.tree).generateHpp("raii");
     return { handles, uniqueHandles, functions };
 }
 
