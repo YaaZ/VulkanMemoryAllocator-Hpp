@@ -63,9 +63,6 @@ std::string camelCase(const std::string_view& s) {
     return result;
 }
 
-template<class, class=void> struct HasStdGet : std::bool_constant<false> {};
-template<class T> struct HasStdGet<T, std::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::bool_constant<true> {};
-
 /**
  * Node-based text representation for template processing and code generation.
  */
@@ -110,17 +107,7 @@ class Segment {
     template<class T, std::size_t... I>
     static auto ArrayTupleType(std::index_sequence<I...>) -> std::tuple<ArrayTupleElement<T, I>...>* { return nullptr; }
     template<class T, std::size_t S> using ArrayTuple = std::remove_pointer_t<decltype(ArrayTupleType<T>(std::make_index_sequence<S>()))>;
-
-    template<int Size, class T, template<int, class> class Self> class VectorBase : public ArrayTuple<T, Size> {
-        template<std::size_t... I> Self<Size + 1, T> join(T&& o, std::index_sequence<I...>) && {
-            return { std::forward<T>(std::get<I>(*this))..., std::forward<T>(o) };
-        }
-    public:
-        using ArrayTuple<T, Size>::ArrayTuple;
-        auto& operator*() { return static_cast<ArrayTuple<T, Size>&>(*this); }
-        Self<Size + 1, T> operator,(T&& o) && { return std::move(*this).join(std::forward<T>(o), std::make_index_sequence<Size>()); }
-        Self<2, Self<Size, T>> operator,(Self<Size, T>&& o) && { return { static_cast<Self<Size, T>&&>(*this), std::move(o) }; }
-    };
+    template <class Expected, class T> using ForwardReturn = std::enable_if_t<std::is_same_v<Expected, std::decay_t<T>>, T>;
 
 public:
     class Specialization {
@@ -139,50 +126,47 @@ public:
         }
     };
 
-    template<int Size, class T = Segment> class Vector : public VectorBase<Size, T, Vector> {
-        template<std::size_t, class Ts, class=std::enable_if_t<!HasStdGet<Ts>::value>>
-        static const auto& element(const Ts& t) { return t; }
-        template<std::size_t>
-        static Segment element(const Segment& t) { return t; }
-        template<std::size_t, class... Ts>
-        static const auto& element(const std::variant<Ts...>& t) { return t; }
-        template<std::size_t I, class... Ts>
-        static const auto& element(const std::tuple<Ts...>& t) { return std::get<I>(t); }
-        template<std::size_t I, class... Ts>
-        static const auto& element(const std::pair<Ts...>& t) { return std::get<I>(t); }
-
-        template<bool Back, class Arg, std::size_t I = 0> void plus(const Arg& arg) {
-            if constexpr (Back) std::get<I>(*this) + element<I>(arg);
-            else element<I>(arg) + std::get<I>(*this);
-            if constexpr (I < Size - 1) plus<Back, Arg, I + 1>(arg);
+    template<int Size, class T = Segment> class Vector : public ArrayTuple<T, Size> {
+        template<bool Back, class Arg, std::size_t I = 0> void concat(const Arg& arg) {
+            if constexpr (Back) std::get<I>(*this) << arg;
+            else arg >>= std::get<I>(*this);
+            if constexpr (I < Size - 1) concat<Back, Arg, I + 1>(arg);
+        }
+        template<std::size_t... I> Vector<Size + 1, T> join(T&& o, std::index_sequence<I...>) && {
+            return { std::forward<T>(std::get<I>(*this))..., std::forward<T>(o) };
         }
     public:
-        using VectorBase<Size, T, Vector>::VectorBase;
+        using ArrayTuple<T, Size>::ArrayTuple;
+        auto& operator*() & { return static_cast<ArrayTuple<T, Size>&>(*this); }
+        Vector<Size + 1, T> operator,(T&& o) && { return std::move(*this).join(std::forward<T>(o), std::make_index_sequence<Size>()); }
         template<std::size_t I = 0> Vector& pop() {
             std::get<I>(*this).pop();
             if constexpr (I < Size - 1) pop<I + 1>();
             return *this;
         }
-        template<class Arg> friend Vector& operator+(Vector& v, const Arg& arg) { v.template plus<true>(arg); return v; }
-        template<class Arg> friend Vector& operator+(const Arg& arg, Vector& v) { v.template plus<false>(arg); return v; }
-        template<class Arg> friend Vector&& operator+(Vector&& v, const Arg& arg) { v.template plus<true>(arg); return std::move(v); }
-        template<class Arg> friend Vector&& operator+(const Arg& arg, Vector&& v) { v.template plus<false>(arg); return std::move(v); }
+        template<class V, class Arg> friend ForwardReturn<Vector, V> operator<<(V&& v, const Arg& arg) {
+            v.template concat<true>(arg);
+            return std::forward<V>(v);
+        }
+        template<class V, class Arg> friend ForwardReturn<Vector, V> operator>>=(const Arg& arg, V&& v) {
+            v.template concat<false>(arg);
+            return std::forward<V>(v);
+        }
     };
 
     class Token : public Node {
+        using Node::Node;
     public:
-        template<int Size, class T = Token> struct Vector : VectorBase<Size, T, Vector> {
-            using VectorBase<Size, T, Vector>::VectorBase;
-        };
         Token() : Node(StringViewNode { nullptr, 0, 0 }) {}
         Token(const char* s, const int indent = 0) : Node(StringViewNode { s, static_cast<int>(std::strlen(s)), indent }) {}
-        template<std::size_t N> Token(const char(&s)[N], int indent = 0) : Node(StringViewNode { s, N - 1, indent }) {}
+        template<std::size_t N> Token(const char(&s)[N], const int indent = 0) : Node(StringViewNode { s, N - 1, indent }) {}
         Token(const std::string_view& s, const int indent = 0) : Node(StringViewNode { s.data(), static_cast<int>(s.length()), indent }) {}
         Token(const std::string& s, const int indent = 0) : Node(StringNode { std::make_shared<StringNode::Data>(StringNode::Data { s, indent }) }) {}
-        Vector<2, Token&> operator,(Token& o) { return { *this, o }; }
         explicit operator std::string() const { return std::string(**this); }
         std::size_t length() const { return (**this).length(); }
         explicit operator bool() const { return length() > 0; }
+        friend bool operator==(const Token& a, const Token& b) { return *a == *b; }
+        friend bool operator!=(const Token& a, const Token& b) { return *a != *b; }
         std::string_view operator*() const { return *info(*this)->view; }
         Token substr(const std::size_t pos = 0, const std::size_t count = -1) const {
             if (const auto* n = std::get_if<StringViewNode>(this))
@@ -319,8 +303,7 @@ public:
     template<std::size_t N> explicit Segment(const char(&source)[N]) : Segment(source, N - 1) {}
     friend Segment operator ""_seg(const char* data, const std::size_t size) { return Segment(data, size); }
 
-    Segment& clear() { nodes.clear(); return *this; }
-    Segment&& pop() && { if (!nodes.empty()) nodes.pop_back(); return std::move(*this); }
+    Segment& clear() & { nodes.clear(); return *this; }
     Segment& pop() & { if (!nodes.empty()) nodes.pop_back(); return *this; }
 
     /**
@@ -331,33 +314,29 @@ public:
         return true;
     }
 
-    Vector<2, Segment&> operator,(Segment& o) { return { *this, o }; }
-    friend Segment&& operator+(Segment&& s, const Token& o) { s.nodes.emplace_back(o); return std::move(s); }
-    friend Segment&& operator+(Segment&& s, const Node& o) { s.nodes.emplace_back(o); return std::move(s); }
-    friend Segment&  operator+(Segment& s, const Token& o) { s.nodes.emplace_back(o); return s; }
-    friend Segment&  operator+(Segment& s, const Node& o) { s.nodes.emplace_back(o); return s; }
-    friend Segment&& operator+(const Token& o, Segment&& s) { s.nodes.emplace(s.nodes.begin(), o); return std::move(s); }
-    friend Segment&& operator+(const Node& o, Segment&& s) { s.nodes.emplace(s.nodes.begin(), o); return std::move(s); }
-    friend Segment&  operator+(const Token& o, Segment& s) { s.nodes.emplace(s.nodes.begin(), o); return s; }
-    friend Segment&  operator+(const Node& o, Segment& s) { s.nodes.emplace(s.nodes.begin(), o); return s; }
+    Vector<2, Segment&> operator,(Segment& o) & { return { *this, o }; }
 
-    friend Segment& operator+(Segment& s, Segment&& o) {
-        s.nodes.reserve(s.nodes.size() + o.nodes.size());
-        std::move(o.nodes.begin(), o.nodes.end(), std::back_inserter(s.nodes));
-        return s;
+    template<class S> friend ForwardReturn<Segment, S> operator<<(S&& s, const Token& t) {
+        s.nodes.emplace_back(t);
+        return std::forward<S>(s);
     }
-    friend Segment& operator+(Segment&& o, Segment& s) {
-        s.nodes.reserve(s.nodes.size() + o.nodes.size());
-        std::move(o.nodes.begin(), o.nodes.end(), std::inserter(s.nodes, s.nodes.begin()));
-        return s;
+    template<class S> friend ForwardReturn<Segment, S> operator>>=(const Token& t, S&& s) {
+        s.nodes.emplace(s.nodes.begin(), t);
+        return std::forward<S>(s);
+    }
+    template<class S> friend ForwardReturn<Segment, S> operator<<(S&& s, const Segment& o) {
+        s.nodes.insert(s.nodes.end(), o.nodes.begin(), o.nodes.end());
+        return std::forward<S>(s);
+    }
+    template<class S> friend ForwardReturn<Segment, S> operator>>=(const Segment& o, S&& s) {
+        s.nodes.insert(s.nodes.begin(), o.nodes.begin(), o.nodes.end());
+        return std::forward<S>(s);
     }
 
-    template<class... Args> Segment&& replace(const Args&... args) && { replaceImpl(std::nullopt, args...); return std::move(*this); }
-    template<class... Args> Segment& replace(const Args&... args) & { replaceImpl(std::nullopt, args...); return *this; }
-    template<class... Args> Segment&& replace(Specialization spec, const Args&... args) && { replaceImpl(spec, args...); return std::move(*this); }
-    template<class... Args> Segment& replace(Specialization spec, const Args&... args) & { replaceImpl(spec, args...); return *this; }
+    template<class... Args> Segment replace(const Args&... args) && { replaceImpl(std::nullopt, args...); return std::move(*this); }
+    template<class... Args> Segment replace(Specialization spec, const Args&... args) && { replaceImpl(spec, args...); return std::move(*this); }
 
-    Segment& resolve(const ConditionalTree& tree, int startPosition = 0);
+    Segment resolve(const ConditionalTree& tree, int startPosition = 0) &&;
 
     void generateHpp(std::string name) const {
         const std::string file = "vk_mem_alloc_" + name + ".hpp";
@@ -413,7 +392,7 @@ struct {
 */
 class ConditionalTree {
     struct Statement {
-        std::string_view directive;
+        Token directive;
         int sourcePosition;
         enum class Type { IF, ELIF, ELSE, ENDIF } type;
         int descent = -1; // Descent chain: $parent <- #if <- #elif <- #else <- #endif
@@ -493,7 +472,7 @@ public:
             for (int from, to, next;
                 sourcePosition >= (to = at(next = current().ascent).sourcePosition) |
                 sourcePosition < (from = current().sourcePosition); statement = next)
-                if (to > from) ascent + n + "#" + at(next).directive;
+                if (to > from) ascent << n << "#" << at(next).directive;
             // Find target statement.
             int target;
             for (int from = statement, to = current().ascent; (target = (from + to) / 2) > from;)
@@ -501,20 +480,20 @@ public:
             while (at(target).type == Statement::Type::ENDIF) target = at(target).ascent;
             // Descend into the target (ascend from the target, actually).
             for (int i = target; i != statement; i = at(i).descent)
-                n + ("#" + (at(i).directive + descent));
+                n >>= "#" >>= at(i).directive >>= descent;
             statement = target;
-            return ascent.blank() && descent.blank() ? ascent : ascent + std::move(descent) + n;
+            return ascent.blank() && descent.blank() ? ascent : ascent << descent << n;
         }
     };
     Traversal traverse(const int start = 0) const { return Traversal(this, start); }
 };
 
-Segment& Segment::resolve(const ConditionalTree& tree, const int startPosition) {
+Segment Segment::resolve(const ConditionalTree& tree, const int startPosition) && {
     auto traverse = tree.traverse(startPosition);
     for (int i = 0; i < nodes.size(); ++i)
         if (const auto* n = std::get_if<NavigateNode>(&nodes[i]))
             replaceNode(i--, std::numeric_limits<int>::min(), traverse.navigate(n->sourcePosition));
-    return *this;
+    return std::move(*this);
 }
 
 /**
@@ -633,7 +612,7 @@ public:
             // Ignore void* - those should not be represented as arrays.
             if (auto& a = result[i]; a.lenIfNotNull && (a.pointers > 1 || a.kind != Kind::VOID)) {
                 for (int j = 0; j < result.size(); ++j) {
-                    if (auto& s = result[j]; *a.lenIfNotNull == *s.name) {
+                    if (auto& s = result[j]; a.lenIfNotNull == s.name) {
                         s.deducedArrays.push_back(i);
                         a.deducedArraySize = j;
                         break;
@@ -678,30 +657,30 @@ Symbols generateEnums(const Source& source) {
                 return e;
             }();
 
-            entryPieces + navigate(begin, entryMatch);
-            entries + "\ne$0 = $1,"_seg.replace(entry, originalEntry);
-            entryToString + "\nif (value == $0::e$1) return \"$1\";"_seg.replace(name, entry);
+            entryPieces << navigate(begin, entryMatch);
+            entries << n << "e" << entry << " = " << originalEntry << ",";
+            entryToString << n << "if (value == " << name << "::e" << entry << ") return \"" << entry << "\";";
             if (flagBits && bitEntry) {
-                allFlags + "\n$2 VMA_HPP_NAMESPACE::$0::e$1"_seg.replace(name, entry, allFlags.blank() ? " " : "|");
-                flagsToString + "\nif (value & $0::e$1) result += \" $1 |\";"_seg.replace(name, entry);
+                allFlags << n << (allFlags.blank() ? " " : "|") << " VMA_HPP_NAMESPACE::" << name << "::e" << entry;
+                flagsToString << n << "if (value & " << name << "::e" << entry << ") result += \" " << entry << " |\";";
             }
         }
         entries.pop();
-        entryPieces + navigate(match);
+        entryPieces << navigate(match);
 
-        (content, toString) + nn + navigate(match);
+        (content, toString) << nn << navigate(match);
 
-        content + R"(
+        content << R"(
         // wrapper class for enum Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
         enum class $0$1 {
           $2
         };
-        )"_seg.replace(name, flagBits ? " : Vma"_seg + flagBits : ""_seg, entries);
-        if (flagBits) content + "// wrapper using for bitmask Vma" + flagBits +
-            ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html" +
-            n + "using " + flagBits + " = VULKAN_HPP_NAMESPACE::Flags<" + name + ">;";
+        )"_seg.replace(name, flagBits ? " : Vma"_seg << flagBits : ""_seg, entries);
+        if (flagBits) content << "// wrapper using for bitmask Vma" << flagBits <<
+            ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html" <<
+            n << "using " << flagBits << " = VULKAN_HPP_NAMESPACE::Flags<" << name << ">;";
 
-        toString + R""(
+        toString << R""(
         VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR_20 std::string to_string($0 value) {
           $1
           return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
@@ -709,7 +688,7 @@ Symbols generateEnums(const Source& source) {
         )""_seg.replace(name, entryToString);
 
         if (flagBits) {
-            flagTraits + nn + navigate(match) + R"(
+            flagTraits << nn << navigate(match) << R"(
 
             template<> struct FlagTraits<VMA_HPP_NAMESPACE::$0> {
               using WrappedType = Vma$0;
@@ -719,7 +698,7 @@ Symbols generateEnums(const Source& source) {
             };
             )"_seg.replace(name, allFlags);
 
-            toString + R"(
+            toString << R"(
 
             VULKAN_HPP_INLINE std::string to_string($0 value) {
               if (!value) return "{}";
@@ -731,7 +710,7 @@ Symbols generateEnums(const Source& source) {
             }
             )"_seg.replace(flagBits, flagsToString);
         }
-        entryPieces + navigate.reset;
+        entryPieces << navigate.reset;
     }
 
     R"(
@@ -776,14 +755,14 @@ Symbols generateStructs(const Source& source) {
                 storageType = std::regex_replace(std::string(member.type), regex, "VULKAN_HPP_NAMESPACE::ArrayWrapper1D");
                 constexprToken = "VULKAN_HPP_CONSTEXPR_14";
             } else containsPFN |= member.kind == Var::Kind::PFN;
-            memberPieces + navigate(member);
+            memberPieces << navigate(member);
 
             // Generate constructor parameter and setter.
             if (!constructorParams.blank())
-                (constructorParams, constructorInitializer, reflectTypes, reflectTie) + n + Token(", ", -2);
-            constructorParams + member.type + " " + member.name + "_ = {}";
-            constructorInitializer + member.name + " { " + member.name + "_ }";
-            setters + R"(
+                (constructorParams, constructorInitializer, reflectTypes, reflectTie) << n << Token(", ", -2);
+            constructorParams << member.type << " " << member.name << "_ = {}";
+            constructorInitializer << member.name << " { " << member.name << "_ }";
+            setters << R"(
             VULKAN_HPP_CONSTEXPR_14 $0& set$3($2 $1_) VULKAN_HPP_NOEXCEPT {
               $1 = $1_;
               return *this;
@@ -793,16 +772,16 @@ Symbols generateStructs(const Source& source) {
 
             // Generate enhanced constructor parameter and setter.
             if (member.deducedArrays.empty()) { // Skip deduced size params.
-                if (!enhancedParams.blank()) (enhancedParams, enhancedInitializer) + n + Token(", ", -2);
+                if (!enhancedParams.blank()) (enhancedParams, enhancedInitializer) << n << Token(", ", -2);
                 Token defaultAssignment = hasEnhancedConstructor ? " = {}" : ""; // No default assignments till the first enhanced param (inclusive).
                 if (member.deducedArraySize != -1) {
                     hasEnhancedConstructor = true;
                     const auto& size = members[member.deducedArraySize];
                     if (size.deducedArrays.size() > 1) throw std::runtime_error("Deducing size from multiple arrays"); // Not implemented.
-                    enhancedParams + "VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<" + member.prettyType + "> const & " + member.prettyName + "_";
-                    enhancedInitializer + size.name + " { static_cast<" + size.type + ">(" + member.prettyName + "_.size()) }";
-                    enhancedInitializer + n + Token(", ", -2) + member.name + " { " + member.prettyName + "_.data() }";
-                    setters + R"(
+                    enhancedParams << "VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<" << member.prettyType << "> const & " << member.prettyName << "_";
+                    enhancedInitializer << size.name << " { static_cast<" << size.type << ">(" << member.prettyName << "_.size()) }";
+                    enhancedInitializer << n << Token(", ", -2) << member.name << " { " << member.prettyName << "_.data() }";
+                    setters << R"(
                     #if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
                     $0& set$1(VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<$5> const & $2_) VULKAN_HPP_NOEXCEPT {
                       $4 = static_cast<$6>($2_.size());
@@ -813,21 +792,21 @@ Symbols generateStructs(const Source& source) {
 
                     )"_seg.replace(name, member.prettyName.capitalize(), member.prettyName, member.name, size.name, member.prettyType, size.type);
                 } else {
-                    enhancedParams + member.type + " " + member.name + "_";
-                    enhancedInitializer + member.name + " { " + member.name + "_ }";
+                    enhancedParams << member.type << " " << member.name << "_";
+                    enhancedInitializer << member.name << " { " << member.name << "_ }";
                 }
-                enhancedParams + defaultAssignment;
+                enhancedParams << defaultAssignment;
             }
 
             // Generate comparison and field declarations.
-            reflectTypes + storageType + " const &";
-            reflectTie + member.name;
-            if (!comparison.blank()) comparison + n + Token("&& ", -3);
-            comparison + "$0 == rhs.$0"_seg.replace(member.name);
-            fields + "\n$1 $0 = {};"_seg.replace(member.name, storageType);
+            reflectTypes << storageType << " const &";
+            reflectTie << member.name;
+            if (!comparison.blank()) comparison << n << Token("&& ", -3);
+            comparison << member.name << " == rhs." << member.name;
+            fields << n << storageType << " " << member.name << " = {};";
         }
         setters.pop();
-        memberPieces + navigate(match);
+        memberPieces << navigate(match);
 
         comparison = R"(
         bool operator==($0 const & rhs) const VULKAN_HPP_NOEXCEPT {
@@ -860,7 +839,7 @@ Symbols generateStructs(const Source& source) {
         $0(Vma$0 const & rhs) VULKAN_HPP_NOEXCEPT : $0(*reinterpret_cast<$0 const *>(&rhs)) {}
         )"_seg.replace(name, constexprToken, constructorParams, constructorInitializer);
         if (hasEnhancedConstructor) {
-            constructors + R"(
+            constructors << R"(
 
             #if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
             $0(
@@ -871,7 +850,7 @@ Symbols generateStructs(const Source& source) {
             )"_seg.replace(name, enhancedParams, enhancedInitializer);
         }
 
-        content + nn + navigate(match) + R"(
+        content << nn << navigate(match) << R"(
         // wrapper struct for struct Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$1.html
         struct $0 {
           using NativeType = Vma$0;
@@ -926,7 +905,7 @@ Symbols generateStructs(const Source& source) {
     namespace VMA_HPP_NAMESPACE {
       $0
     }
-    )"_seg.replace(content + navigate.reset).resolve(source.tree).generateHpp("structs");
+    )"_seg.replace(content << navigate.reset).resolve(source.tree).generateHpp("structs");
     return structs;
 }
 
@@ -980,7 +959,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         for (auto& param : function.params) {
             if (param.kind != Var::Kind::VMA) continue;
             for (Handle& handle : handleVector) {
-                if (*handle.name == (*param.underlyingType).substr(3)) {
+                if (handle.name == (*param.underlyingType).substr(3)) {
                     param.handle = &handle;
                     break;
                 }
@@ -1028,10 +1007,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 return function.methodName;
             };
             std::string_view handle = function.handle ? *function.handle->name : "";
-            if (*function.name == "vmaFreeStatsString" || *function.name == "vmaFreeVirtualBlockStatsString" ||
-                *function.name == "vmaDestroyBuffer" || *function.name == "vmaDestroyImage") function.raiiName = {}; // No RAII variant.
-            else if (*function.name == "vmaCopyMemoryToAllocation") function.raiiName = "copyFromMemory";
-            else if (*function.name == "vmaClearVirtualBlock")      function.raiiName = "clearBlock";
+            if (function.name == "vmaFreeStatsString" || function.name == "vmaFreeVirtualBlockStatsString" ||
+                function.name == "vmaDestroyBuffer" || function.name == "vmaDestroyImage") function.raiiName = {}; // No RAII variant.
+            else if (function.name == "vmaCopyMemoryToAllocation") function.raiiName = "copyFromMemory";
+            else if (function.name == "vmaClearVirtualBlock")      function.raiiName = "clearBlock";
             else if (handle == "Allocation")   function.raiiName = replace({"Allocation", "Memory"});
             else if (handle == "VirtualBlock") function.raiiName = replace({"VirtualBlock", "Virtual"});
             else if (function.handle) function.raiiName = replace({ handle });
@@ -1041,7 +1020,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Save destructor.
         if (shortName && function.handle && function.params.size() == 1 + !!function.handle->owner) {
             if (function.handle->destructor)
-                throw std::runtime_error("Conflicting destructor for handle: " + std::string(*function.handle->name));
+                throw std::runtime_error("Conflicting destructor for handle: " + std::string(function.handle->name));
             function.handle->destructor = function.methodName;
             function.raiiName = {}; // Destructors do not have separate methods in RAII.
         }
@@ -1066,12 +1045,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             Param* operator->() const { return param; }
             Output(Param& param) : param(&param) {
                 if (param.handle) {
-                    if (param.handle->destructor) uniqueType = "Unique" + std::string(*param.prettyType);
+                    if (param.handle->destructor) uniqueType = "Unique" + std::string(param.prettyType);
                     raiiType = param.prettyType;
-                } else if (*param.underlyingType == "VkBuffer") {
+                } else if (param.underlyingType == "VkBuffer") {
                     uniqueType = "UniqueBuffer";
                     raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer";
-                } else if (*param.underlyingType == "VkImage") {
+                } else if (param.underlyingType == "VkImage") {
                     uniqueType = "UniqueImage";
                     raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image";
                 }
@@ -1111,103 +1090,101 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         else if (function.returnType == "void") simpleReturn = "void";
         else if (function.returnType == "VkResult") {
             simpleReturn = "VULKAN_HPP_NAMESPACE::Result";
-            resultCheck = "VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::$0\""_seg + ");";
+            resultCheck = "VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING \"::$0\""_seg << ");";
             resultValue = ResultValue::VALUE_TYPE;
             // Custom result checks.
-            if (*function.name == "vmaBeginDefragmentationPass" ||
-                *function.name == "vmaEndDefragmentationPass") {
+            if (function.name == "vmaBeginDefragmentationPass" ||
+                function.name == "vmaEndDefragmentationPass") {
                 resultValue = ResultValue::VALUE;
-                resultCheck.pop() + ", { VULKAN_HPP_NAMESPACE::Result::eSuccess, VULKAN_HPP_NAMESPACE::Result::eIncomplete });";
-            } else if (*function.name == "vmaFindMemoryTypeIndex" ||
-                *function.name == "vmaFindMemoryTypeIndexForBufferInfo" ||
-                *function.name == "vmaFindMemoryTypeIndexForImageInfo")
-                "if (result == VULKAN_HPP_NAMESPACE::Result::eErrorFeatureNotPresent) memoryTypeIndex = VULKAN_HPP_NAMESPACE::MaxMemoryTypes;\nelse "_seg + resultCheck;
+                resultCheck.pop() << ", { VULKAN_HPP_NAMESPACE::Result::eSuccess, VULKAN_HPP_NAMESPACE::Result::eIncomplete });";
+            } else if (function.name == "vmaFindMemoryTypeIndex" ||
+                function.name == "vmaFindMemoryTypeIndexForBufferInfo" ||
+                function.name == "vmaFindMemoryTypeIndexForImageInfo")
+                "if (result == VULKAN_HPP_NAMESPACE::Result::eErrorFeatureNotPresent) memoryTypeIndex = VULKAN_HPP_NAMESPACE::MaxMemoryTypes;\nelse "_seg >>= resultCheck;
         }
 
         // Convert enhanced outputs.
         if (enhancedReturn.blank()) {
             if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
-                enhancedReturn + "std::pair<$2, $1>"_seg; // Pair order is reversed.
+                enhancedReturn = "std::pair<$2, $1>"_seg; // Pair order is reversed.
                 if (outputs[0]->kind != Var::Kind::VK) simpleReturn = {}; // Trigger error.
-                else raiiReturn + outputs[0]->prettyType.substr(22); // RAII uses combined handles.
+                else raiiReturn = outputs[0]->prettyType.substr(22); // RAII uses combined handles.
                 enhancedOutput = "pair";
-                enhancedOutputs + n + "std::pair<" + outputs[1]->prettyType + ", " + outputs[0]->prettyType + "> pair;" +
-                    n + outputs[0]->prettyType + "& " + outputs[0]->prettyName + " = pair.second;" +
-                    n + outputs[1]->prettyType + "& " + outputs[1]->prettyName + " = pair.first;";
+                enhancedOutputs << n << "std::pair<" << outputs[1]->prettyType << ", " << outputs[0]->prettyType << "> pair;" <<
+                    n << outputs[0]->prettyType << "& " << outputs[0]->prettyName << " = pair.second;" <<
+                    n << outputs[1]->prettyType << "& " << outputs[1]->prettyName << " = pair.first;";
                 if (hasUniqueVariant) {
-                    uniqueWrap + " {";
+                    uniqueWrap << " {";
                     for (auto& output : Iterable(outputs.rbegin(), outputs.rend())) {
-                        uniqueWrap + n + "  ";
-                        if (output.uniqueType) uniqueWrap + output.uniqueType + "(" + output->prettyName + (handle ? ", *this" : ", {}") + ")";
-                        else uniqueWrap + output->prettyName;
-                        uniqueWrap + ",";
+                        uniqueWrap << n << "  ";
+                        if (output.uniqueType) uniqueWrap << output.uniqueType << "(" << output->prettyName << (handle ? ", *this" : ", {}") << ")";
+                        else uniqueWrap << output->prettyName;
+                        uniqueWrap << ",";
                     }
-                    uniqueWrap.pop() + n + "};";
+                    uniqueWrap.pop() << n << "};";
                 }
             } else if (outputs.size() == 1) {
                 enhancedOutput = outputs[0]->prettyName;
                 if (outputs[0]->lenIfNotNull) { // Vector.
                     vecAllocName = (vecAllocType = outputs[0]->prettyType).capitalize(false);
-                    enhancedReturn + "std::vector<$1, $0Allocator>"_seg.replace(vecAllocType);
-                    raiiReturn + "std::vector<$1>"_seg;
+                    enhancedReturn = "std::vector<$1, $0Allocator>"_seg.replace(vecAllocType);
+                    raiiReturn = "std::vector<$1>"_seg;
                     // Generate template for vector allocator.
-                    enhanced.ret + "template <typename " + vecAllocType + "Allocator" +
-                        (declaration & !vectorAllocator)[" = std::allocator<$1>"_seg] +
-                        vectorAllocator[R"(,
-                                  typename std::enable_if<std::is_same<typename $0Allocator::value_type, $1>::value, int>::type
-                        )"_seg.pop().replace(vecAllocType)] +
-                        (declaration & vectorAllocator)[" = 0"]  + ">" + n;
+                    enhanced.ret << "template <typename " << vecAllocType << "Allocator" <<
+                        (declaration & !vectorAllocator)[" = std::allocator<$1>"_seg] <<
+                        vectorAllocator[",\n          typename std::enable_if<std::is_same<typename $0Allocator::value_type, $1>::value, int>::type"_seg.replace(vecAllocType)] <<
+                        (declaration & vectorAllocator)[" = 0"]  << ">" << n;
                     // Unique variants should use a default allocator for the intermediate vector.
-                    enhancedOutputs + n + "std::vector<" + outputs[0]->prettyType +
-                        (!unique)[", $0Allocator"_seg.replace(vecAllocType)] + "> " + enhancedOutput;
+                    enhancedOutputs << n << "std::vector<" << outputs[0]->prettyType <<
+                        (!unique)[", $0Allocator"_seg.replace(vecAllocType)] << "> " << enhancedOutput;
                     Token size;
                     if (outputs[0]->deducedArraySize == -1) { // Custom size deduction logic.
-                        if (*function.name == "vmaGetHeapBudgets" && *outputs[0]->lenIfNotNull == "\"VkPhysicalDeviceMemoryProperties::memoryHeapCount\"")
+                        if (function.name == "vmaGetHeapBudgets" && outputs[0]->lenIfNotNull == "\"VkPhysicalDeviceMemoryProperties::memoryHeapCount\"")
                             size = "getMemoryProperties()->memoryHeapCount";
                         else throw std::runtime_error("Could not deduce output vector size for " + std::string(function.name));
                     } else size = params[outputs[0]->deducedArraySize].prettyName;
-                    enhancedOutputs + "(" + size + (!unique & vectorAllocator)[", "_seg + vecAllocName + "Allocator"] + ");";
+                    enhancedOutputs << "(" << size << (!unique & vectorAllocator)[", "_seg << vecAllocName << "Allocator"] << ");";
                     if (hasUniqueVariant) {
-                        uniqueWrap + vectorAllocator["($0Allocator)"_seg.replace(vecAllocName)] + ";" + n +
-                            enhancedOutput + "Unique.reserve(" + enhancedOutput + ".size());" + n +
-                            "for (auto const& t : " + enhancedOutput + ") " + enhancedOutput + "Unique.emplace_back(t" + (handle ? ", *this" : ", {}") + ");";
+                        uniqueWrap << vectorAllocator["($0Allocator)"_seg.replace(vecAllocName)] << ";" << n <<
+                            enhancedOutput << "Unique.reserve(" << enhancedOutput << ".size());" << n <<
+                            "for (auto const& t : " << enhancedOutput << ") " << enhancedOutput << "Unique.emplace_back(t" << (handle ? ", *this" : ", {}") << ");";
                     }
                 } else { // Single value.
-                    (enhancedReturn, raiiReturn) + "$1"_seg;
-                    enhancedOutputs + n + "$0 $1;"_seg.replace(outputs[0]->prettyType, enhancedOutput);
-                    if (hasUniqueVariant) uniqueWrap + " { " + enhancedOutput + (handle ? ", *this" : ", {}") + " };";
+                    (enhancedReturn, raiiReturn) << "$1"_seg;
+                    enhancedOutputs << n << outputs[0]->prettyType << " " << enhancedOutput << ";";
+                    if (hasUniqueVariant) uniqueWrap << " { " << enhancedOutput << (handle ? ", *this" : ", {}") << " };";
                 }
             }
         } else if (!outputs.empty()) simpleReturn = {}; // Trigger error.
-        if (!uniqueWrap.blank()) Segment(enhancedReturn) + " " + enhancedOutput + "Unique" + uniqueWrap;
+        if (!uniqueWrap.blank()) enhancedReturn >>= " " >>= enhancedOutput >>= "Unique" >>= uniqueWrap;
 
         // Verify that conversion succeeded.
         if (!simpleReturn || (enhancedReturn.blank() && !outputs.empty()))
             throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
         // Generate macros.
-        if (resultValue == ResultValue::VALUE || !enhancedReturn.blank()) (enhanced.ret, raii.ret) + "VULKAN_HPP_NODISCARD ";
-        else if (resultValue == ResultValue::VALUE_TYPE) (enhanced.ret, raii.ret) + "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
-        if (*simpleReturn != "void") simple.ret + "VULKAN_HPP_NODISCARD ";
-        (simple.ret, enhanced.ret, raii.ret) + (!declaration)["VULKAN_HPP_INLINE "];
+        if (resultValue == ResultValue::VALUE || !enhancedReturn.blank()) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD ";
+        else if (resultValue == ResultValue::VALUE_TYPE) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
+        if (simpleReturn != "void") simple.ret << "VULKAN_HPP_NODISCARD ";
+        (simple.ret, enhanced.ret, raii.ret) << (!declaration)["VULKAN_HPP_INLINE "];
 
         // Generate a return type.
         if (resultValue == ResultValue::VALUE) {
-            if (enhancedReturn.blank()) (enhancedReturn, raiiReturn) + simpleReturn;
-            else "VULKAN_HPP_NAMESPACE::ResultValue<" + (enhancedReturn, raiiReturn) + ">";
+            if (enhancedReturn.blank()) (enhancedReturn, raiiReturn) << simpleReturn;
+            else "VULKAN_HPP_NAMESPACE::ResultValue<" >>= (enhancedReturn, raiiReturn) << ">";
         } else {
-            if (enhancedReturn.blank()) (enhancedReturn, raiiReturn) + "void";
+            if (enhancedReturn.blank()) (enhancedReturn, raiiReturn) << "void";
             if (resultValue == ResultValue::VALUE_TYPE)
-                "typename VULKAN_HPP_NAMESPACE::ResultValueType<" + (enhancedReturn, raiiReturn) + ">::type";
+                "typename VULKAN_HPP_NAMESPACE::ResultValueType<" >>= (enhancedReturn, raiiReturn) << ">::type";
         }
-        simple.ret + simpleReturn;
-        enhanced.ret + Segment(enhancedReturn);
-        raii.ret + Segment(raiiReturn);
+        simple.ret << simpleReturn;
+        enhanced.ret << enhancedReturn;
+        raii.ret << raiiReturn;
 
         // Generate parameter list.
         bool signatureTransformed = false;
         for (const auto& param : function.methodParams()) {
-            simple.params + param.type + " " + param.name + "," + n;
+            simple.params << param.type << " " << param.name << "," << n;
             if (param.paramType == Param::Type::OUTPUT || !param.deducedArrays.empty()) { // Skip outputs and deduced array sizes.
                 signatureTransformed = true;
                 continue;
@@ -1226,39 +1203,39 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             }
             if (p.blank()) p = param.type;
             else signatureTransformed = true;
-            p + " " + param.prettyName;
-            if (&param >= defaultOutputsFrom) p + (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
-            p + "," + n;
-            if (function.secondHandleParam != &param) raii.params + Segment(p).replace(param.prettyType);
-            enhanced.params + std::move(p).replace(param.prettyType);
+            p << " " << param.prettyName;
+            if (&param >= defaultOutputsFrom) p << (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
+            p << "," << n;
+            if (function.secondHandleParam != &param) raii.params << Segment(p).replace(param.prettyType);
+            enhanced.params << std::move(p).replace(param.prettyType);
         }
         (simple.params, enhanced.params, raii.params).pop().pop();
-        enhanced.params + vectorAllocator[(enhanced.params.blank() ? ""_seg : ",\n"_seg) +
-            vecAllocType + "Allocator& " + vecAllocName + "Allocator"];
+        enhanced.params << vectorAllocator[(enhanced.params.blank() ? ""_seg : ",\n"_seg) <<
+            vecAllocType << "Allocator& " << vecAllocName << "Allocator"];
 
         // Generate deduction statements.
         for (const auto& param : function.methodParams()) {
             if (param.deducedArrays.empty()) continue;
             Segment assertChecks, exceptionChecks;
-            enhanced.body + n + param.type + " " + param.prettyName + " = ";
+            enhanced.body << n << param.type << " " << param.prettyName << " = ";
             for (int i : param.deducedArrays) {
                 const auto& t = params[i];
                 if (t.paramType == Param::Type::OUTPUT) continue;
-                enhanced.body + t.prettyName + ".size()" + " | ";
-                assertChecks + n + "VULKAN_HPP_ASSERT(";
-                exceptionChecks + n + "if (";
+                enhanced.body << t.prettyName << ".size()" << " | ";
+                assertChecks << n << "VULKAN_HPP_ASSERT(";
+                exceptionChecks << n << "if (";
                 if (t.tag != Var::Tag::NOT_NULL) {
-                    assertChecks + t.prettyName + ".empty() || ";
-                    exceptionChecks + "!" + t.prettyName + ".empty() && ";
+                    assertChecks << t.prettyName << ".empty() || ";
+                    exceptionChecks << "!" << t.prettyName << ".empty() && ";
                 }
-                assertChecks + t.prettyName + ".size() == " + param.prettyName + ");";
-                exceptionChecks + t.prettyName + ".size() != " + param.prettyName +
-                    ") throw VULKAN_HPP_NAMESPACE::LogicError(VMA_HPP_NAMESPACE_STRING \"::$0: "_seg +
-                    t.prettyName + ".size() != " + param.prettyName + "\");";
+                assertChecks << t.prettyName << ".size() == " << param.prettyName << ");";
+                exceptionChecks << t.prettyName << ".size() != " << param.prettyName <<
+                    ") throw VULKAN_HPP_NAMESPACE::LogicError(VMA_HPP_NAMESPACE_STRING \"::$0: "_seg <<
+                    t.prettyName << ".size() != " << param.prettyName << "\");";
             }
-            enhanced.body.pop() + ";";
+            enhanced.body.pop() << ";";
             if (param.deducedArrays.size() > 1) // No need to cross-check array sizes when there is only one.
-                enhanced.body + n + R"(
+                enhanced.body << n << R"(
                 #ifdef VULKAN_HPP_NO_EXCEPTIONS
                 $1
                 #else
@@ -1269,55 +1246,55 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
         // Generate a call.
         Segment simpleCall, enhancedCall;
-        (simpleCall, enhancedCall) + function.name + "(";
-        if (handle) (simpleCall, enhancedCall) + "m_" + handle->memberName + ", ";
+        (simpleCall, enhancedCall) << function.name << "(";
+        if (handle) (simpleCall, enhancedCall) << "m_" << handle->memberName << ", ";
         for (const auto& param : function.methodParams()) {
             Segment pass;
             if (param.pointers > 1 || param.kind != Var::Kind::VOID) {
                 if (param.pointers && param.lenIfNotNull && param.kind != Var::Kind::VOID) // Array.
-                    pass + param.prettyName + ".data()";
+                    pass << param.prettyName << ".data()";
                 else if (param.pointers && param.tag == Var::Tag::NOT_NULL) // Reference or local.
-                    pass + "&" + param.prettyName;
+                    pass << "&" << param.prettyName;
                 else if (param.pointers && !param.constant && param.kind != Var::Kind::OTHER && param.kind != Var::Kind::CHAR) // Optional.
-                    pass + "static_cast<" + param.type + ">(" + param.prettyName + ")";
+                    pass << "static_cast<" << param.type << ">(" << param.prettyName << ")";
             }
-            if (pass.blank()) pass + param.prettyName;
-            if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) + // Cast Vk & Vma types.
-                (param.pointers ? "reinterpret_cast<" : "static_cast<") + param.originalType + ">(";
-            simpleCall + param.name;
-            enhancedCall + std::move(pass);
-            if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) + ")"; // Cast Vk & Vma types.
-            (simpleCall, enhancedCall) + ", ";
+            if (pass.blank()) pass << param.prettyName;
+            if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) << // Cast Vk & Vma types.
+                (param.pointers ? "reinterpret_cast<" : "static_cast<") << param.originalType << ">(";
+            simpleCall << param.name;
+            enhancedCall << pass;
+            if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) << ")"; // Cast Vk & Vma types.
+            (simpleCall, enhancedCall) << ", ";
         }
-        (simpleCall, enhancedCall).pop() + ")";
-        if (*simpleReturn != "void")
-            simpleReturn + (" result = static_cast<" + (simpleReturn + (">( " + (simpleCall, enhancedCall) + " )")));
-        simple.body + n + std::move(simpleCall) + ";";
-        enhanced.body + std::move(enhancedOutputs) + n + std::move(enhancedCall) + ";";
+        (simpleCall, enhancedCall).pop() << ")";
+        if (simpleReturn != "void")
+            simpleReturn >>= " result = static_cast<" >>= simpleReturn >>= ">( " >>= (simpleCall, enhancedCall) << " )";
+        simple.body << n << simpleCall << ";";
+        enhanced.body << enhancedOutputs << n << enhancedCall << ";";
 
         // Generate result check.
-        if (!resultCheck.blank()) enhanced.body + n + std::move(resultCheck);
+        if (!resultCheck.blank()) enhanced.body << n << resultCheck;
 
         // Generate unique conversion.
-        if (!uniqueWrap.blank()) enhanced.body + unique[n + std::move(uniqueWrap)];
+        if (!uniqueWrap.blank()) enhanced.body << unique[std::move(n >>= uniqueWrap)];
 
         // Generate return statement.
-        if (*simpleReturn != "void") simple.body + n + "return result;";
-        if (*simpleReturn != "void" || !outputs.empty()) {
-            enhanced.body + n + "return ";
-            if (resultValue == ResultValue::VALUE && outputs.empty()) enhanced.body + "result";
+        if (simpleReturn != "void") simple.body << n << "return result;";
+        if (simpleReturn != "void" || !outputs.empty()) {
+            enhanced.body << n << "return ";
+            if (resultValue == ResultValue::VALUE && outputs.empty()) enhanced.body << "result";
             else {
-                if (resultValue == ResultValue::VALUE) enhanced.body + Segment(enhancedReturn) + "(result, ";
+                if (resultValue == ResultValue::VALUE) enhanced.body << enhancedReturn << "(result, ";
                 else if (resultValue == ResultValue::VALUE_TYPE)
-                    enhanced.body + "VULKAN_HPP_NAMESPACE::detail::createResultValueType(result" + (outputs.empty() ? "" : ", ");
+                    enhanced.body << "VULKAN_HPP_NAMESPACE::detail::createResultValueType(result" << (outputs.empty() ? "" : ", ");
                 if (!outputs.empty() || resultValue == ResultValue::NONE) {
-                    if (hasUniqueVariant) enhanced.body + unique["std::move("];
-                    enhanced.body + enhancedOutput;
-                    if (hasUniqueVariant) enhanced.body + unique["Unique)"];
+                    if (hasUniqueVariant) enhanced.body << unique["std::move("];
+                    enhanced.body << enhancedOutput;
+                    if (hasUniqueVariant) enhanced.body << unique["Unique)"];
                 }
-                if (resultValue != ResultValue::NONE) enhanced.body + ")";
+                if (resultValue != ResultValue::NONE) enhanced.body << ")";
             }
-            enhanced.body + ";";
+            enhanced.body << ";";
         }
 
         // Append methods to the handle.
@@ -1328,36 +1305,36 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             };
             // Generate name.
             Segment methodName;
-            if (handle && variant & !declaration) methodName + *handle->name + "::";
-            methodName + name;
-            if (variant & unique) methodName + "Unique";
-            if (*name == "free") "(" + methodName + ")"; // MSVC debug free workaround.
+            if (handle && variant & !declaration) methodName << handle->name << "::";
+            methodName << name;
+            if (variant & unique) methodName << "Unique";
+            if (name == "free") "(" >>= methodName << ")"; // MSVC debug free workaround.
             // Make a signature.
-            Segment result = "// wrapper function for command "_seg + function.name +
+            Segment result = "// wrapper function for command "_seg << function.name <<
                 ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html";
-            result + n + Segment(method.ret) + " $0($3)"_seg;
-            if (handle) result + " const";
-            if (resultValue == ResultValue::NONE || &method == &simple) result + " VULKAN_HPP_NOEXCEPT";
-            else result + " VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS";
-            if (variant & declaration) result + ";";
-            else result + " {\n  $4\n}"_seg;
-            return std::move(result.replace(variant, methodName, outputType(0), outputType(1), method.params, method.body));
+            result << n << method.ret << " $0($3)"_seg;
+            if (handle) result << " const";
+            if (resultValue == ResultValue::NONE || &method == &simple) result << " VULKAN_HPP_NOEXCEPT";
+            else result << " VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS";
+            if (variant & declaration) result << ";";
+            else result << " {\n  $4\n}"_seg;
+            return std::move(result).replace(variant, methodName, outputType(0), outputType(1), method.params, method.body);
         };
         auto appendMethods = [&](Segment& dst, const Segment::Specialization variant, const Token& name) {
-            dst + nn + navigate(function) + "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg + n +
+            dst << nn << navigate(function) << "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg << n <<
                 buildMethod(variant & !unique & !vectorAllocator, handle, name, enhanced);
-            if (vecAllocName) dst + n +
+            if (vecAllocName) dst << n <<
                 buildMethod(variant & !unique & vectorAllocator, handle, name, enhanced);
             if (hasUniqueVariant) {
-                dst + n + "#ifndef VULKAN_HPP_NO_SMART_HANDLE"_seg + n +
+                dst << n << "#ifndef VULKAN_HPP_NO_SMART_HANDLE"_seg << n <<
                     buildMethod(variant & unique & !vectorAllocator, handle, name, enhanced);
-                if (vecAllocName) dst + n +
+                if (vecAllocName) dst << n <<
                     buildMethod(variant & unique & vectorAllocator, handle, name, enhanced);
-                dst + n + "#endif"_seg;
+                dst << n << "#endif"_seg;
             }
-            dst + n + (signatureTransformed ? "#endif"_seg : "#else"_seg) + n +
+            dst << n << (signatureTransformed ? "#endif"_seg : "#else"_seg) << n <<
                 buildMethod(variant & !unique, handle, name, simple);
-            if (!signatureTransformed) dst + n + "#endif"_seg;
+            if (!signatureTransformed) dst << n << "#endif"_seg;
         };
         Handle& h = handle ? *handle : namespaceHandle;
         appendMethods(h.methodDecl, declaration, function.methodName);
@@ -1367,13 +1344,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             appendMethods(h.methodDef, !declaration, function.shortName);
         }
         if (function.raiiName && (function.handle || hasUniqueVariant)) {
-            if (*function.name == "vmaBuildStatsString" || *function.name == "vmaBuildVirtualBlockStatsString")
+            if (function.name == "vmaBuildStatsString" || function.name == "vmaBuildVirtualBlockStatsString")
                 outputs[0].raiiType = "StatsString"; // Custom RAII type for the stats string.
             for (auto& o : outputs) if (o.raiiType) o->prettyType = o.raiiType;  // TODO // TODO // TODO // TODO
             Handle& r = function.handle ? *function.handle : namespaceHandle;
-            r.raiiDecl + nn + navigate(function) + buildMethod(declaration & !unique, function.handle, function.raiiName, raii);
+            r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !unique, function.handle, function.raiiName, raii);
             if (!raii.body.blank()) { // TODO
-                r.raiiDef + nn + navigate(function) + buildMethod(!declaration & !unique, function.handle, function.raiiName, raii);
+                r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !unique, function.handle, function.raiiName, raii);
             }
         }
     }
@@ -1381,16 +1358,16 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     // Generate handle declarations.
     Segment::Vector<7> content;
     auto& [forwardDecls, uniqueDecls, declarations, handleTraits, cppTypeTraits, uniqueTraits, definitions] = *content;
-    for (const Symbol& s : structs) forwardDecls + n + navigate(s) + "struct " + s.name + ";";
+    for (const Symbol& s : structs) forwardDecls << n << navigate(s) << "struct " << s.name << ";";
     for (Handle& h : handleVector) {
-        (forwardDecls, handleTraits, cppTypeTraits) + n + navigate(h);
-        forwardDecls + "class " + h.name + ";";
-        handleTraits + R"(
+        (forwardDecls, handleTraits, cppTypeTraits) << n << navigate(h);
+        forwardDecls << "class " << h.name << ";";
+        handleTraits << R"(
         template <> struct isVulkanHandleType<VMA_HPP_NAMESPACE::$0> {
           static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
         };
         )"_seg.replace(h.name);
-        cppTypeTraits + R"(
+        cppTypeTraits << R"(
         template <> struct CppType<Vma$0, VK_NULL_HANDLE> {
           using Type = VMA_HPP_NAMESPACE::$0;
         };
@@ -1400,16 +1377,16 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         if (h.destructor) {
             Segment owner, destructor;
             if (h.owner) {
-                owner + "VMA_HPP_NAMESPACE::" + h.owner->name;
-                destructor + "getOwner()." + h.destructor + "(t)";
+                owner << "VMA_HPP_NAMESPACE::" << h.owner->name;
+                destructor << "getOwner()." << h.destructor << "(t)";
             } else {
-                owner + "void";
-                destructor + "t." + h.destructor + "()";
+                owner << "void";
+                destructor << "t." << h.destructor << "()";
             }
-            uniqueDecls + n + navigate(h) + R"(
+            uniqueDecls << n << navigate(h) << R"(
             using Unique$0 = VULKAN_HPP_NAMESPACE::UniqueHandle<$0, detail::Dispatcher>;
             )"_seg.replace(h.name);
-            uniqueTraits + n + navigate(h) + R"(
+            uniqueTraits << n << navigate(h) << R"(
             template <> class UniqueHandleTraits<VMA_HPP_NAMESPACE::$0, VMA_HPP_NAMESPACE::detail::Dispatcher> {
             public:
               class deleter : public VMA_HPP_NAMESPACE::detail::UniqueBase<$1> {
@@ -1425,7 +1402,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         }
 
         // Generate handle class.
-        declarations + nn + navigate(h) + R"(
+        declarations << nn << navigate(h) << R"(
         // wrapper class for handle Vma$0, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_$2.html
         class $0 {
         public:
@@ -1481,28 +1458,28 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         private:
           Vma$0 m_$1 = {};
         };
-        )"_seg.replace(h.name, h.memberName, docLink(*h.name), h.methodDecl + navigate(h));
-        definitions + nn + std::move(h.methodDef + navigate(h));
+        )"_seg.replace(h.name, h.memberName, docLink(*h.name), h.methodDecl << navigate(h));
+        definitions << nn << h.methodDef << navigate(h);
     }
-    declarations + nn + std::move(namespaceHandle.methodDecl);
-    definitions + nn + std::move(namespaceHandle.methodDef);
-    content + navigate.reset;
+    declarations << nn << namespaceHandle.methodDecl;
+    definitions << nn << namespaceHandle.methodDef;
+    content << navigate.reset;
 
     // Generate RAII handle declarations.
     handleVector.emplace_back("Buffer", -1);
     handleVector.emplace_back("Image", -1);
     handleVector.emplace_back("StatsString", [&] { // Use the source position of vmaBuildStatsString.
         for (auto& function : functionVector)
-            if (*function.name == "vmaBuildStatsString") return function.sourcePosition;
+            if (function.name == "vmaBuildStatsString") return function.sourcePosition;
         throw std::runtime_error("Could not find vmaBuildStatsString");
     }());
     Segment raiiContent;
-    for (Handle& h : handleVector) raiiContent + n + navigate(h) + "class " + h.name + ";";
-    raiiContent + navigate.reset + n + "using VULKAN_HPP_NAMESPACE::exchange;";
+    for (Handle& h : handleVector) raiiContent << n << navigate(h) << "class " << h.name << ";";
+    raiiContent << navigate.reset << n << "using VULKAN_HPP_NAMESPACE::exchange;";
     for (Handle& h : handleVector) {
         // Generate body pieces.
         Segment classTemplate, memberDecls, constructors, moveInit, swap, operators, clear, release, getters;
-        if (*h.name == "Buffer" || *h.name == "Image") {
+        if (h.name == "Buffer" || h.name == "Image") {
             classTemplate = R"(
             // wrapper class for handle Vk$0 combined with VmaAllocation
             // see https://registry.khronos.org/vulkan/specs/latest/man/html/Vk$0.html
@@ -1528,15 +1505,15 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             constructors = R"(
             $0(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(nullptr) {}
             )"_seg;
-            moveInit + R"(
+            moveInit = R"(
             : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(exchange(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(rhs), nullptr))
             , m_allocation(exchange(rhs.m_allocation, nullptr))
             )"_seg;
-            swap + R"(
+            swap = R"(
             std::swap(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(*this), static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&>(rhs));
             std::swap(m_allocation, rhs.m_allocation);
             )"_seg;
-            clear + R"(
+            clear = R"(
             if (*m_allocation) {
               const auto allocator = m_allocation.getAllocator();
               const auto pair = release();
@@ -1555,7 +1532,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             getters = R"(
             const Allocation& getAllocation() const { return m_allocation; }
             )"_seg;
-        } else if (*h.name == "StatsString") {
+        } else if (h.name == "StatsString") {
             classTemplate = R"(
             // wrapper class for the stats string
             class $0 {
@@ -1584,12 +1561,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
             $0(std::nullptr_t) {}
             )"_seg;
-            moveInit + R"(
+            moveInit = R"(
             : m_owner(exchange(rhs.m_owner, 0))
             , m_string(exchange(rhs.m_string, nullptr))
             , m_destructor(exchange(rhs.m_destructor, nullptr))
             )"_seg;
-            swap + R"(
+            swap = R"(
             std::swap(m_owner, rhs.m_owner);
             std::swap(m_string, rhs.m_string);
             std::swap(m_destructor, rhs.m_destructor);
@@ -1598,7 +1575,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             char* operator*() const VULKAN_HPP_NOEXCEPT { return m_string; }
             operator char*() const VULKAN_HPP_NOEXCEPT { return m_string; }
             )"_seg.replace(h.memberName);
-            clear + R"(
+            clear = R"(
             if (m_string) m_destructor(m_owner, m_string);
             m_owner = 0;
             m_string = nullptr;
@@ -1619,8 +1596,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             };
             std::vector<Member> members;
             // Segment constructorParams; // TODO constructor params?
-            if (*h.name == "DefragmentationContext") h.destructor = "endDefragmentation"; // Custom destructor for DefragmentationContext.
-            if (*h.name == "Allocator") { // Custom members for Allocator.
+            if (h.name == "DefragmentationContext") h.destructor = "endDefragmentation"; // Custom destructor for DefragmentationContext.
+            if (h.name == "Allocator") { // Custom members for Allocator.
                 members = {
                     Member { "VULKAN_HPP_NAMESPACE::Device"_seg, "device" },
                     Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" },
@@ -1633,11 +1610,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 //                        )"_seg.pop();
             } else {
                 if (h.owner) {
-                    members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.owner->name, h.owner->memberName });
-                    // constructorParams + h.owner->name + " const & " + h.owner->memberName + ", ";
+                    members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg << h.owner->name, h.owner->memberName });
+                    // constructorParams << h.owner->name << " const & " << h.owner->memberName << ", ";
                 }
-                members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg + h.name, h.memberName });
-                // constructorParams + "Vma" + h.name + " " + h.memberName;
+                members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg << h.name, h.memberName });
+                // constructorParams << "Vma" << h.name << " " << h.memberName;
             }
 
             classTemplate = R"(
@@ -1665,17 +1642,17 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             CppType const && operator*() const && VULKAN_HPP_NOEXCEPT { return std::move(m_$0); }
             operator CppType() const VULKAN_HPP_NOEXCEPT { return m_$0; }
             )"_seg.replace(h.memberName);
-            clear + "if (m_" + h.memberName + ") m_" + (h.owner ? h.owner->memberName : h.memberName) + "." + h.destructor + "(";
-            if (h.owner) clear + "m_" + h.memberName;
-            clear + ");";
+            clear << "if (m_" << h.memberName << ") m_" << (h.owner ? h.owner->memberName : h.memberName) << "." << h.destructor << "(";
+            if (h.owner) clear << "m_" << h.memberName;
+            clear << ");";
             for (const auto& [type, name] : members) {
-                memberDecls + Segment(type) + " m_" + name + " = {};" + n;
-                moveInit + (moveInit.blank() ? ": m_" : ", m_") + name + "(exchange(rhs.m_" + name + ", {}))" + n;
-                swap + "std::swap(m_" + name + ", rhs.m_" + name + ");" + n;
-                clear + n + "m_" + name + " = nullptr;";
-                if (*h.memberName != *name) {
-                    release + n + "m_" + name + " = nullptr;";
-                    getters + nn + Segment(type) + " get" + name.capitalize() + "() const { return m_" + name + "; }";
+                memberDecls << type << " m_" << name << " = {};" << n;
+                moveInit << (moveInit.blank() ? ": m_" : ", m_") << name << "(exchange(rhs.m_" << name << ", {}))" << n;
+                swap << "std::swap(m_" << name << ", rhs.m_" << name << ");" << n;
+                clear << n << "m_" << name << " = nullptr;";
+                if (h.memberName != name) {
+                    release << n << "m_" << name << " = nullptr;";
+                    getters << nn << type << " get" << name.capitalize() << "() const { return m_" << name << "; }";
                 }
             }
             constructors = R"(
@@ -1724,11 +1701,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         )"_seg.replace(std::nullopt, constructors, moveInit.pop(), swap.pop(), operators, clear, release, getters);
 
         // Generate handle class.
-        raiiContent + nn + navigate(h) + std::move(classTemplate).replace(h.name, body + std::move(h.raiiDecl + navigate(h)), memberDecls);
+        raiiContent << nn << navigate(h) << std::move(classTemplate).replace(h.name, body << h.raiiDecl << navigate(h), memberDecls);
     }
-    raiiContent + navigate.reset + nn + std::move(namespaceHandle.raiiDecl);
-    for (Handle& h : handleVector) raiiContent + nn + std::move(h.raiiDef);
-    raiiContent + nn + std::move(namespaceHandle.raiiDef) + navigate.reset;
+    raiiContent << navigate.reset << nn << namespaceHandle.raiiDecl;
+    for (Handle& h : handleVector) raiiContent << nn << h.raiiDef;
+    raiiContent << nn << namespaceHandle.raiiDef << navigate.reset;
 
     // Generate files.
     R"(
@@ -1808,20 +1785,20 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 void generateStaticAssertions(const ConditionalTree& tree, const Symbols& structs, const Symbols& handles) {
     Segment content;
     for (const Symbol& s : structs) {
-        content + nn + navigate(s) + R"(
+        content << nn << navigate(s) << R"(
         VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::$0) == sizeof(Vma$0), "struct and wrapper have different size!");
         VULKAN_HPP_STATIC_ASSERT(std::is_standard_layout<VMA_HPP_NAMESPACE::$0>::value, "struct wrapper is not a standard layout!");
         VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not nothrow_move_constructible!");
         )"_seg.replace(s.name);
     }
     for (const Symbol& h : handles) {
-        content + nn + navigate(h) + R"(
+        content << nn << navigate(h) << R"(
         VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::$0) == sizeof(Vma$0), "handle and wrapper have different size!");
         VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not copy_constructible!");
         VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not nothrow_move_constructible!");
         )"_seg.replace(h.name);
     }
-    ("#include <vk_mem_alloc.hpp>" + content + navigate.reset).resolve(tree).generateHpp("static_assertions");
+    std::move("#include <vk_mem_alloc.hpp>" >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
 }
 
 void generateModule(const ConditionalTree& tree, const Symbols& enums, const Symbols& structs,
@@ -1831,30 +1808,30 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
     // Generate export statements.
     for (const auto* list : { &enums, &structs, &handles, &uniqueHandles, &functions })
         for (const Symbol& t : *list)
-            exports + n + navigate(t) + "using VMA_HPP_NAMESPACE::" + (list == &uniqueHandles ? "Unique" : "") + t.name + ";";
+            exports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << (list == &uniqueHandles ? "Unique" : "") << t.name << ";";
 
     // Some workarounds for compilation errors on MSVC...
 
     // error C2678: binary '|': no operator found which takes a left-hand operand of type 'const vma::AllocationCreateFlagBits' (or there is no acceptable conversion)
     for (const Symbol& t : enums)
         if (endsWith(*t.name, "FlagBits"))
-            specializations + n + navigate(t) + "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" + t.name + ">;";
+            specializations << n << navigate(t) << "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" << t.name << ">;";
 
     // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc_hpp'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
     for (const Symbol& t : handles)
-        specializations + n + navigate(t) + "template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::" + t.name + ">;";
+        specializations << n << navigate(t) << "template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::" << t.name << ">;";
 
     // error C2027: use of undefined type 'vk::UniqueHandleTraits<Type,Dispatch>'
     for (const Symbol& t : uniqueHandles)
-        specializations + n + navigate(t) + "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" + t.name + ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+        specializations << n << navigate(t) << "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" << t.name << ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
-    (exports, specializations) + navigate.reset;
+    (exports, specializations) << navigate.reset;
 
     // Don't forget Buffer and Image.
-    exports + n + "using VMA_HPP_NAMESPACE::UniqueBuffer;" +
-              n + "using VMA_HPP_NAMESPACE::UniqueImage;";
-    specializations + n + "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  +
-                      n + "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+    exports << n << "using VMA_HPP_NAMESPACE::UniqueBuffer;" <<
+               n << "using VMA_HPP_NAMESPACE::UniqueImage;";
+    specializations << n << "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  <<
+                       n << "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
     module;
