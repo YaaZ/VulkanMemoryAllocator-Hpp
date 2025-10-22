@@ -1204,7 +1204,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             p << " " << param.prettyName;
             if (&param >= defaultOutputsFrom) p << (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
             p << "," << n;
-            if (function.secondHandleParam != &param) raii.params << Segment(p).replace(param.prettyType);
+            if (function.secondHandleParam != &param) // We accept plain handles, so add a non-raii namespace.
+                raii.params << Segment(p).replace(param.handle ? param.makePretty("VMA_HPP_NAMESPACE::"_seg << param.type) : param.prettyType);
             enhanced.params << std::move(p).replace(param.prettyType);
         }
         (simple.params, enhanced.params, raii.params).pop().pop();
