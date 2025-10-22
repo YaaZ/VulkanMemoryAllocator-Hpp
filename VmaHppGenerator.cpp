@@ -307,11 +307,11 @@ public:
     Segment& pop() & { if (!nodes.empty()) nodes.pop_back(); return *this; }
 
     /**
-     * Has no text or wildcard tokens (navigation and breaks are ignored).
+     * Has any text or wildcard tokens (navigation and breaks are ignored).
      */
-    bool blank() const {
-        for (const auto& n : nodes) if (const auto i = info(n); i && (!i->view || !i->view->empty())) return false;
-        return true;
+    explicit operator bool() const {
+        for (const auto& n : nodes) if (const auto i = info(n); i && (!i->view || !i->view->empty())) return true;
+        return false;
     }
 
     Vector<2, Segment&> operator,(Segment& o) & { return { *this, o }; }
@@ -482,7 +482,7 @@ public:
             for (int i = target; i != statement; i = at(i).descent)
                 n >>= "#" >>= at(i).directive >>= descent;
             statement = target;
-            return ascent.blank() && descent.blank() ? ascent : ascent << descent << n;
+            return ascent || descent ? ascent << descent << n : ascent;
         }
     };
     Traversal traverse(const int start = 0) const { return Traversal(this, start); }
@@ -516,13 +516,15 @@ using Symbols = std::vector<Symbol>;
  * Parsed variable declaration (field or function parameter).
  */
 class Var {
+    Segment typeTemplate;
 public:
     Token name; // Original name
     Token prettyName; // Name with p* prefix removed for pointers
-    Token type; // Full converted C++ type
-    Token prettyType; // Full converted C++ type with the last pointer stripped
-    Token originalType; // Original type
     Token underlyingType; // Original type without array size, const and pointers
+    Token typeNamespace; // Namespace of the converted C++ type
+    Token type; // Converted C++ type name
+    Segment simpleType; // Full converted C++ type
+    Segment prettyType; // Full converted C++ type with the last pointer stripped
     Token lenIfNotNull;
     enum class Kind : std::uint8_t { OTHER, VOID, CHAR, PFN, VK, VMA, ARRAY } kind;
     enum class Tag : std::uint8_t { NONE, NULLABLE, NOT_NULL } tag;
@@ -531,6 +533,15 @@ public:
     int sourcePosition;
     int deducedArraySize = -1; // Array params point to the corresponding size param (if found), or -1
     std::vector<int> deducedArrays; // Size param points to corresponding arrays.
+
+    template<class Nm, class Ns, class Arr = Token>
+    Segment makeType(const Nm& nm, const Ns& nspace, const int ptrs, const Arr& arrayType = "std::array") const {
+        return Segment(typeTemplate).replace(nm, nspace, ptrs == 2 ? "**" : ptrs == 1 ? "*" : "", arrayType);
+    }
+    template<class Nm, class Ns> Segment makeType(const Nm& nm, const Ns& nspace) const { return makeType(nm, nspace, pointers); }
+    template<class Nm> Segment makeType(const Nm& nm) const { return makeType(nm, typeNamespace); }
+    template<class Nm, class Ns> Segment makePretty(const Nm& nm, const Ns& nspace) const { return makeType(nm, nspace, pointers - 1); }
+    template<class Nm> Segment makePretty(const Nm& nm) const { return makePretty(nm, typeNamespace); }
 
 private:
     static constexpr std::string_view pattern =
@@ -545,51 +556,39 @@ private:
     Var(const std::string_view& source, const Match& match, const int sourcePosition) : sourcePosition(sourcePosition) {
         auto group = [&](const int i) { return ::group(source, match, i); };
 
-        underlyingType = group(2);
-        std::string type { underlyingType }, originalType { underlyingType };
+        type = underlyingType = group(2);
         if (type == "uint32_t" || type == "size_t" || type == "float" || type == "HANDLE") kind = Kind::OTHER;
         else if (type == "void") kind = Kind::VOID;
         else if (type == "char") kind = Kind::CHAR;
-        else if (startsWith(type, "PFN_")) kind = Kind::PFN;
-        else if (startsWith(type, "Vk")) {
+        else if (startsWith(*type, "PFN_")) kind = Kind::PFN;
+        else if (startsWith(*type, "Vk")) {
             kind = Kind::VK;
-            type = "VULKAN_HPP_NAMESPACE::" + type.substr(2);
-        } else if (startsWith(type, "Vma")) {
+            typeNamespace = "VULKAN_HPP_NAMESPACE::";
+            type = type.substr(2);
+        } else if (startsWith(*type, "Vma")) {
             kind = Kind::VMA;
             type = type.substr(3);
-        } else throw std::runtime_error("Unknown type: " + type);
+        } else throw std::runtime_error("Unknown type: " + std::string(type));
 
+        typeTemplate = "$1$0$2"_seg;
         constant = !group(1).empty();
         const bool p1 = !group(3).empty(), p2 = !group(5).empty();
         pointers = p1 + p2;
-        if (constant && pointers > 0) {
-            type = "const " + type;
-            originalType = "const " + originalType;
-        }
-        if (pointers == 2) {
-            constant = false; // double pointer, then first-level pointer is not const
-            type += "**";
-            originalType += "**";
-        } else if (pointers == 1) {
-            type += "*";
-            originalType += "*";
-        }
+        if (constant && pointers > 0) "const " >>= typeTemplate;
         name = group(9);
         prettyName = pointers && name.length() > 0 && (*name)[0] == 'p' ? name.substr(1).capitalize(false) : name;
 
         std::string_view arr = trim(group(10));
-        originalType += arr;
         while (!(arr = trim(arr)).empty()) {
             const auto i = arr.find_last_of('['); // assert(i != npos);
             std::string dim { trim(arr.substr(i + 1, arr.length() - i - 2)) };
             if (startsWith(dim, "VK_")) dim = "VULKAN_HPP_NAMESPACE::" + camelCase(dim.substr(3));
-            type = "std::array<" + type + ", " + dim + ">";
+            "$3<"_seg >>= typeTemplate << ", " << dim << ">";
             arr = arr.substr(0, i);
             kind = Kind::ARRAY;
         }
-        this->type = type;
-        this->prettyType = pointers ? this->type.substr(0, this->type.length() - 1) : this->type;
-        this->originalType = originalType;
+        simpleType = makeType(type, typeNamespace);
+        prettyType = makePretty(type, typeNamespace);
 
         const std::string_view tag = p2 ? group(6) : group(4);
         if (tag == "NULLABLE") this->tag = Tag::NULLABLE;
@@ -661,7 +660,7 @@ Symbols generateEnums(const Source& source) {
             entries << n << "e" << entry << " = " << originalEntry << ",";
             entryToString << n << "if (value == " << name << "::e" << entry << ") return \"" << entry << "\";";
             if (flagBits && bitEntry) {
-                allFlags << n << (allFlags.blank() ? " " : "|") << " VMA_HPP_NAMESPACE::" << name << "::e" << entry;
+                allFlags << n << (allFlags ? "|" : " ") << " VMA_HPP_NAMESPACE::" << name << "::e" << entry;
                 flagsToString << n << "if (value & " << name << "::e" << entry << ") result += \" " << entry << " |\";";
             }
         }
@@ -749,18 +748,17 @@ Symbols generateStructs(const Source& source) {
                setters, reflectTypes, reflectTie, comparison, fields] = *memberPieces;
         bool containsPFN = false, hasEnhancedConstructor = false;
         for (const Var& member : members) {
-            Token storageType = member.type;
+            Segment storageType = member.simpleType;
             if (member.kind == Var::Kind::ARRAY) {
-                static const std::regex regex { "std::array" };
-                storageType = std::regex_replace(std::string(member.type), regex, "VULKAN_HPP_NAMESPACE::ArrayWrapper1D");
+                storageType = member.makeType(member.type, member.typeNamespace, member.pointers, "VULKAN_HPP_NAMESPACE::ArrayWrapper1D");
                 constexprToken = "VULKAN_HPP_CONSTEXPR_14";
             } else containsPFN |= member.kind == Var::Kind::PFN;
             memberPieces << navigate(member);
 
             // Generate constructor parameter and setter.
-            if (!constructorParams.blank())
+            if (constructorParams)
                 (constructorParams, constructorInitializer, reflectTypes, reflectTie) << n << Token(", ", -2);
-            constructorParams << member.type << " " << member.name << "_ = {}";
+            constructorParams << member.simpleType << " " << member.name << "_ = {}";
             constructorInitializer << member.name << " { " << member.name << "_ }";
             setters << R"(
             VULKAN_HPP_CONSTEXPR_14 $0& set$3($2 $1_) VULKAN_HPP_NOEXCEPT {
@@ -768,18 +766,18 @@ Symbols generateStructs(const Source& source) {
               return *this;
             }
 
-            )"_seg.replace(name, member.name, member.type, member.name.capitalize());
+            )"_seg.replace(name, member.name, member.simpleType, member.name.capitalize());
 
             // Generate enhanced constructor parameter and setter.
             if (member.deducedArrays.empty()) { // Skip deduced size params.
-                if (!enhancedParams.blank()) (enhancedParams, enhancedInitializer) << n << Token(", ", -2);
+                if (enhancedParams) (enhancedParams, enhancedInitializer) << n << Token(", ", -2);
                 Token defaultAssignment = hasEnhancedConstructor ? " = {}" : ""; // No default assignments till the first enhanced param (inclusive).
                 if (member.deducedArraySize != -1) {
                     hasEnhancedConstructor = true;
                     const auto& size = members[member.deducedArraySize];
                     if (size.deducedArrays.size() > 1) throw std::runtime_error("Deducing size from multiple arrays"); // Not implemented.
                     enhancedParams << "VULKAN_HPP_NAMESPACE::ArrayProxyNoTemporaries<" << member.prettyType << "> const & " << member.prettyName << "_";
-                    enhancedInitializer << size.name << " { static_cast<" << size.type << ">(" << member.prettyName << "_.size()) }";
+                    enhancedInitializer << size.name << " { static_cast<" << size.simpleType << ">(" << member.prettyName << "_.size()) }";
                     enhancedInitializer << n << Token(", ", -2) << member.name << " { " << member.prettyName << "_.data() }";
                     setters << R"(
                     #if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
@@ -790,9 +788,9 @@ Symbols generateStructs(const Source& source) {
                     }
                     #endif
 
-                    )"_seg.replace(name, member.prettyName.capitalize(), member.prettyName, member.name, size.name, member.prettyType, size.type);
+                    )"_seg.replace(name, member.prettyName.capitalize(), member.prettyName, member.name, size.name, member.prettyType, size.simpleType);
                 } else {
-                    enhancedParams << member.type << " " << member.name << "_";
+                    enhancedParams << member.simpleType << " " << member.name << "_";
                     enhancedInitializer << member.name << " { " << member.name << "_ }";
                 }
                 enhancedParams << defaultAssignment;
@@ -801,7 +799,7 @@ Symbols generateStructs(const Source& source) {
             // Generate comparison and field declarations.
             reflectTypes << storageType << " const &";
             reflectTie << member.name;
-            if (!comparison.blank()) comparison << n << Token("&& ", -3);
+            if (comparison) comparison << n << Token("&& ", -3);
             comparison << member.name << " == rhs." << member.name;
             fields << n << storageType << " " << member.name << " = {};";
         }
@@ -969,7 +967,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Find the first-order handle.
         if (!function.params.empty() && function.params[0].handle) {
             if (function.params[0].pointers)
-                throw std::runtime_error("Unexpected handle parameter: " + std::string(function.params[0].type));
+                throw std::runtime_error("Unexpected handle parameter in " + std::string(function.name));
             function.handle = function.params[0].handle;
 
             // Find the second-order handle.
@@ -1040,19 +1038,19 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
         // Find output params.
         struct Output {
-            Token uniqueType, raiiType;
+            Segment uniqueType, raiiType;
             Param* param;
             Param* operator->() const { return param; }
             Output(Param& param) : param(&param) {
                 if (param.handle) {
-                    if (param.handle->destructor) uniqueType = "Unique" + std::string(param.prettyType);
+                    if (param.handle->destructor) uniqueType = param.makePretty("Unique"_seg << param.type);
                     raiiType = param.prettyType;
                 } else if (param.underlyingType == "VkBuffer") {
-                    uniqueType = "UniqueBuffer";
-                    raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer";
+                    uniqueType = "UniqueBuffer"_seg;
+                    raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer"_seg;
                 } else if (param.underlyingType == "VkImage") {
-                    uniqueType = "UniqueImage";
-                    raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image";
+                    uniqueType = "UniqueImage"_seg;
+                    raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image"_seg;
                 }
             }
         };
@@ -1061,7 +1059,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         bool hasUniqueVariant = false;
         for (auto& param : function.methodParams()) {
             // Ignore void* and char* - those are not outputs.
-            if (!param.constant && param.pointers && (param.pointers > 1 || (param.kind != Var::Kind::VOID && param.kind != Var::Kind::CHAR))) {
+            if (param.pointers > 1 || (!param.constant && param.pointers && param.kind != Var::Kind::VOID && param.kind != Var::Kind::CHAR)) {
                 if (param.tag == Var::Tag::NOT_NULL) {
                     param.paramType = Param::Type::OUTPUT;
                     if (outputs.emplace_back(param).uniqueType) hasUniqueVariant = true;
@@ -1104,11 +1102,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         }
 
         // Convert enhanced outputs.
-        if (enhancedReturn.blank()) {
+        if (!enhancedReturn) {
             if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
                 enhancedReturn = "std::pair<$2, $1>"_seg; // Pair order is reversed.
                 if (outputs[0]->kind != Var::Kind::VK) simpleReturn = {}; // Trigger error.
-                else raiiReturn = outputs[0]->prettyType.substr(22); // RAII uses combined handles.
+                else raiiReturn = outputs[0]->makePretty(outputs[0]->type, ""); // RAII uses combined handles.
                 enhancedOutput = "pair";
                 enhancedOutputs << n << "std::pair<" << outputs[1]->prettyType << ", " << outputs[0]->prettyType << "> pair;" <<
                     n << outputs[0]->prettyType << "& " << outputs[0]->prettyName << " = pair.second;" <<
@@ -1126,7 +1124,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             } else if (outputs.size() == 1) {
                 enhancedOutput = outputs[0]->prettyName;
                 if (outputs[0]->lenIfNotNull) { // Vector.
-                    vecAllocName = (vecAllocType = outputs[0]->prettyType).capitalize(false);
+                    vecAllocName = (vecAllocType = outputs[0]->type).capitalize(false);
                     enhancedReturn = "std::vector<$1, $0Allocator>"_seg.replace(vecAllocType);
                     raiiReturn = "std::vector<$1>"_seg;
                     // Generate template for vector allocator.
@@ -1156,24 +1154,24 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 }
             }
         } else if (!outputs.empty()) simpleReturn = {}; // Trigger error.
-        if (!uniqueWrap.blank()) enhancedReturn >>= " " >>= enhancedOutput >>= "Unique" >>= uniqueWrap;
+        if (uniqueWrap) enhancedReturn >>= " " >>= enhancedOutput >>= "Unique" >>= uniqueWrap;
 
         // Verify that conversion succeeded.
-        if (!simpleReturn || (enhancedReturn.blank() && !outputs.empty()))
+        if (!simpleReturn || (!enhancedReturn && !outputs.empty()))
             throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
         // Generate macros.
-        if (resultValue == ResultValue::VALUE || !enhancedReturn.blank()) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD ";
+        if (resultValue == ResultValue::VALUE || enhancedReturn) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD ";
         else if (resultValue == ResultValue::VALUE_TYPE) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
         if (simpleReturn != "void") simple.ret << "VULKAN_HPP_NODISCARD ";
         (simple.ret, enhanced.ret, raii.ret) << (!declaration)["VULKAN_HPP_INLINE "];
 
         // Generate a return type.
         if (resultValue == ResultValue::VALUE) {
-            if (enhancedReturn.blank()) (enhancedReturn, raiiReturn) << simpleReturn;
+            if (!enhancedReturn) (enhancedReturn, raiiReturn) << simpleReturn;
             else "VULKAN_HPP_NAMESPACE::ResultValue<" >>= (enhancedReturn, raiiReturn) << ">";
         } else {
-            if (enhancedReturn.blank()) (enhancedReturn, raiiReturn) << "void";
+            if (!enhancedReturn) (enhancedReturn, raiiReturn) << "void";
             if (resultValue == ResultValue::VALUE_TYPE)
                 "typename VULKAN_HPP_NAMESPACE::ResultValueType<" >>= (enhancedReturn, raiiReturn) << ">::type";
         }
@@ -1184,7 +1182,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Generate parameter list.
         bool signatureTransformed = false;
         for (const auto& param : function.methodParams()) {
-            simple.params << param.type << " " << param.name << "," << n;
+            simple.params << param.simpleType << " " << param.name << "," << n;
             if (param.paramType == Param::Type::OUTPUT || !param.deducedArrays.empty()) { // Skip outputs and deduced array sizes.
                 signatureTransformed = true;
                 continue;
@@ -1201,7 +1199,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 else if (!param.constant && param.kind != Var::Kind::OTHER && param.kind != Var::Kind::CHAR)
                     p = "VULKAN_HPP_NAMESPACE::Optional<$0>"_seg;
             }
-            if (p.blank()) p = param.type;
+            if (!p) p = param.simpleType;
             else signatureTransformed = true;
             p << " " << param.prettyName;
             if (&param >= defaultOutputsFrom) p << (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
@@ -1210,14 +1208,14 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             enhanced.params << std::move(p).replace(param.prettyType);
         }
         (simple.params, enhanced.params, raii.params).pop().pop();
-        enhanced.params << vectorAllocator[(enhanced.params.blank() ? ""_seg : ",\n"_seg) <<
+        enhanced.params << vectorAllocator[(enhanced.params ? ",\n"_seg : ""_seg) <<
             vecAllocType << "Allocator& " << vecAllocName << "Allocator"];
 
         // Generate deduction statements.
         for (const auto& param : function.methodParams()) {
             if (param.deducedArrays.empty()) continue;
             Segment assertChecks, exceptionChecks;
-            enhanced.body << n << param.type << " " << param.prettyName << " = ";
+            enhanced.body << n << param.simpleType << " " << param.prettyName << " = ";
             for (int i : param.deducedArrays) {
                 const auto& t = params[i];
                 if (t.paramType == Param::Type::OUTPUT) continue;
@@ -1256,11 +1254,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 else if (param.pointers && param.tag == Var::Tag::NOT_NULL) // Reference or local.
                     pass << "&" << param.prettyName;
                 else if (param.pointers && !param.constant && param.kind != Var::Kind::OTHER && param.kind != Var::Kind::CHAR) // Optional.
-                    pass << "static_cast<" << param.type << ">(" << param.prettyName << ")";
+                    pass << "static_cast<" << param.simpleType << ">(" << param.prettyName << ")";
             }
-            if (pass.blank()) pass << param.prettyName;
+            if (!pass) pass << param.prettyName;
             if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) << // Cast Vk & Vma types.
-                (param.pointers ? "reinterpret_cast<" : "static_cast<") << param.originalType << ">(";
+                (param.pointers ? "reinterpret_cast<" : "static_cast<") << param.makeType(param.underlyingType, "") << ">(";
             simpleCall << param.name;
             enhancedCall << pass;
             if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) << ")"; // Cast Vk & Vma types.
@@ -1273,10 +1271,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         enhanced.body << enhancedOutputs << n << enhancedCall << ";";
 
         // Generate result check.
-        if (!resultCheck.blank()) enhanced.body << n << resultCheck;
+        if (resultCheck) enhanced.body << n << resultCheck;
 
         // Generate unique conversion.
-        if (!uniqueWrap.blank()) enhanced.body << unique[std::move(n >>= uniqueWrap)];
+        if (uniqueWrap) enhanced.body << unique[std::move(n >>= uniqueWrap)];
 
         // Generate return statement.
         if (simpleReturn != "void") simple.body << n << "return result;";
@@ -1345,11 +1343,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         }
         if (function.raiiName && (function.handle || hasUniqueVariant)) {
             if (function.name == "vmaBuildStatsString" || function.name == "vmaBuildVirtualBlockStatsString")
-                outputs[0].raiiType = "StatsString"; // Custom RAII type for the stats string.
+                outputs[0].raiiType = "StatsString"_seg; // Custom RAII type for the stats string.
             for (auto& o : outputs) if (o.raiiType) o->prettyType = o.raiiType;  // TODO // TODO // TODO // TODO
             Handle& r = function.handle ? *function.handle : namespaceHandle;
             r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !unique, function.handle, function.raiiName, raii);
-            if (!raii.body.blank()) { // TODO
+            if (raii.body) { // TODO
                 r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !unique, function.handle, function.raiiName, raii);
             }
         }
@@ -1647,7 +1645,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             clear << ");";
             for (const auto& [type, name] : members) {
                 memberDecls << type << " m_" << name << " = {};" << n;
-                moveInit << (moveInit.blank() ? ": m_" : ", m_") << name << "(exchange(rhs.m_" << name << ", {}))" << n;
+                moveInit << (moveInit ? ", m_" : ": m_") << name << "(exchange(rhs.m_" << name << ", {}))" << n;
                 swap << "std::swap(m_" << name << ", rhs.m_" << name << ");" << n;
                 clear << n << "m_" << name << " = nullptr;";
                 if (h.memberName != name) {
