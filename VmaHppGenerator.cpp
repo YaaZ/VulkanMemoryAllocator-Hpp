@@ -1817,6 +1817,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
     R"(
+    #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     namespace VMA_HPP_NAMESPACE {
       namespace VMA_HPP_RAII_NAMESPACE {
         namespace detail {
@@ -1854,6 +1855,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         $0
       }
     }
+    #endif
     )"_seg.replace(raiiContent << navigate.reset).resolve(source.tree).generateHpp("raii");
     return { handles, uniqueHandles, functions };
 }

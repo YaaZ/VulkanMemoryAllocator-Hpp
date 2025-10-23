@@ -2,6 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_RAII_HPP
 #define VULKAN_MEMORY_ALLOCATOR_RAII_HPP
 
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
 namespace VMA_HPP_NAMESPACE {
   namespace VMA_HPP_RAII_NAMESPACE {
     namespace detail {
@@ -1224,4 +1225,5 @@ namespace VMA_HPP_NAMESPACE {
 #endif 
   }
 }
+#endif
 #endif
