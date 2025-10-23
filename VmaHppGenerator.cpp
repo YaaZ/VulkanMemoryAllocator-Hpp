@@ -1290,13 +1290,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         simple.body << n << simpleCall << ";";
         enhanced.body << enhancedOutputs << n << enhancedCall << ";";
 
-        if (hasRAIIVariant) {
-            raii.body << "return detail::RAII::wrap<" << raiiReturn << ">(std::forward_as_tuple(";
-            if (function.handle) raii.body << "*this";
-            raii.body << "), ";
-        } else if (simpleReturn != "void" || !outputs.empty()) raii.body << "return ";
+        if (hasRAIIVariant) raii.body << "return detail::Wrapper<" << raiiReturn << ">(";
+        else if (simpleReturn != "void" || !outputs.empty()) raii.body << "return ";
         raii.body << raiiCall;
-        if (hasRAIIVariant) raii.body << ")";
+        if (hasRAIIVariant) {
+            if (function.handle) raii.body << ", *this";
+            raii.body << ")";
+        }
         raii.body << ";";
 
         // Generate result check.
@@ -1386,7 +1386,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 createInfo.device = device;
                 const VulkanFunctions functions = functionsFromDispatcher(instance.getDispatcher(), device.getDispatcher());
                 createInfo.pVulkanFunctions = &functions;
-                return detail::RAII::wrap<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(std::forward_as_tuple(device), VMA_HPP_NAMESPACE::createAllocator(createInfo), std::forward_as_tuple(createInfo.pAllocationCallbacks, device.getDispatcher()));
+                return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(VMA_HPP_NAMESPACE::createAllocator(createInfo), device, createInfo.pAllocationCallbacks, device.getDispatcher());
                 )"_seg;
             }
             for (auto& o : outputs) if (o.raiiType) o->prettyType = o.raiiType;  // TODO // TODO // TODO // TODO
@@ -1538,10 +1538,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
               $1
 
             private:
-              friend class detail::RAII;
+              friend class detail::Wrapper<$0>;
               explicit $0(const Allocator& allocator, std::pair<VMA_HPP_NAMESPACE::Allocation, VULKAN_HPP_NAMESPACE::$0> pair) VULKAN_HPP_NOEXCEPT :
                 VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(allocator.getDevice(), pair.second, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
-                m_allocation(detail::RAII::wrap<Allocation>(std::forward_as_tuple(allocator), pair.first)) {}
+                m_allocation(detail::Wrapper<Allocation>(pair.first, allocator)) {}
 
               Allocation m_allocation = nullptr;
             };
@@ -1588,7 +1588,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
               $1
 
             private:
-              friend class detail::RAII;
+              friend class detail::Wrapper<StatsString>;
               using Destructor = void (*)(uint64_t, char*);
               template<class T> static uint64_t erase(T t) { return reinterpret_cast<uint64_t>(static_cast<typename T::CType>(t)); }
               template<class T, void (*destructor)(T, char*)> static Destructor erase() {
@@ -1649,9 +1649,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (h.name == "Allocator") { // Custom members for Allocator.
                 members = {
                     Member { "VULKAN_HPP_NAMESPACE::Device"_seg, "device" },
-                    Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" },
                     Member { "const VULKAN_HPP_NAMESPACE::AllocationCallbacks *"_seg, "allocationCallbacks" },
-                    Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" }
+                    Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" },
+                    Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" }
                 };
             } else {
                 if (h.owner) members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg << h.owner->name, h.owner->memberName });
@@ -1684,7 +1684,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             clear << "if (m_" << h.memberName << ") m_" << (h.owner ? h.owner->memberName : h.memberName) << "." << h.destructor << "(";
             if (h.owner) clear << "m_" << h.memberName;
             clear << ");";
-            priv << "friend class detail::RAII;\nexplicit $0("_seg;
+            priv << "friend class detail::Wrapper<$0>;\nexplicit $0("_seg;
             for (const auto& [type, name] : members) priv << type << " " << name << ", ";
             priv.pop() << ") VULKAN_HPP_NOEXCEPT :" << n << "  ";
             for (const auto& [type, name] : members) priv << "m_" << name << "(" << name << ")" << ", ";
@@ -1820,54 +1820,33 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     namespace VMA_HPP_NAMESPACE {
       namespace VMA_HPP_RAII_NAMESPACE {
         namespace detail {
-          class RAII {
-            template<int... I> struct Seq { using next = Seq<I..., sizeof...(I)>; };
-            template<class...> struct SeqFor { using type = RAII::Seq<>; };
-            template<class T> struct Wrapper { using type = T; };
-            template<class T> struct ResourceWrapper : T { // custom wrapper for RAII Buffer & Image
-              using type = ResourceWrapper; using T::T;
-              template<class Allocator> ResourceWrapper(const Allocator& alloc, typename T::CppType t) VULKAN_HPP_NOEXCEPT :
-                T(alloc.getDevice(), t, alloc.getAllocationCallbacks(), alloc.getDispatcher()) {}
-            };
+          template<class Dst, class=void> struct Wrapper : Dst {
+            explicit Wrapper() VULKAN_HPP_NOEXCEPT : Dst(nullptr) {}
+            template<class Src, class... Args> explicit Wrapper(Src&& src, Args&&... args) VULKAN_HPP_NOEXCEPT :
+              Dst(std::forward<Args>(args)..., std::forward<Src>(src)) {}
+          };
 
-            template<class Dst, class Src, class... B, int... BI, class... A, int... AI>
-            static Dst wrap(const std::tuple<B...>& before, Seq<BI...> bi, VULKAN_HPP_NAMESPACE::ResultValue<Src>&& src, const std::tuple<A...>& after, Seq<AI...> ai) {
-              using Result = decltype(Dst::value);
-              if (src.result < VULKAN_HPP_NAMESPACE::Result::eSuccess) return Dst(src.result, typename Wrapper<Result>::type(nullptr));
-              return Dst(src.result, wrap<Result>(before, bi, std::move(src.value), after, ai));
-            }
+          template<class Dst> struct Wrapper<VULKAN_HPP_NAMESPACE::ResultValue<Dst>> : VULKAN_HPP_NAMESPACE::ResultValue<Dst> {
+            template<class Src, class... Args> explicit Wrapper(VULKAN_HPP_NAMESPACE::ResultValue<Src>&& src, Args&&... args) VULKAN_HPP_NOEXCEPT :
+              VULKAN_HPP_NAMESPACE::ResultValue<Dst>(src.result, src.result < VULKAN_HPP_NAMESPACE::Result::eSuccess ?
+                Wrapper<Dst>() : Wrapper<Dst>(std::move(src.value), std::forward<Args>(args)...)) {}
+          };
 
-            template<class Dst, class Src, class... B, int... BI, class... A, int... AI>
-            static Dst wrap(const std::tuple<B...>& before, Seq<BI...> bi, std::vector<Src>&& src, const std::tuple<A...>& after, Seq<AI...> ai) {
-              using Result = typename Dst::value_type;
-              Dst dst;
-              dst.reserve(src.size());
-              for (Src& s : src) dst.push_back(wrap<Result>(before, bi, std::move(s), after, ai));
-              return dst;
-            }
-
-            template<class Dst, class Src, class... B, int... BI, class... A, int... AI>
-            static Dst wrap(const std::tuple<B...>& before, Seq<BI...>, Src&& src, const std::tuple<A...>& after, Seq<AI...>) {
-              return typename Wrapper<Dst>::type(std::get<BI>(before)..., std::forward<Src>(src), std::get<AI>(after)...);
-            }
-
-          public:
-            template<class Dst, class Src, class... Before, class... After>
-            static Dst wrap(const std::tuple<Before...>& before, Src&& src, const std::tuple<After...>& after = {}) {
-              using BI = typename SeqFor<Before...>::type;
-              using AI = typename SeqFor<After...>::type;
-              return wrap<Dst>(before, BI(), std::forward<Src>(src), after, AI());
+          template<class Dst> struct Wrapper<std::vector<Dst>> : std::vector<Dst> {
+            explicit Wrapper() VULKAN_HPP_NOEXCEPT = default;
+            template<class Src, class... Args> explicit Wrapper(std::vector<Src>&& src, Args&&... args) VULKAN_HPP_NOEXCEPT {
+              this->reserve(src.size());
+              for (Src& s : src) this->push_back(Wrapper<Dst>(std::move(s), std::forward<Args>(args)...));
             }
           };
-          template<> struct RAII::Wrapper<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> :
-            RAII::ResourceWrapper<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> {};
-          template<> struct RAII::Wrapper<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> :
-            RAII::ResourceWrapper<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> {};
-          template<class T> struct RAII::Wrapper<std::vector<T>> : std::vector<T> {
-            using type = Wrapper; Wrapper(std::nullptr_t) {}
-          };
-          template<class T, class... Ts> struct RAII::SeqFor<T, Ts...> {
-            using type = typename RAII::SeqFor<Ts...>::type::next;
+
+          template<class Dst> struct Wrapper<Dst, typename std::enable_if<
+            std::is_same<Dst, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::value ||
+            std::is_same<Dst, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::value
+          >::type> : Dst {
+            explicit Wrapper() VULKAN_HPP_NOEXCEPT : Dst(nullptr) {}
+            template<class Allocator> explicit Wrapper(typename Dst::CppType src, const Allocator& alloc) VULKAN_HPP_NOEXCEPT :
+              Dst(alloc.getDevice(), src, alloc.getAllocationCallbacks(), alloc.getDispatcher()) {}
           };
         }
 
