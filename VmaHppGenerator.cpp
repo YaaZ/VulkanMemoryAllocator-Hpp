@@ -1044,15 +1044,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
         // Find output params.
         struct Output {
-            Segment uniqueType, raiiType;
+            Segment uniqueType;
             Param* param;
             Param* operator->() const { return param; }
             Output(Param& param) : param(&param) {
                 if (param.handle) {
                     if (param.handle->destructor || param.kind == Var::Kind::VK)
                         uniqueType = param.makePretty("Unique"_seg << param.type, "");
-                    raiiType = param.makePretty(param.type, param.kind == Var::Kind::VK ?
-                        "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::" : "");
                 }
             }
         };
@@ -1066,7 +1064,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                     param.paramType = Param::Type::OUTPUT;
                     const Output& o = outputs.emplace_back(param);
                     if (o.uniqueType) hasUniqueVariant = true;
-                    if (o.raiiType) {
+                    if (o->handle) {
                         hasRAIIVariant = true;
                         // RAII Buffers and Images can only be created from the first level handle.
                         if (o->kind == Var::Kind::VK && function.handle && function.handle->owner) {
@@ -1082,17 +1080,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             }
             defaultOutputsFrom = params.data() + params.size();
         }
-        if (function.name == "vmaBuildStatsString" || function.name == "vmaBuildVirtualBlockStatsString") {
-            statsStringHandle.sourcePosition = function.sourcePosition; // Bind to the constructor function.
-            outputs[0].raiiType = (outputs[0]->handle = &statsStringHandle)->name; // Custom RAII type for the stats string.
-            hasRAIIVariant = true;
-        }
 
         // Generate methods.
         struct Method {
             Segment ret, params, body;
         } simple, enhanced, raii;
-        Segment::Specialization declaration(1), unique(2), vectorAllocator(4), raiiVariant(8);
+        Segment::Specialization declaration(1), unique(2), vectorAllocator(4);
 
         // Convert simple return type.
         enum class ResultValue {
@@ -1115,6 +1108,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 function.name == "vmaFindMemoryTypeIndexForBufferInfo" ||
                 function.name == "vmaFindMemoryTypeIndexForImageInfo")
                 "if (result == VULKAN_HPP_NAMESPACE::Result::eErrorFeatureNotPresent) memoryTypeIndex = VULKAN_HPP_NAMESPACE::MaxMemoryTypes;\nelse "_seg >>= resultCheck;
+        }
+
+        // Custom RAII type for the stats string.
+        if (function.name == "vmaBuildStatsString" || function.name == "vmaBuildVirtualBlockStatsString") {
+            statsStringHandle.sourcePosition = function.sourcePosition; // Bind to the constructor function.
+            raiiReturn = (outputs[0]->handle = &statsStringHandle)->name;
+            hasRAIIVariant = true;
         }
 
         // Convert enhanced outputs.
@@ -1142,10 +1142,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 }
             } else if (outputs.size() == 1) {
                 enhancedOutput = outputs[0]->prettyName;
+                if (!raiiReturn) raiiReturn = outputs[0]->handle ? // Add vk::raii namespace for vk handles.
+                    outputs[0]->makePretty(outputs[0]->type, outputs[0]->kind == Var::Kind::VK ?
+                        "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::" : "") : outputs[0]->prettyType;
                 if (outputs[0]->lenIfNotNull) { // Vector.
                     vecAllocName = (vecAllocType = outputs[0]->type).capitalize(false);
                     enhancedReturn = "std::vector<$1, $0Allocator>"_seg.replace(vecAllocType);
-                    raiiReturn = "std::vector<$1>"_seg;
+                    "std::vector<" >>= raiiReturn << ">";
                     // Generate template for vector allocator.
                     enhanced.ret << "template <typename " << vecAllocType << "Allocator" <<
                         (declaration & !vectorAllocator)[" = std::allocator<$1>"_seg] <<
@@ -1167,7 +1170,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                             "for (auto const& t : " << enhancedOutput << ") " << enhancedOutput << "Unique.emplace_back(t" << (handle ? ", *this" : ", {}") << ");";
                     }
                 } else { // Single value.
-                    (enhancedReturn, raiiReturn) << "$1"_seg;
+                    enhancedReturn << "$1"_seg;
                     raiiOutputHandle = outputs[0]->kind != Var::Kind::VK ? outputs[0]->handle : nullptr;
                     enhancedOutputs << n << outputs[0]->prettyType << " " << enhancedOutput << ";";
                     if (hasUniqueVariant) uniqueWrap << " { " << enhancedOutput << (handle ? ", *this" : ", {}") << " };";
@@ -1337,7 +1340,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         auto buildMethod = [&](const Segment::Specialization variant, Handle* handle, const Token& name, const Method& method) {
             auto outputType = [&](const int i) {
                 return i >= outputs.size() ? Token() :
-                    variant == (variant & raiiVariant) && outputs[i].raiiType ? outputs[i].raiiType :
                     variant == (variant & unique) && outputs[i].uniqueType ? outputs[i].uniqueType : outputs[i]->prettyType;
             };
             // Generate name.
@@ -1402,8 +1404,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 )"_seg;
             }
             Handle& r = function.handle ? *function.handle : namespaceHandle;
-            r.raiiDecl << nn << navigate(function) << buildMethod(declaration & raiiVariant & !constructorVariant, function.handle, function.raiiName, raii);
-            r.raiiDef << nn << navigate(function) << buildMethod(!declaration & raiiVariant & !constructorVariant, function.handle, function.raiiName, raii);
+            r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !constructorVariant, function.handle, function.raiiName, raii);
+            r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !constructorVariant, function.handle, function.raiiName, raii);
             if (raiiOutputHandle) {
                 if (function.handle) function.handle->name >>= " const & " >>= function.handle->memberName >>= "," >>= n >>= raii.params;
                 Segment constructor = "// wrapper constructor for command "_seg << function.name <<
@@ -1412,9 +1414,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 if (resultValue == ResultValue::NONE) constructor << " VULKAN_HPP_NOEXCEPT";
 
                 raiiOutputHandle->raiiConstructorDecl << navigate(function) << Segment(constructor) .replace(
-                    declaration & raiiVariant & constructorVariant, "explicit "_seg << raiiOutputHandle->name, raii.params) << ";" << nn;
+                    declaration & constructorVariant, "explicit "_seg << raiiOutputHandle->name, raii.params) << ";" << nn;
                 raiiOutputHandle->raiiConstructorDef << navigate(function) << std::move(constructor) .replace(
-                    !declaration & raiiVariant & constructorVariant, "VULKAN_HPP_INLINE "_seg << raiiOutputHandle->name << "::" <<
+                    !declaration & constructorVariant, "VULKAN_HPP_INLINE "_seg << raiiOutputHandle->name << "::" <<
                     raiiOutputHandle->name, raii.params) << " :" << n << "  " << raiiOutputHandle->name << "(";
                 if (function.handle) raiiOutputHandle->raiiConstructorDef << function.handle->memberName << ".";
                 else raiiOutputHandle->raiiConstructorDef << "VMA_HPP_RAII_NAMESPACE::";
