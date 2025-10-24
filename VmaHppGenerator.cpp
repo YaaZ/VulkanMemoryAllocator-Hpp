@@ -119,6 +119,7 @@ public:
         explicit constexpr operator bool() const { return !(~mask & condition); }
         Specialization constexpr operator!() const { return Specialization(mask, mask ^ condition); }
         bool constexpr operator==(const Specialization& s) const { return mask == s.mask && condition == s.condition; }
+        bool constexpr operator!=(const Specialization& s) const { return !(*this == s); }
         Specialization constexpr operator&(const Specialization& s) const {
             return Specialization((s.mask|mask)^s.mask&condition^mask&s.condition, s.condition|condition);
         }
@@ -1070,11 +1071,25 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             defaultOutputsFrom = params.data() + params.size();
         }
 
+        // Find a combined RAII output handle (Buffer or Image).
+        // Combined handle is created from at least one already existing component (Buffer, Image, or Allocation).
+        Handle* combinedHandle = [&]() -> Handle* {
+            bool hasVmaHandle = false, hasInputHandle = false;
+            Handle* result = nullptr;
+            for (const auto& param : function.methodParams()) {
+                if (!param.handle) continue;
+                if (param.kind == Var::Kind::VK) result = param.handle;
+                else hasVmaHandle = true;
+                if (param.paramType == Param::Type::INPUT) hasInputHandle = true;
+            }
+            return hasVmaHandle && hasInputHandle && function.raiiName ? result : nullptr;
+        }();
+
         // Generate methods.
         struct Method {
             Segment ret, params, body;
         } simple, enhanced, raii;
-        Segment::Specialization declaration(1), unique(2), vectorAllocator(4);
+        Segment::Specialization declaration(1), unique(2), vectorAllocator(4), constructor(8), combining(16);
 
         // Convert simple return type.
         enum class ResultValue {
@@ -1181,21 +1196,24 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         if (!simpleReturn || (!enhancedReturn && !outputs.empty()))
             throw std::runtime_error("Unexpected output configuration for " + std::string(function.name));
 
-        // Generate macros.
+        // Generate macros and return type.
         if (resultValue == ResultValue::VALUE || enhancedReturn) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD ";
         else if (resultValue == ResultValue::VALUE_TYPE) (enhanced.ret, raii.ret) << "VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS ";
         if (simpleReturn != "void") simple.ret << "VULKAN_HPP_NODISCARD ";
-        (simple.ret, enhanced.ret, raii.ret) << (!declaration)["VULKAN_HPP_INLINE "];
-
-        // Generate a return type.
         if (resultValue == ResultValue::VALUE) {
+            if (combinedHandle)  throw std::runtime_error("Combined handles in ResultValue are not implemented: " + std::string(function.name));
             if (!enhancedReturn) (enhancedReturn, raiiReturn) << simpleReturn;
             else "VULKAN_HPP_NAMESPACE::ResultValue<" >>= (enhancedReturn, raiiReturn) << ">";
         } else {
             if (!enhancedReturn) (enhancedReturn, raiiReturn) << "void";
+            if (combinedHandle) { // And combined variant.
+                auto t = (!combining)[std::move(raiiReturn)];
+                raiiReturn.clear() << std::move(t) << combining[combinedHandle->name];
+            }
             if (resultValue == ResultValue::VALUE_TYPE)
                 "typename VULKAN_HPP_NAMESPACE::ResultValueType<" >>= (enhancedReturn, raiiReturn) << ">::type";
         }
+        (simple.ret, enhanced.ret, raii.ret) << (!declaration)["VULKAN_HPP_INLINE "];
         simple.ret << simpleReturn;
         enhanced.ret << enhancedReturn;
         raii.ret << raiiReturn;
@@ -1224,13 +1242,20 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             else signatureTransformed = true;
             p << " " << param.prettyName;
             if (&param >= defaultOutputsFrom) p << (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
-            p << "," << n;
             if (function.secondHandleParam != &param) {
                 // We accept plain handles, so add a non-raii namespace.
-                raii.params << Segment(p).replace(param.handle && param.kind == Var::Kind::VMA ?
+                auto r = Segment(p).replace(param.handle && param.kind == Var::Kind::VMA ?
                     param.makePretty("VMA_HPP_NAMESPACE::"_seg << param.type) : param.prettyType);
+                if (combinedHandle && param.handle) {
+                    raii.params << (!combining)[std::move(r)];
+                    r.clear();
+                    if (param.kind != Var::Kind::VK) r << param.prettyType;
+                    else r << param.makePretty(param.type, "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::");
+                    raii.params << combining[std::move(r << "&& " << param.prettyName)];
+                } else raii.params << r;
+                raii.params << "," << n;
             }
-            enhanced.params << std::move(p).replace(param.prettyType);
+            enhanced.params << std::move(p).replace(param.prettyType) << "," << n;
         }
         (simple.params, enhanced.params, raii.params).pop().pop();
         enhanced.params << vectorAllocator[(enhanced.params ? ",\n"_seg : ""_seg) <<
@@ -1299,15 +1324,46 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         enhanced.body << enhancedOutputs << n << enhancedCall << ";";
 
         if (hasRAIIVariant) raii.body << "return detail::Wrapper<" << raiiReturn << ">(";
-        else if (simpleReturn != "void" || !outputs.empty()) raii.body << "return ";
+        else if (simpleReturn != "void" || !outputs.empty()) {
+            if (combinedHandle) {
+                raii.body << combining[R"(
+                    VULKAN_HPP_NAMESPACE::Result result =
+                    #ifndef VULKAN_HPP_NO_EXCEPTIONS
+                      VULKAN_HPP_NAMESPACE::Result::eSuccess;
+                    #endif
+                    )"_seg] << (!combining)["return "];
+            } else raii.body << "return ";
+        }
         if (handle) raii.body << "m_" << handle->memberName << ".";
         else raii.body << "VMA_HPP_NAMESPACE::";
         raii.body << function.methodName << "(" << raiiPass.pop() << ")";
         if (hasRAIIVariant) {
             if (function.handle) raii.body << ", *this";
+            if (combinedHandle) {
+                Segment s;
+                for (const auto& param : function.methodParams())
+                    if (param.paramType == Param::Type::INPUT && param.handle)
+                        s << ", std::move(" << param.prettyName << ")";
+                raii.body << combining[std::move(s)];
+            }
             raii.body << ")";
         }
         raii.body << ";";
+        if (combinedHandle && !hasRAIIVariant) {
+            Segment s = R"(
+            #ifdef VULKAN_HPP_NO_EXCEPTIONS
+            if (result < VULKAN_HPP_NAMESPACE::Result::eSuccess)
+              return VULKAN_HPP_NAMESPACE::ResultValue<$0>(result, detail::Wrapper<$0>());
+            #endif
+            return VULKAN_HPP_NAMESPACE::detail::createResultValueType<$0>(result, detail::Wrapper<$0>(
+            )"_seg.replace(combinedHandle->name);
+            s.pop();
+            for (const auto& param : function.methodParams())
+                if (param.paramType == Param::Type::INPUT && param.handle)
+                    s << "std::move(" << (function.secondHandleParam == &param ? "*this" : param.prettyName) << ")" << ", ";
+            s.pop() << "));";
+            raii.body << combining[std::move(s)];
+        }
 
         // Generate result check.
         if (resultCheck) enhanced.body << n << resultCheck;
@@ -1343,14 +1399,15 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (variant == (variant & unique)) methodName << "Unique";
             if (name == "free") "(" >>= methodName << ")"; // MSVC debug free workaround.
             // Make a signature.
-            Segment result = "// wrapper function for command "_seg << function.name <<
-                ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html";
+            Segment result = "// wrapper "_seg << (variant == (variant & constructor) ? "constructor" : "function") <<
+                " for command " << function.name << ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html";
             result << n << method.ret << " $0($1)"_seg;
-            if (handle) result << " const";
+            if (variant == (variant & combining) && handle && handle->owner) result << " &&";
+            else if (handle && variant != (variant & constructor)) result << " const";
             if (resultValue == ResultValue::NONE || &method == &simple) result << " VULKAN_HPP_NOEXCEPT";
-            else result << " VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS";
+            else if (variant != (variant & constructor)) result << " VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS";
             if (variant & declaration) result << ";";
-            else result << " {\n  $2\n}"_seg;
+            else result << (variant == (variant & constructor) ? " :\n  $0($2) {}"_seg.replace(name) : " {\n  $2\n}"_seg);
             return std::move(result).replace(variant, methodName, method.params, method.body);
         };
         auto appendMethods = [&](Segment& dst, const Segment::Specialization variant, const Token& name) {
@@ -1377,13 +1434,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             appendMethods(h.methodDef, !declaration, function.shortName);
         }
         if (function.raiiName && (function.handle || hasRAIIVariant)) {
-            Segment::Specialization constructorVariant(16);
             if (function.name == "vmaCreateAllocator") { // Custom code for allocator creation.
                 raiiPass = "instance, device, createInfo"_seg;
                 (raii.params = R"(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Instance const & instance,
                                   VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Device const & device,
                                   AllocatorCreateInfo
-                                  )"_seg).pop() << constructorVariant[" const &"] << " createInfo";
+                                  )"_seg).pop() << constructor[" const &"] << " createInfo";
                 raii.body = R"(
                 if (createInfo.instance || createInfo.device || createInfo.pVulkanFunctions) {
                   VULKAN_HPP_NAMESPACE::detail::resultCheck(VULKAN_HPP_NAMESPACE::Result::eErrorValidationFailed, VMA_HPP_RAII_NAMESPACE_STRING
@@ -1398,23 +1454,21 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 )"_seg;
             }
             Handle& r = function.handle ? *function.handle : namespaceHandle;
-            r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !constructorVariant, function.handle, function.raiiName, raii);
-            r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !constructorVariant, function.handle, function.raiiName, raii);
+            r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !constructor & !combining, function.handle, function.raiiName, raii);
+            r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !constructor & !combining, function.handle, function.raiiName, raii);
+            if (combinedHandle) {
+                r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !constructor & combining, function.handle, function.raiiName, raii);
+                r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !constructor & combining, function.handle, function.raiiName, raii);
+            }
             if (raiiOutputHandle) {
+                raii.ret.clear() << declaration["explicit"] << (!declaration)["VULKAN_HPP_INLINE"];
                 if (function.handle) function.handle->name >>= " const & " >>= function.handle->memberName >>= "," >>= n >>= raii.params;
-                Segment constructor = "// wrapper constructor for command "_seg << function.name <<
-                    ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html" <<
-                    n << "$0($1)"_seg;
-                if (resultValue == ResultValue::NONE) constructor << " VULKAN_HPP_NOEXCEPT";
-
-                raiiOutputHandle->raiiConstructorDecl << navigate(function) << Segment(constructor) .replace(
-                    declaration & constructorVariant, "explicit "_seg << raiiOutputHandle->name, raii.params) << ";" << nn;
-                raiiOutputHandle->raiiConstructorDef << navigate(function) << std::move(constructor) .replace(
-                    !declaration & constructorVariant, "VULKAN_HPP_INLINE "_seg << raiiOutputHandle->name << "::" <<
-                    raiiOutputHandle->name, raii.params) << " :" << n << "  " << raiiOutputHandle->name << "(";
-                if (function.handle) raiiOutputHandle->raiiConstructorDef << function.handle->memberName << ".";
-                else raiiOutputHandle->raiiConstructorDef << "VMA_HPP_RAII_NAMESPACE::";
-                raiiOutputHandle->raiiConstructorDef << function.raiiName << "(" << raiiPass << ")) {}" << nn;
+                raii.body.clear();
+                if (function.handle) raii.body << function.handle->memberName << ".";
+                else raii.body << "VMA_HPP_RAII_NAMESPACE::";
+                raii.body << function.raiiName << "(" << raiiPass << ")";
+                raiiOutputHandle->raiiConstructorDecl << navigate(function) << buildMethod(declaration & constructor & !combining, raiiOutputHandle, raiiOutputHandle->name, raii) << nn;
+                raiiOutputHandle->raiiConstructorDef << navigate(function) << buildMethod(!declaration & constructor & !combining, raiiOutputHandle, raiiOutputHandle->name, raii) << nn;
             }
         }
     }
@@ -1552,9 +1606,16 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
             private:
               friend class detail::Wrapper<$0>;
+              explicit $0(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&& t, Allocation&& allocation) VULKAN_HPP_NOEXCEPT :
+                VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(std::move(t)),
+                m_allocation(std::move(allocation)) {}
+              explicit $0(const Allocator& allocator, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&& t, VMA_HPP_NAMESPACE::Allocation allocation) VULKAN_HPP_NOEXCEPT :
+                $0(std::move(t), detail::Wrapper<Allocation>(allocation, allocator)) {}
+              explicit $0(const Allocator& allocator, Allocation&& allocation, VULKAN_HPP_NAMESPACE::$0 t) VULKAN_HPP_NOEXCEPT :
+                VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(allocator.getDevice(), t, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
+                m_allocation(std::move(allocation)) {}
               explicit $0(const Allocator& allocator, std::pair<VMA_HPP_NAMESPACE::Allocation, VULKAN_HPP_NAMESPACE::$0> pair) VULKAN_HPP_NOEXCEPT :
-                VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(allocator.getDevice(), pair.second, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
-                m_allocation(detail::Wrapper<Allocation>(pair.first, allocator)) {}
+                $0(allocator, detail::Wrapper<Allocation>(pair.first, allocator), pair.second) {}
 
               Allocation m_allocation = nullptr;
             };

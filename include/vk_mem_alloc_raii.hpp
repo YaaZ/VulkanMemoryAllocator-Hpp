@@ -177,10 +177,20 @@ namespace VMA_HPP_NAMESPACE {
                                                                                                                     const AllocationCreateInfo& createInfo,
                                                                                                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
+      // wrapper function for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer,
+                                                                                                                const AllocationCreateInfo& createInfo,
+                                                                                                                VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
       // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
                                                                                                                    const AllocationCreateInfo& createInfo,
                                                                                                                    VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type allocateMemoryForImage(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image,
+                                                                                                              const AllocationCreateInfo& createInfo,
+                                                                                                              VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
       // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       void freeMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VMA_HPP_NAMESPACE::Allocation> const & allocations) const VULKAN_HPP_NOEXCEPT;
@@ -216,10 +226,19 @@ namespace VMA_HPP_NAMESPACE {
       VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::type createAliasingBuffer(VMA_HPP_NAMESPACE::Allocation allocation,
                                                                                                                                                               const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
+      // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type createAliasingBuffer(Allocation&& allocation,
+                                                                                                             const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
       // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::type createAliasingBuffer2(VMA_HPP_NAMESPACE::Allocation allocation,
                                                                                                                                                                VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                                const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type createAliasingBuffer2(Allocation&& allocation,
+                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                              const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
       // wrapper function for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type createImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
@@ -230,10 +249,19 @@ namespace VMA_HPP_NAMESPACE {
       VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::type createAliasingImage(VMA_HPP_NAMESPACE::Allocation allocation,
                                                                                                                                                             const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
+      // wrapper function for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type createAliasingImage(Allocation&& allocation,
+                                                                                                           const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
       // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::type createAliasingImage2(VMA_HPP_NAMESPACE::Allocation allocation,
                                                                                                                                                              VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                              const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type createAliasingImage2(Allocation&& allocation,
+                                                                                                            VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                            const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
 #if VMA_STATS_STRING_ENABLED
       // wrapper function for command vmaBuildStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
@@ -444,18 +472,34 @@ namespace VMA_HPP_NAMESPACE {
       // wrapper function for command vmaBindBufferMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBuffer(VULKAN_HPP_NAMESPACE::Buffer buffer) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
+      // wrapper function for command vmaBindBufferMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type bindBuffer(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
       // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindBuffer2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                      VULKAN_HPP_NAMESPACE::Buffer buffer,
                                                                                                                      const void* next) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
+      // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type bindBuffer2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                       VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer,
+                                                                                                                       const void* next) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
       // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImage(VULKAN_HPP_NAMESPACE::Image image) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type bindImage(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
       // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type bindImage2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                     VULKAN_HPP_NAMESPACE::Image image,
                                                                                                                     const void* next) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
+
+      // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type bindImage2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                     VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image,
+                                                                                                                     const void* next) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
     private:
       friend class detail::Wrapper<Allocation>;
@@ -751,9 +795,16 @@ namespace VMA_HPP_NAMESPACE {
 
     private:
       friend class detail::Wrapper<Buffer>;
+      explicit Buffer(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& t, Allocation&& allocation) VULKAN_HPP_NOEXCEPT :
+        VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(std::move(t)),
+        m_allocation(std::move(allocation)) {}
+      explicit Buffer(const Allocator& allocator, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& t, VMA_HPP_NAMESPACE::Allocation allocation) VULKAN_HPP_NOEXCEPT :
+        Buffer(std::move(t), detail::Wrapper<Allocation>(allocation, allocator)) {}
+      explicit Buffer(const Allocator& allocator, Allocation&& allocation, VULKAN_HPP_NAMESPACE::Buffer t) VULKAN_HPP_NOEXCEPT :
+        VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(allocator.getDevice(), t, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
+        m_allocation(std::move(allocation)) {}
       explicit Buffer(const Allocator& allocator, std::pair<VMA_HPP_NAMESPACE::Allocation, VULKAN_HPP_NAMESPACE::Buffer> pair) VULKAN_HPP_NOEXCEPT :
-        VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(allocator.getDevice(), pair.second, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
-        m_allocation(detail::Wrapper<Allocation>(pair.first, allocator)) {}
+        Buffer(allocator, detail::Wrapper<Allocation>(pair.first, allocator), pair.second) {}
 
       Allocation m_allocation = nullptr;
     };
@@ -819,9 +870,16 @@ namespace VMA_HPP_NAMESPACE {
 
     private:
       friend class detail::Wrapper<Image>;
+      explicit Image(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& t, Allocation&& allocation) VULKAN_HPP_NOEXCEPT :
+        VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(std::move(t)),
+        m_allocation(std::move(allocation)) {}
+      explicit Image(const Allocator& allocator, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& t, VMA_HPP_NAMESPACE::Allocation allocation) VULKAN_HPP_NOEXCEPT :
+        Image(std::move(t), detail::Wrapper<Allocation>(allocation, allocator)) {}
+      explicit Image(const Allocator& allocator, Allocation&& allocation, VULKAN_HPP_NAMESPACE::Image t) VULKAN_HPP_NOEXCEPT :
+        VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(allocator.getDevice(), t, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
+        m_allocation(std::move(allocation)) {}
       explicit Image(const Allocator& allocator, std::pair<VMA_HPP_NAMESPACE::Allocation, VULKAN_HPP_NAMESPACE::Image> pair) VULKAN_HPP_NOEXCEPT :
-        VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(allocator.getDevice(), pair.second, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
-        m_allocation(detail::Wrapper<Allocation>(pair.first, allocator)) {}
+        Image(allocator, detail::Wrapper<Allocation>(pair.first, allocator), pair.second) {}
 
       Allocation m_allocation = nullptr;
     };
@@ -1009,11 +1067,25 @@ namespace VMA_HPP_NAMESPACE {
       return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type>(m_allocator.allocateMemoryForBuffer(buffer, createInfo, allocationInfo), *this);
     }
 
+    // wrapper function for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type Allocator::allocateMemoryForBuffer(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer,
+                                                                                                                                           const AllocationCreateInfo& createInfo,
+                                                                                                                                           VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type>(m_allocator.allocateMemoryForBuffer(buffer, createInfo, allocationInfo), *this, std::move(buffer));
+    }
+
     // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type Allocator::allocateMemoryForImage(VULKAN_HPP_NAMESPACE::Image image,
                                                                                                                                               const AllocationCreateInfo& createInfo,
                                                                                                                                               VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
       return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type>(m_allocator.allocateMemoryForImage(image, createInfo, allocationInfo), *this);
+    }
+
+    // wrapper function for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type Allocator::allocateMemoryForImage(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image,
+                                                                                                                                         const AllocationCreateInfo& createInfo,
+                                                                                                                                         VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type>(m_allocator.allocateMemoryForImage(image, createInfo, allocationInfo), *this, std::move(image));
     }
 
     // wrapper function for command vmaFreeMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
@@ -1066,11 +1138,24 @@ namespace VMA_HPP_NAMESPACE {
       return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::type>(m_allocator.createAliasingBuffer(allocation, bufferCreateInfo), *this);
     }
 
+    // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type Allocator::createAliasingBuffer(Allocation&& allocation,
+                                                                                                                                        const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type>(m_allocator.createAliasingBuffer(allocation, bufferCreateInfo), *this, std::move(allocation));
+    }
+
     // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::type Allocator::createAliasingBuffer2(VMA_HPP_NAMESPACE::Allocation allocation,
                                                                                                                                                                                           VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                                                           const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
       return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::type>(m_allocator.createAliasingBuffer2(allocation, allocationLocalOffset, bufferCreateInfo), *this);
+    }
+
+    // wrapper function for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type Allocator::createAliasingBuffer2(Allocation&& allocation,
+                                                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                                         const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type>(m_allocator.createAliasingBuffer2(allocation, allocationLocalOffset, bufferCreateInfo), *this, std::move(allocation));
     }
 
     // wrapper function for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
@@ -1086,11 +1171,24 @@ namespace VMA_HPP_NAMESPACE {
       return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::type>(m_allocator.createAliasingImage(allocation, imageCreateInfo), *this);
     }
 
+    // wrapper function for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type Allocator::createAliasingImage(Allocation&& allocation,
+                                                                                                                                      const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type>(m_allocator.createAliasingImage(allocation, imageCreateInfo), *this, std::move(allocation));
+    }
+
     // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::type Allocator::createAliasingImage2(VMA_HPP_NAMESPACE::Allocation allocation,
                                                                                                                                                                                         VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                                                         const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
       return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::type>(m_allocator.createAliasingImage2(allocation, allocationLocalOffset, imageCreateInfo), *this);
+    }
+
+    // wrapper function for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type Allocator::createAliasingImage2(Allocation&& allocation,
+                                                                                                                                       VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                                       const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type>(m_allocator.createAliasingImage2(allocation, allocationLocalOffset, imageCreateInfo), *this, std::move(allocation));
     }
 
 #if VMA_STATS_STRING_ENABLED
@@ -1198,6 +1296,20 @@ namespace VMA_HPP_NAMESPACE {
       return m_allocator.bindBufferMemory(m_allocation, buffer);
     }
 
+    // wrapper function for command vmaBindBufferMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type Allocation::bindBuffer(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      VULKAN_HPP_NAMESPACE::Result result =
+#ifndef VULKAN_HPP_NO_EXCEPTIONS
+        VULKAN_HPP_NAMESPACE::Result::eSuccess;
+#endif
+      m_allocator.bindBufferMemory(m_allocation, buffer);
+#ifdef VULKAN_HPP_NO_EXCEPTIONS
+      if (result < VULKAN_HPP_NAMESPACE::Result::eSuccess)
+        return VULKAN_HPP_NAMESPACE::ResultValue<Buffer>(result, detail::Wrapper<Buffer>());
+#endif
+      return VULKAN_HPP_NAMESPACE::detail::createResultValueType<Buffer>(result, detail::Wrapper<Buffer>(std::move(*this), std::move(buffer)));
+    }
+
     // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocation::bindBuffer2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
                                                                                                                                                  VULKAN_HPP_NAMESPACE::Buffer buffer,
@@ -1205,9 +1317,39 @@ namespace VMA_HPP_NAMESPACE {
       return m_allocator.bindBufferMemory2(m_allocation, allocationLocalOffset, buffer, next);
     }
 
+    // wrapper function for command vmaBindBufferMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Buffer>::type Allocation::bindBuffer2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                                                   VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer,
+                                                                                                                                                   const void* next) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      VULKAN_HPP_NAMESPACE::Result result =
+#ifndef VULKAN_HPP_NO_EXCEPTIONS
+        VULKAN_HPP_NAMESPACE::Result::eSuccess;
+#endif
+      m_allocator.bindBufferMemory2(m_allocation, allocationLocalOffset, buffer, next);
+#ifdef VULKAN_HPP_NO_EXCEPTIONS
+      if (result < VULKAN_HPP_NAMESPACE::Result::eSuccess)
+        return VULKAN_HPP_NAMESPACE::ResultValue<Buffer>(result, detail::Wrapper<Buffer>());
+#endif
+      return VULKAN_HPP_NAMESPACE::detail::createResultValueType<Buffer>(result, detail::Wrapper<Buffer>(std::move(*this), std::move(buffer)));
+    }
+
     // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<void>::type Allocation::bindImage(VULKAN_HPP_NAMESPACE::Image image) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
       return m_allocator.bindImageMemory(m_allocation, image);
+    }
+
+    // wrapper function for command vmaBindImageMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type Allocation::bindImage(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      VULKAN_HPP_NAMESPACE::Result result =
+#ifndef VULKAN_HPP_NO_EXCEPTIONS
+        VULKAN_HPP_NAMESPACE::Result::eSuccess;
+#endif
+      m_allocator.bindImageMemory(m_allocation, image);
+#ifdef VULKAN_HPP_NO_EXCEPTIONS
+      if (result < VULKAN_HPP_NAMESPACE::Result::eSuccess)
+        return VULKAN_HPP_NAMESPACE::ResultValue<Image>(result, detail::Wrapper<Image>());
+#endif
+      return VULKAN_HPP_NAMESPACE::detail::createResultValueType<Image>(result, detail::Wrapper<Image>(std::move(*this), std::move(image)));
     }
 
     // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
@@ -1215,6 +1357,22 @@ namespace VMA_HPP_NAMESPACE {
                                                                                                                                                 VULKAN_HPP_NAMESPACE::Image image,
                                                                                                                                                 const void* next) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
       return m_allocator.bindImageMemory2(m_allocation, allocationLocalOffset, image, next);
+    }
+
+    // wrapper function for command vmaBindImageMemory2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_NODISCARD_WHEN_NO_EXCEPTIONS VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Image>::type Allocation::bindImage2(VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                                                                                                                                 VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image,
+                                                                                                                                                 const void* next) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+      VULKAN_HPP_NAMESPACE::Result result =
+#ifndef VULKAN_HPP_NO_EXCEPTIONS
+        VULKAN_HPP_NAMESPACE::Result::eSuccess;
+#endif
+      m_allocator.bindImageMemory2(m_allocation, allocationLocalOffset, image, next);
+#ifdef VULKAN_HPP_NO_EXCEPTIONS
+      if (result < VULKAN_HPP_NAMESPACE::Result::eSuccess)
+        return VULKAN_HPP_NAMESPACE::ResultValue<Image>(result, detail::Wrapper<Image>());
+#endif
+      return VULKAN_HPP_NAMESPACE::detail::createResultValueType<Image>(result, detail::Wrapper<Image>(std::move(*this), std::move(image)));
     }
 
     // wrapper function for command vmaEndDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
