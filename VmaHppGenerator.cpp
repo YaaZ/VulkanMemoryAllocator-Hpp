@@ -917,6 +917,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         Segment methodDecl, methodDef, raiiDecl, raiiDef, raiiConstructorDecl, raiiConstructorDef;
         Handle* owner = nullptr;
         Token memberName, destructor;
+        bool raiiOnly = true;
     } namespaceHandle {"", -1};
     std::vector<Handle> handleVector;
     handleVector.reserve(16); // We use pointers, so preallocate.
@@ -926,7 +927,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     for (const auto& match : iterate(source, handlePattern)) {
         handles.emplace_back(handleVector.emplace_back(group(source, match, 2), match));
         handleVector.back().memberName = handleVector.back().name.capitalize(false);
+        handleVector.back().raiiOnly = false;
     }
+    handleVector.emplace_back("Buffer", -1);
+    handleVector.emplace_back("Image", -1);
+    auto& statsStringHandle = handleVector.emplace_back("StatsString", -1);
 
     // All functions.
     struct Param : Var {
@@ -956,7 +961,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     for (auto& function : functionVector) {
         // Map parameters to the handles.
         for (auto& param : function.params) {
-            if (param.kind != Var::Kind::VMA) continue;
+            if (param.kind != Var::Kind::VMA && param.kind != Var::Kind::VK) continue;
             for (Handle& handle : handleVector) {
                 if (handle.name == param.type) {
                     param.handle = &handle;
@@ -973,7 +978,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
             // Find the second-order handle.
             for (const auto& param : function.methodParams()) {
-                if (param.handle == nullptr || param.pointers) continue;
+                if (param.handle == nullptr || param.pointers || param.kind != Var::Kind::VMA) continue;
                 // Set the owner for the second-level handle.
                 if (!param.handle->owner || param.handle->owner == function.handle) param.handle->owner = function.handle;
                 else throw std::runtime_error("Handle owner conflict: " + std::string(param.handle->name));
@@ -1031,10 +1036,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     // Collect unique handles.
     for (const auto& h : handleVector) if (h.destructor) uniqueHandles.emplace_back(h);
 
-    // Custom RAII handles.
-    std::array customRAIIHandles { Handle("Buffer", -1), Handle("Image", -1), Handle("StatsString", -1) };
-    auto& [bufferHandle, imageHandle, statsStringHandle] = customRAIIHandles;
-
     // Iterate VMA functions.
     for (auto& function : functionVector) {
         auto& params = function.params;
@@ -1048,14 +1049,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             Param* operator->() const { return param; }
             Output(Param& param) : param(&param) {
                 if (param.handle) {
-                    if (param.handle->destructor) uniqueType = param.makePretty("Unique"_seg << param.type);
-                    raiiType = param.prettyType;
-                } else if (param.underlyingType == "VkBuffer") {
-                    uniqueType = "UniqueBuffer"_seg;
-                    raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer"_seg;
-                } else if (param.underlyingType == "VkImage") {
-                    uniqueType = "UniqueImage"_seg;
-                    raiiType = "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image"_seg;
+                    if (param.handle->destructor || param.kind == Var::Kind::VK)
+                        uniqueType = param.makePretty("Unique"_seg << param.type, "");
+                    raiiType = param.makePretty(param.type, param.kind == Var::Kind::VK ?
+                        "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::" : "");
                 }
             }
         };
@@ -1127,8 +1124,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 enhancedReturn = "std::pair<$2, $1>"_seg; // Pair order is reversed.
                 if (outputs[0]->kind == Var::Kind::VK) { // RAII uses combined handles.
                     raiiReturn = outputs[0]->makePretty(outputs[0]->type, "");
-                    if (outputs[0]->type == "Buffer") raiiOutputHandle = &bufferHandle;
-                    else if (outputs[0]->type == "Image") raiiOutputHandle = &imageHandle;
+                    raiiOutputHandle = outputs[0]->handle;
                 }
                 enhancedOutput = "pair";
                 enhancedOutputs << n << "std::pair<" << outputs[1]->prettyType << ", " << outputs[0]->prettyType << "> pair;" <<
@@ -1172,7 +1168,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                     }
                 } else { // Single value.
                     (enhancedReturn, raiiReturn) << "$1"_seg;
-                    raiiOutputHandle = outputs[0]->handle;
+                    raiiOutputHandle = outputs[0]->kind != Var::Kind::VK ? outputs[0]->handle : nullptr;
                     enhancedOutputs << n << outputs[0]->prettyType << " " << enhancedOutput << ";";
                     if (hasUniqueVariant) uniqueWrap << " { " << enhancedOutput << (handle ? ", *this" : ", {}") << " };";
                 }
@@ -1228,8 +1224,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             p << " " << param.prettyName;
             if (&param >= defaultOutputsFrom) p << (declaration & !vectorAllocator)[param.pointers ? " = nullptr" : " = {}"];
             p << "," << n;
-            if (function.secondHandleParam != &param) // We accept plain handles, so add a non-raii namespace.
-                raii.params << Segment(p).replace(param.handle ? param.makePretty("VMA_HPP_NAMESPACE::"_seg << param.type) : param.prettyType);
+            if (function.secondHandleParam != &param) {
+                // We accept plain handles, so add a non-raii namespace.
+                raii.params << Segment(p).replace(param.handle && param.kind == Var::Kind::VMA ?
+                    param.makePretty("VMA_HPP_NAMESPACE::"_seg << param.type) : param.prettyType);
+            }
             enhanced.params << std::move(p).replace(param.prettyType);
         }
         (simple.params, enhanced.params, raii.params).pop().pop();
@@ -1429,6 +1428,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     auto& [forwardDecls, uniqueDecls, declarations, handleTraits, cppTypeTraits, uniqueTraits, definitions] = *content;
     for (const Symbol& s : structs) forwardDecls << n << navigate(s) << "struct " << s.name << ";";
     for (Handle& h : handleVector) {
+        if (h.raiiOnly) continue;
         (forwardDecls, handleTraits, cppTypeTraits) << n << navigate(h);
         forwardDecls << "class " << h.name << ";";
         handleTraits << R"(
@@ -1535,7 +1535,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     content << navigate.reset;
 
     // Generate RAII handle declarations.
-    std::move(customRAIIHandles.begin(), customRAIIHandles.end(), std::back_inserter(handleVector));
     Segment raiiContent;
     for (Handle& h : handleVector) raiiContent << n << navigate(h) << "class " << h.name << ";";
     raiiContent << navigate.reset << nn << namespaceHandle.raiiDecl << navigate.reset;
