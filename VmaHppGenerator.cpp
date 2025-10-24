@@ -1221,7 +1221,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 else if (param.tag == Var::Tag::NOT_NULL)
                     p = "$0&"_seg;
                 else if (!param.constant && param.kind != Var::Kind::OTHER && param.kind != Var::Kind::CHAR)
-                    p = "VULKAN_HPP_NAMESPACE::Optional<$0>"_seg;
+                    p = "VULKAN_HPP_NAMESPACE::Optional<$0> const &"_seg;
             }
             if (!p) p = param.pointers ? param.simpleType : "$0"_seg;
             else signatureTransformed = true;
