@@ -1592,7 +1592,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             }
             )"_seg;
             getters = R"(
-            const Allocation& getAllocation() const { return m_allocation; }
+            VULKAN_HPP_NODISCARD const Allocation& getAllocation() const { return m_allocation; }
             )"_seg;
         } else if (h.name == "StatsString") {
             classTemplate = R"(
@@ -1710,7 +1710,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 clear << n << "m_" << name << " = nullptr;";
                 if (h.memberName != name) {
                     release << n << "m_" << name << " = nullptr;";
-                    getters << nn << type << " get" << name.capitalize() << "() const { return m_" << name << "; }";
+                    getters << nn << "VULKAN_HPP_NODISCARD " << type << " get" << name.capitalize() << "() const { return m_" << name << "; }";
                 }
             }
             constructors = R"(

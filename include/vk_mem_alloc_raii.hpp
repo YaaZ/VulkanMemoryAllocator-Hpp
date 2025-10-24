@@ -113,11 +113,11 @@ namespace VMA_HPP_NAMESPACE {
         return exchange(m_allocator, nullptr);
       }
 
-      VULKAN_HPP_NAMESPACE::Device getDevice() const { return m_device; }
+      VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Device getDevice() const { return m_device; }
 
-      const VULKAN_HPP_NAMESPACE::AllocationCallbacks * getAllocationCallbacks() const { return m_allocationCallbacks; }
+      VULKAN_HPP_NODISCARD const VULKAN_HPP_NAMESPACE::AllocationCallbacks * getAllocationCallbacks() const { return m_allocationCallbacks; }
 
-      VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const * getDispatcher() const { return m_dispatcher; }
+      VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const * getDispatcher() const { return m_dispatcher; }
 
       void swap(Allocator & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(m_device, rhs.m_device);
@@ -298,7 +298,7 @@ namespace VMA_HPP_NAMESPACE {
         return exchange(m_pool, nullptr);
       }
 
-      VMA_HPP_NAMESPACE::Allocator getAllocator() const { return m_allocator; }
+      VULKAN_HPP_NODISCARD VMA_HPP_NAMESPACE::Allocator getAllocator() const { return m_allocator; }
 
       void swap(Pool & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(m_allocator, rhs.m_allocator);
@@ -390,7 +390,7 @@ namespace VMA_HPP_NAMESPACE {
         return exchange(m_allocation, nullptr);
       }
 
-      VMA_HPP_NAMESPACE::Allocator getAllocator() const { return m_allocator; }
+      VULKAN_HPP_NODISCARD VMA_HPP_NAMESPACE::Allocator getAllocator() const { return m_allocator; }
 
       void swap(Allocation & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(m_allocator, rhs.m_allocator);
@@ -513,7 +513,7 @@ namespace VMA_HPP_NAMESPACE {
         return exchange(m_defragmentationContext, nullptr);
       }
 
-      VMA_HPP_NAMESPACE::Allocator getAllocator() const { return m_allocator; }
+      VULKAN_HPP_NODISCARD VMA_HPP_NAMESPACE::Allocator getAllocator() const { return m_allocator; }
 
       void swap(DefragmentationContext & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(m_allocator, rhs.m_allocator);
@@ -586,7 +586,7 @@ namespace VMA_HPP_NAMESPACE {
         return exchange(m_virtualAllocation, nullptr);
       }
 
-      VMA_HPP_NAMESPACE::VirtualBlock getVirtualBlock() const { return m_virtualBlock; }
+      VULKAN_HPP_NODISCARD VMA_HPP_NAMESPACE::VirtualBlock getVirtualBlock() const { return m_virtualBlock; }
 
       void swap(VirtualAllocation & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(m_virtualBlock, rhs.m_virtualBlock);
@@ -742,7 +742,7 @@ namespace VMA_HPP_NAMESPACE {
         return { m_allocation.release(), VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer::release() };
       }
 
-      const Allocation& getAllocation() const { return m_allocation; }
+      VULKAN_HPP_NODISCARD const Allocation& getAllocation() const { return m_allocation; }
 
       void swap(Buffer & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&>(*this), static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&>(rhs));
@@ -810,7 +810,7 @@ namespace VMA_HPP_NAMESPACE {
         return { m_allocation.release(), VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image::release() };
       }
 
-      const Allocation& getAllocation() const { return m_allocation; }
+      VULKAN_HPP_NODISCARD const Allocation& getAllocation() const { return m_allocation; }
 
       void swap(Image & rhs) VULKAN_HPP_NOEXCEPT {
         std::swap(static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&>(*this), static_cast<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&>(rhs));
