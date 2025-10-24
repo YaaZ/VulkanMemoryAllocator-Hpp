@@ -308,10 +308,12 @@ public:
     Segment& pop() & { if (!nodes.empty()) nodes.pop_back(); return *this; }
 
     /**
-     * Has any text or wildcard tokens (navigation and breaks are ignored).
+     * Has any text, conditional or wildcard tokens (navigation and breaks are ignored).
      */
     explicit operator bool() const {
-        for (const auto& n : nodes) if (const auto i = info(n); i && (!i->view || !i->view->empty())) return true;
+        for (const auto& n : nodes)
+            if (const auto i = info(n); (i && (!i->view || !i->view->empty())) ||
+                std::holds_alternative<ConditionalNode>(n)) return true;
         return false;
     }
 
@@ -929,8 +931,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         handleVector.back().memberName = handleVector.back().name.capitalize(false);
         handleVector.back().raiiOnly = false;
     }
-    handleVector.emplace_back("Buffer", -1);
-    handleVector.emplace_back("Image", -1);
+    handleVector.emplace_back("Buffer", -1).destructor = "destroyBuffer";
+    handleVector.emplace_back("Image", -1).destructor = "destroyImage";
     auto& statsStringHandle = handleVector.emplace_back("StatsString", -1);
 
     // All functions.
@@ -1034,7 +1036,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     }
 
     // Collect unique handles.
-    for (const auto& h : handleVector) if (h.destructor) uniqueHandles.emplace_back(h);
+    for (const auto& h : handleVector) if (h.destructor && !h.raiiOnly) uniqueHandles.emplace_back(h);
 
     // Iterate VMA functions.
     for (auto& function : functionVector) {
@@ -1043,18 +1045,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         if (handle && handle->owner) handle = handle->owner; // Get the first-level handle.
 
         // Find output params.
-        struct Output {
-            Segment uniqueType;
-            Param* param;
-            Param* operator->() const { return param; }
-            Output(Param& param) : param(&param) {
-                if (param.handle) {
-                    if (param.handle->destructor || param.kind == Var::Kind::VK)
-                        uniqueType = param.makePretty("Unique"_seg << param.type, "");
-                }
-            }
-        };
-        std::vector<Output> outputs; // Mandatory only.
+        std::vector<Param*> outputs; // Mandatory only.
         const Param* defaultOutputsFrom = nullptr;
         bool hasUniqueVariant = false, hasRAIIVariant = false;
         for (auto& param : function.methodParams()) {
@@ -1062,9 +1053,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (param.pointers > 1 || (!param.constant && param.pointers && param.kind != Var::Kind::VOID && param.kind != Var::Kind::CHAR)) {
                 if (param.tag == Var::Tag::NOT_NULL) {
                     param.paramType = Param::Type::OUTPUT;
-                    const Output& o = outputs.emplace_back(param);
-                    if (o.uniqueType) hasUniqueVariant = true;
-                    if (o->handle) {
+                    if (Param* o = outputs.emplace_back(&param); o->handle) {
                         hasRAIIVariant = true;
                         // RAII Buffers and Images can only be created from the first level handle.
                         if (o->kind == Var::Kind::VK && function.handle && function.handle->owner) {
@@ -1120,8 +1109,17 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         // Convert enhanced outputs.
         Handle* raiiOutputHandle = nullptr;
         if (!enhancedReturn) {
+            Segment enhancedTypes[2];
+            bool hasUniqueType[2] {};
+            for (int i = 0; i < outputs.size(); ++i) {
+                if (const Param& p = *outputs[i]; p.handle && p.handle->destructor) {
+                    enhancedTypes[i] << unique[p.makePretty("Unique"_seg << p.type, "")] << (!unique)[p.prettyType];
+                    hasUniqueType[i] = true;
+                    hasUniqueVariant = true;
+                } else enhancedTypes[i] = p.prettyType;
+            }
             if (outputs.size() == 2 && !outputs[0]->lenIfNotNull && !outputs[1]->lenIfNotNull) { // Pair.
-                enhancedReturn = "std::pair<$2, $1>"_seg; // Pair order is reversed.
+                enhancedReturn << "std::pair<" << enhancedTypes[1] << ", " << enhancedTypes[0] << ">"; // Pair order is reversed.
                 if (outputs[0]->kind == Var::Kind::VK) { // RAII uses combined handles.
                     raiiReturn = outputs[0]->makePretty(outputs[0]->type, "");
                     raiiOutputHandle = outputs[0]->handle;
@@ -1132,10 +1130,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                     n << outputs[1]->prettyType << "& " << outputs[1]->prettyName << " = pair.first;";
                 if (hasUniqueVariant) {
                     uniqueWrap << " {";
-                    for (auto& output : Iterable(outputs.rbegin(), outputs.rend())) {
+                    for (int i = 1; i >= 0; --i) {
                         uniqueWrap << n << "  ";
-                        if (output.uniqueType) uniqueWrap << output.uniqueType << "(" << output->prettyName << (handle ? ", *this" : ", {}") << ")";
-                        else uniqueWrap << output->prettyName;
+                        if (hasUniqueType[i]) uniqueWrap << enhancedTypes[i] << "(" << outputs[i]->prettyName << (handle ? ", *this" : ", {}") << ")";
+                        else uniqueWrap << outputs[i]->prettyName;
                         uniqueWrap << ",";
                     }
                     uniqueWrap.pop() << n << "};";
@@ -1147,12 +1145,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                         "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::" : "") : outputs[0]->prettyType;
                 if (outputs[0]->lenIfNotNull) { // Vector.
                     vecAllocName = (vecAllocType = outputs[0]->type).capitalize(false);
-                    enhancedReturn = "std::vector<$1, $0Allocator>"_seg.replace(vecAllocType);
+                    enhancedReturn = "std::vector<$0, $1Allocator>"_seg.replace(enhancedTypes[0], vecAllocType);
                     "std::vector<" >>= raiiReturn << ">";
                     // Generate template for vector allocator.
                     enhanced.ret << "template <typename " << vecAllocType << "Allocator" <<
-                        (declaration & !vectorAllocator)[" = std::allocator<$1>"_seg] <<
-                        vectorAllocator[",\n          typename std::enable_if<std::is_same<typename $0Allocator::value_type, $1>::value, int>::type"_seg.replace(vecAllocType)] <<
+                        (declaration & !vectorAllocator)[" = std::allocator<$0>"_seg.replace(enhancedTypes[0])] <<
+                        vectorAllocator[",\n          typename std::enable_if<std::is_same<typename $1Allocator::value_type, $0>::value, int>::type"_seg.replace(enhancedTypes[0], vecAllocType)] <<
                         (declaration & vectorAllocator)[" = 0"]  << ">" << n;
                     // Unique variants should use a default allocator for the intermediate vector.
                     enhancedOutputs << n << "std::vector<" << outputs[0]->prettyType <<
@@ -1170,7 +1168,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                             "for (auto const& t : " << enhancedOutput << ") " << enhancedOutput << "Unique.emplace_back(t" << (handle ? ", *this" : ", {}") << ");";
                     }
                 } else { // Single value.
-                    enhancedReturn << "$1"_seg;
+                    enhancedReturn = std::move(enhancedTypes[0]);
                     raiiOutputHandle = outputs[0]->kind != Var::Kind::VK ? outputs[0]->handle : nullptr;
                     enhancedOutputs << n << outputs[0]->prettyType << " " << enhancedOutput << ";";
                     if (hasUniqueVariant) uniqueWrap << " { " << enhancedOutput << (handle ? ", *this" : ", {}") << " };";
@@ -1338,10 +1336,6 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
         // Append methods to the handle.
         auto buildMethod = [&](const Segment::Specialization variant, Handle* handle, const Token& name, const Method& method) {
-            auto outputType = [&](const int i) {
-                return i >= outputs.size() ? Token() :
-                    variant == (variant & unique) && outputs[i].uniqueType ? outputs[i].uniqueType : outputs[i]->prettyType;
-            };
             // Generate name.
             Segment methodName;
             if (handle && variant & !declaration) methodName << handle->name << "::";
@@ -1351,13 +1345,13 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             // Make a signature.
             Segment result = "// wrapper function for command "_seg << function.name <<
                 ", see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html";
-            result << n << method.ret << " $0($3)"_seg;
+            result << n << method.ret << " $0($1)"_seg;
             if (handle) result << " const";
             if (resultValue == ResultValue::NONE || &method == &simple) result << " VULKAN_HPP_NOEXCEPT";
             else result << " VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS";
             if (variant & declaration) result << ";";
-            else result << " {\n  $4\n}"_seg;
-            return std::move(result).replace(variant, methodName, outputType(0), outputType(1), method.params, method.body);
+            else result << " {\n  $2\n}"_seg;
+            return std::move(result).replace(variant, methodName, method.params, method.body);
         };
         auto appendMethods = [&](Segment& dst, const Segment::Specialization variant, const Token& name) {
             dst << nn << navigate(function) << "#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE"_seg << n <<
