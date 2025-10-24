@@ -65,7 +65,10 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaCreateAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Allocator(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Instance const & instance,
+                         VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Device const & device,
+                         AllocatorCreateInfo const & createInfo);
 #endif
 
       Allocator(std::nullptr_t) {}
@@ -256,7 +259,9 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaCreatePool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Pool(Allocator const & allocator,
+                    const PoolCreateInfo& createInfo);
 #endif
 
       Pool(std::nullptr_t) {}
@@ -332,7 +337,23 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaAllocateMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Allocation(Allocator const & allocator,
+                          const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
+                          const AllocationCreateInfo& createInfo,
+                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr);
+
+      // wrapper constructor for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Allocation(Allocator const & allocator,
+                          VULKAN_HPP_NAMESPACE::Buffer buffer,
+                          const AllocationCreateInfo& createInfo,
+                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr);
+
+      // wrapper constructor for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Allocation(Allocator const & allocator,
+                          VULKAN_HPP_NAMESPACE::Image image,
+                          const AllocationCreateInfo& createInfo,
+                          VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr);
 #endif
 
       Allocation(std::nullptr_t) {}
@@ -453,7 +474,9 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaBeginDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit DefragmentationContext(Allocator const & allocator,
+                                      const DefragmentationInfo& info);
 #endif
 
       DefragmentationContext(std::nullptr_t) {}
@@ -523,7 +546,10 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaVirtualAllocate, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit VirtualAllocation(VirtualBlock const & virtualBlock,
+                                 const VirtualAllocationCreateInfo& createInfo,
+                                 VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset = nullptr);
 #endif
 
       VirtualAllocation(std::nullptr_t) {}
@@ -590,7 +616,8 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaCreateVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit VirtualBlock(const VirtualBlockCreateInfo& createInfo);
 #endif
 
       VirtualBlock(std::nullptr_t) {}
@@ -666,7 +693,18 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Buffer(Allocator const & allocator,
+                      const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                      const AllocationCreateInfo& allocationCreateInfo,
+                      VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr);
+
+      // wrapper constructor for command vmaCreateBufferWithAlignment, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Buffer(Allocator const & allocator,
+                      const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                      const AllocationCreateInfo& allocationCreateInfo,
+                      VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
+                      VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr);
 #endif
 
       Buffer(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(nullptr) {}
@@ -730,7 +768,11 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
-      // TODO constructors
+      // wrapper constructor for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Image(Allocator const & allocator,
+                     const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                     const AllocationCreateInfo& allocationCreateInfo,
+                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo = nullptr);
 #endif
 
       Image(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(nullptr) {}
@@ -792,6 +834,16 @@ namespace VMA_HPP_NAMESPACE {
       using CppType = char*;
 
     public:
+#if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+      // wrapper constructor for command vmaBuildVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit StatsString(VirtualBlock const & virtualBlock,
+                           VULKAN_HPP_NAMESPACE::Bool32 detailedMap) VULKAN_HPP_NOEXCEPT;
+
+      // wrapper constructor for command vmaBuildStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit StatsString(Allocator const & allocator,
+                           VULKAN_HPP_NAMESPACE::Bool32 detailedMap) VULKAN_HPP_NOEXCEPT;
+#endif
+
       StatsString(std::nullptr_t) {}
       ~StatsString() { clear(); }
 
@@ -1223,6 +1275,89 @@ namespace VMA_HPP_NAMESPACE {
     }
 
 #endif 
+
+#if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+    // wrapper constructor for command vmaCreateAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Allocator::Allocator(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Instance const & instance,
+                                           VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Device const & device,
+                                           AllocatorCreateInfo const & createInfo) :
+      Allocator(VMA_HPP_RAII_NAMESPACE::createAllocator(instance, device, createInfo)) {}
+
+    // wrapper constructor for command vmaCreatePool, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Pool::Pool(Allocator const & allocator,
+                                 const PoolCreateInfo& createInfo) :
+      Pool(allocator.createPool(createInfo)) {}
+
+    // wrapper constructor for command vmaAllocateMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Allocation::Allocation(Allocator const & allocator,
+                                             const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
+                                             const AllocationCreateInfo& createInfo,
+                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) :
+      Allocation(allocator.allocateMemory(vkMemoryRequirements, createInfo, allocationInfo)) {}
+
+    // wrapper constructor for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Allocation::Allocation(Allocator const & allocator,
+                                             VULKAN_HPP_NAMESPACE::Buffer buffer,
+                                             const AllocationCreateInfo& createInfo,
+                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) :
+      Allocation(allocator.allocateMemoryForBuffer(buffer, createInfo, allocationInfo)) {}
+
+    // wrapper constructor for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Allocation::Allocation(Allocator const & allocator,
+                                             VULKAN_HPP_NAMESPACE::Image image,
+                                             const AllocationCreateInfo& createInfo,
+                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) :
+      Allocation(allocator.allocateMemoryForImage(image, createInfo, allocationInfo)) {}
+
+    // wrapper constructor for command vmaBeginDefragmentation, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE DefragmentationContext::DefragmentationContext(Allocator const & allocator,
+                                                                     const DefragmentationInfo& info) :
+      DefragmentationContext(allocator.beginDefragmentation(info)) {}
+
+    // wrapper constructor for command vmaVirtualAllocate, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE VirtualAllocation::VirtualAllocation(VirtualBlock const & virtualBlock,
+                                                           const VirtualAllocationCreateInfo& createInfo,
+                                                           VULKAN_HPP_NAMESPACE::Optional<VULKAN_HPP_NAMESPACE::DeviceSize> offset) :
+      VirtualAllocation(virtualBlock.allocate(createInfo, offset)) {}
+
+    // wrapper constructor for command vmaCreateVirtualBlock, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE VirtualBlock::VirtualBlock(const VirtualBlockCreateInfo& createInfo) :
+      VirtualBlock(VMA_HPP_RAII_NAMESPACE::createVirtualBlock(createInfo)) {}
+
+    // wrapper constructor for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Buffer::Buffer(Allocator const & allocator,
+                                     const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                     const AllocationCreateInfo& allocationCreateInfo,
+                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) :
+      Buffer(allocator.createBuffer(bufferCreateInfo, allocationCreateInfo, allocationInfo)) {}
+
+    // wrapper constructor for command vmaCreateBufferWithAlignment, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Buffer::Buffer(Allocator const & allocator,
+                                     const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                     const AllocationCreateInfo& allocationCreateInfo,
+                                     VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
+                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) :
+      Buffer(allocator.createBufferWithAlignment(bufferCreateInfo, allocationCreateInfo, minAlignment, allocationInfo)) {}
+
+    // wrapper constructor for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Image::Image(Allocator const & allocator,
+                                   const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                                   const AllocationCreateInfo& allocationCreateInfo,
+                                   VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> allocationInfo) :
+      Image(allocator.createImage(imageCreateInfo, allocationCreateInfo, allocationInfo)) {}
+
+#if VMA_STATS_STRING_ENABLED
+    // wrapper constructor for command vmaBuildVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE StatsString::StatsString(VirtualBlock const & virtualBlock,
+                                               VULKAN_HPP_NAMESPACE::Bool32 detailedMap) VULKAN_HPP_NOEXCEPT :
+      StatsString(virtualBlock.buildStatsString(detailedMap)) {}
+
+    // wrapper constructor for command vmaBuildStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE StatsString::StatsString(Allocator const & allocator,
+                                               VULKAN_HPP_NAMESPACE::Bool32 detailedMap) VULKAN_HPP_NOEXCEPT :
+      StatsString(allocator.buildStatsString(detailedMap)) {}
+#endif 
+#endif
   }
 }
 #endif
