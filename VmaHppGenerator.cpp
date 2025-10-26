@@ -1323,47 +1323,27 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         simple.body << n << simpleCall << ";";
         enhanced.body << enhancedOutputs << n << enhancedCall << ";";
 
-        if (hasRAIIVariant) raii.body << "return detail::Wrapper<" << raiiReturn << ">(";
-        else if (simpleReturn != "void" || !outputs.empty()) {
-            if (combinedHandle) {
-                raii.body << combining[R"(
-                    VULKAN_HPP_NAMESPACE::Result result =
-                    #ifndef VULKAN_HPP_NO_EXCEPTIONS
-                      VULKAN_HPP_NAMESPACE::Result::eSuccess;
-                    #endif
-                    )"_seg] << (!combining)["return "];
-            } else raii.body << "return ";
-        }
+        raii.body << "return ";
         if (handle) raii.body << "m_" << handle->memberName << ".";
         else raii.body << "VMA_HPP_NAMESPACE::";
         raii.body << function.methodName << "(" << raiiPass.pop() << ")";
-        if (hasRAIIVariant) {
-            if (function.handle) raii.body << ", *this";
+        if (hasRAIIVariant || combinedHandle) {
+            if (hasRAIIVariant) raii.body <<
+                (!combining)[", detail::wrap<$0>($1detail::placeholder)"_seg.replace(raiiReturn, function.handle ? "*this, " : "")];
             if (combinedHandle) {
-                Segment s;
-                for (const auto& param : function.methodParams())
-                    if (param.paramType == Param::Type::INPUT && param.handle)
-                        s << ", std::move(" << param.prettyName << ")";
-                raii.body << combining[std::move(s)];
+                Segment s = ", detail::wrap<$0>("_seg.replace(raiiReturn);
+                if (function.handle && !function.secondHandleParam) s << "*this, ";
+                for (const auto& param : function.methodParams()) {
+                    if (!param.handle) continue;
+                    if (param.paramType == Param::Type::OUTPUT) s << "detail::placeholder";
+                    else if (param.paramType == Param::Type::INPUT)
+                        s << "std::move(" << (function.secondHandleParam == &param ? "*this" : param.prettyName) << ")";
+                    s << ", ";
+                }
+                raii.body << combining[std::move(s.pop() << ")")];
             }
-            raii.body << ")";
         }
         raii.body << ";";
-        if (combinedHandle && !hasRAIIVariant) {
-            Segment s = R"(
-            #ifdef VULKAN_HPP_NO_EXCEPTIONS
-            if (result < VULKAN_HPP_NAMESPACE::Result::eSuccess)
-              return VULKAN_HPP_NAMESPACE::ResultValue<$0>(result, detail::Wrapper<$0>());
-            #endif
-            return VULKAN_HPP_NAMESPACE::detail::createResultValueType<$0>(result, detail::Wrapper<$0>(
-            )"_seg.replace(combinedHandle->name);
-            s.pop();
-            for (const auto& param : function.methodParams())
-                if (param.paramType == Param::Type::INPUT && param.handle)
-                    s << "std::move(" << (function.secondHandleParam == &param ? "*this" : param.prettyName) << ")" << ", ";
-            s.pop() << "));";
-            raii.body << combining[std::move(s)];
-        }
 
         // Generate result check.
         if (resultCheck) enhanced.body << n << resultCheck;
@@ -1450,7 +1430,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 createInfo.device = device;
                 const VulkanFunctions functions = functionsFromDispatcher(instance.getDispatcher(), device.getDispatcher());
                 createInfo.pVulkanFunctions = &functions;
-                return detail::Wrapper<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(VMA_HPP_NAMESPACE::createAllocator(createInfo), device, createInfo.pAllocationCallbacks, device.getDispatcher());
+                return VMA_HPP_NAMESPACE::createAllocator(createInfo), detail::wrap<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(device, detail::placeholder, createInfo.pAllocationCallbacks, device.getDispatcher());
                 )"_seg;
             }
             Handle& r = function.handle ? *function.handle : namespaceHandle;
@@ -1605,17 +1585,17 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
               $1
 
             private:
-              friend class detail::Wrapper<$0>;
-              explicit $0(VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&& t, Allocation&& allocation) VULKAN_HPP_NOEXCEPT :
+              friend class detail::Converter<$0>;
+              explicit $0(Allocation&& allocation, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&& t) VULKAN_HPP_NOEXCEPT :
                 VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(std::move(t)),
                 m_allocation(std::move(allocation)) {}
               explicit $0(const Allocator& allocator, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&& t, VMA_HPP_NAMESPACE::Allocation allocation) VULKAN_HPP_NOEXCEPT :
-                $0(std::move(t), detail::Wrapper<Allocation>(allocation, allocator)) {}
+                $0(detail::wrap<Allocation>(allocator, allocation), std::move(t)) {}
               explicit $0(const Allocator& allocator, Allocation&& allocation, VULKAN_HPP_NAMESPACE::$0 t) VULKAN_HPP_NOEXCEPT :
                 VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(allocator.getDevice(), t, allocator.getAllocationCallbacks(), allocator.getDispatcher()),
                 m_allocation(std::move(allocation)) {}
               explicit $0(const Allocator& allocator, std::pair<VMA_HPP_NAMESPACE::Allocation, VULKAN_HPP_NAMESPACE::$0> pair) VULKAN_HPP_NOEXCEPT :
-                $0(allocator, detail::Wrapper<Allocation>(pair.first, allocator), pair.second) {}
+                $0(allocator, detail::wrap<Allocation>(allocator, pair.first), pair.second) {}
 
               Allocation m_allocation = nullptr;
             };
@@ -1662,7 +1642,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
               $1
 
             private:
-              friend class detail::Wrapper<StatsString>;
+              friend class detail::Converter<StatsString>;
               using Destructor = void (*)(uint64_t, char*);
               template<class T> static uint64_t erase(T t) { return reinterpret_cast<uint64_t>(static_cast<typename T::CType>(t)); }
               template<class T, void (*destructor)(T, char*)> static Destructor erase() {
@@ -1723,9 +1703,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (h.name == "Allocator") { // Custom members for Allocator.
                 members = {
                     Member { "VULKAN_HPP_NAMESPACE::Device"_seg, "device" },
+                    Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" },
                     Member { "const VULKAN_HPP_NAMESPACE::AllocationCallbacks *"_seg, "allocationCallbacks" },
-                    Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" },
-                    Member { "VMA_HPP_NAMESPACE::Allocator"_seg, "allocator" }
+                    Member { "VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const *"_seg, "dispatcher" }
                 };
             } else {
                 if (h.owner) members.push_back(Member { "VMA_HPP_NAMESPACE::"_seg << h.owner->name, h.owner->memberName });
@@ -1754,7 +1734,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             clear << "if (m_" << h.memberName << ") m_" << (h.owner ? h.owner->memberName : h.memberName) << "." << h.destructor << "(";
             if (h.owner) clear << "m_" << h.memberName;
             clear << ");";
-            priv << "friend class detail::Wrapper<$0>;\nexplicit $0("_seg;
+            priv << "friend class detail::Converter<$0>;\nexplicit $0("_seg;
             for (const auto& [type, name] : members) priv << type << " " << name << ", ";
             priv.pop() << ") VULKAN_HPP_NOEXCEPT :" << n << "  ";
             for (const auto& [type, name] : members) priv << "m_" << name << "(" << name << ")" << ", ";
@@ -1896,38 +1876,20 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     R"(
     #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     namespace VMA_HPP_NAMESPACE {
+      namespace detail {
+        template<class T> struct VulkanRAIIResourceConverter : private T {
+          using T::T;
+          template<class Allocator> static T create(const Allocator& alloc, typename T::CppType t) {
+            return VulkanRAIIResourceConverter(alloc.getDevice(), t, alloc.getAllocationCallbacks(), alloc.getDispatcher());
+          }
+        };
+        template<> struct Converter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> :
+        VulkanRAIIResourceConverter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> {};
+        template<> struct Converter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> :
+        VulkanRAIIResourceConverter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> {};
+      }
+
       namespace VMA_HPP_RAII_NAMESPACE {
-        namespace detail {
-          template<class Dst, class=void> struct Wrapper : Dst {
-            explicit Wrapper() VULKAN_HPP_NOEXCEPT : Dst(nullptr) {}
-            template<class Src, class... Args> explicit Wrapper(Src&& src, Args&&... args) VULKAN_HPP_NOEXCEPT :
-              Dst(std::forward<Args>(args)..., std::forward<Src>(src)) {}
-          };
-
-          template<class Dst> struct Wrapper<VULKAN_HPP_NAMESPACE::ResultValue<Dst>> : VULKAN_HPP_NAMESPACE::ResultValue<Dst> {
-            template<class Src, class... Args> explicit Wrapper(VULKAN_HPP_NAMESPACE::ResultValue<Src>&& src, Args&&... args) VULKAN_HPP_NOEXCEPT :
-              VULKAN_HPP_NAMESPACE::ResultValue<Dst>(src.result, src.result < VULKAN_HPP_NAMESPACE::Result::eSuccess ?
-                Wrapper<Dst>() : Wrapper<Dst>(std::move(src.value), std::forward<Args>(args)...)) {}
-          };
-
-          template<class Dst> struct Wrapper<std::vector<Dst>> : std::vector<Dst> {
-            explicit Wrapper() VULKAN_HPP_NOEXCEPT = default;
-            template<class Src, class... Args> explicit Wrapper(std::vector<Src>&& src, Args&&... args) VULKAN_HPP_NOEXCEPT {
-              this->reserve(src.size());
-              for (Src& s : src) this->push_back(Wrapper<Dst>(std::move(s), std::forward<Args>(args)...));
-            }
-          };
-
-          template<class Dst> struct Wrapper<Dst, typename std::enable_if<
-            std::is_same<Dst, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer>::value ||
-            std::is_same<Dst, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image>::value
-          >::type> : Dst {
-            explicit Wrapper() VULKAN_HPP_NOEXCEPT : Dst(nullptr) {}
-            template<class Allocator> explicit Wrapper(typename Dst::CppType src, const Allocator& alloc) VULKAN_HPP_NOEXCEPT :
-              Dst(alloc.getDevice(), src, alloc.getAllocationCallbacks(), alloc.getDispatcher()) {}
-          };
-        }
-
         using VULKAN_HPP_NAMESPACE::exchange;
         $0
       }
