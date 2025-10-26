@@ -6,8 +6,6 @@
 #define VMA_HPP_RAII_NAMESPACE raii
 #endif
 #include <vulkan/vulkan_hpp_macros.hpp>
-#define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
-#define VMA_HPP_RAII_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE)
 
 // VMA header
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
@@ -34,9 +32,11 @@ import vulkan_hpp;
 #else
 #ifndef VULKAN_HPP
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
 #endif
 #endif
+
+#define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
+#define VMA_HPP_RAII_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE)
 
 namespace VMA_HPP_NAMESPACE {
   using VULKAN_HPP_NAMESPACE::operator&;

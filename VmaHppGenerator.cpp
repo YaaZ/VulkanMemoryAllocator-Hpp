@@ -1884,6 +1884,10 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
     R"(
+    #if !defined( VMA_HPP_ENABLE_VULKAN_HPP_MODULE ) && !defined( VULKAN_RAII_HPP )
+    #include <vulkan/vulkan_raii.hpp>
+    #endif
+
     #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     namespace VMA_HPP_NAMESPACE {
       namespace detail {
