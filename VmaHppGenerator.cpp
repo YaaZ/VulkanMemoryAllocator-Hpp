@@ -1313,8 +1313,12 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             if (param.kind == Var::Kind::VK || param.kind == Var::Kind::VMA) (simpleCall, enhancedCall) << ")"; // Cast Vk & Vma types.
             (simpleCall, enhancedCall) << ", ";
             if (param.paramType == Param::Type::OUTPUT || !param.deducedArrays.empty()) continue; // Skip outputs and deduced array sizes.
-            if (function.secondHandleParam != &param) raiiPass << param.prettyName << ", ";
-            else raiiPass << "m_" << function.handle->memberName << ", ";
+            if (function.secondHandleParam != &param) {
+                if (combinedHandle && param.handle) raiiPass << (combining & constructor)["std::move("];
+                raiiPass << param.prettyName;
+                if (combinedHandle && param.handle) raiiPass << (combining & constructor)[")"];
+            } else raiiPass << "m_" << function.handle->memberName;
+            raiiPass << ", ";
         }
         "(" >>= (simpleCall, enhancedCall).pop() << ")";
         function.name >>= (simpleCall, enhancedCall);
@@ -1440,15 +1444,21 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 r.raiiDecl << nn << navigate(function) << buildMethod(declaration & !constructor & combining, function.handle, function.raiiName, raii);
                 r.raiiDef << nn << navigate(function) << buildMethod(!declaration & !constructor & combining, function.handle, function.raiiName, raii);
             }
-            if (raiiOutputHandle) {
+            if (raiiOutputHandle || combinedHandle) {
                 raii.ret.clear() << declaration["explicit"] << (!declaration)["VULKAN_HPP_INLINE"];
                 if (function.handle) function.handle->name >>= " const & " >>= function.handle->memberName >>= "," >>= n >>= raii.params;
                 raii.body.clear();
                 if (function.handle) raii.body << function.handle->memberName << ".";
                 else raii.body << "VMA_HPP_RAII_NAMESPACE::";
                 raii.body << function.raiiName << "(" << raiiPass << ")";
-                raiiOutputHandle->raiiConstructorDecl << navigate(function) << buildMethod(declaration & constructor & !combining, raiiOutputHandle, raiiOutputHandle->name, raii) << nn;
-                raiiOutputHandle->raiiConstructorDef << navigate(function) << buildMethod(!declaration & constructor & !combining, raiiOutputHandle, raiiOutputHandle->name, raii) << nn;
+                if (raiiOutputHandle) {
+                    raiiOutputHandle->raiiConstructorDecl << navigate(function) << buildMethod(declaration & constructor & !combining, raiiOutputHandle, raiiOutputHandle->name, raii) << nn;
+                    raiiOutputHandle->raiiConstructorDef << navigate(function) << buildMethod(!declaration & constructor & !combining, raiiOutputHandle, raiiOutputHandle->name, raii) << nn;
+                }
+                if (combinedHandle && !function.secondHandleParam) {
+                    combinedHandle->raiiConstructorDecl << navigate(function) << buildMethod(declaration & constructor & combining, combinedHandle, combinedHandle->name, raii) << nn;
+                    combinedHandle->raiiConstructorDef << navigate(function) << buildMethod(!declaration & constructor & combining, combinedHandle, combinedHandle->name, raii) << nn;
+                }
             }
         }
     }

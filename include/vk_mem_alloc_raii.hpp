@@ -719,6 +719,12 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+      // wrapper constructor for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Buffer(Allocator const & allocator,
+                      VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer,
+                      const AllocationCreateInfo& createInfo,
+                      VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr);
+
       // wrapper constructor for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       explicit Buffer(Allocator const & allocator,
                       const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
@@ -731,6 +737,17 @@ namespace VMA_HPP_NAMESPACE {
                       const AllocationCreateInfo& allocationCreateInfo,
                       VULKAN_HPP_NAMESPACE::DeviceSize minAlignment,
                       VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr);
+
+      // wrapper constructor for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Buffer(Allocator const & allocator,
+                      Allocation&& allocation,
+                      const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo);
+
+      // wrapper constructor for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Buffer(Allocator const & allocator,
+                      Allocation&& allocation,
+                      VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                      const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo);
 #endif
 
       Buffer(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(nullptr) {}
@@ -801,11 +818,28 @@ namespace VMA_HPP_NAMESPACE {
 
     public:
 #if !defined( VULKAN_HPP_NO_EXCEPTIONS )
+      // wrapper constructor for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Image(Allocator const & allocator,
+                     VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image,
+                     const AllocationCreateInfo& createInfo,
+                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr);
+
       // wrapper constructor for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
       explicit Image(Allocator const & allocator,
                      const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                      const AllocationCreateInfo& allocationCreateInfo,
                      VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo = nullptr);
+
+      // wrapper constructor for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Image(Allocator const & allocator,
+                     Allocation&& allocation,
+                     const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo);
+
+      // wrapper constructor for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+      explicit Image(Allocator const & allocator,
+                     Allocation&& allocation,
+                     VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                     const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo);
 #endif
 
       Image(std::nullptr_t) : VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(nullptr) {}
@@ -1428,6 +1462,13 @@ namespace VMA_HPP_NAMESPACE {
     VULKAN_HPP_INLINE VirtualBlock::VirtualBlock(const VirtualBlockCreateInfo& createInfo) :
       VirtualBlock(VMA_HPP_RAII_NAMESPACE::createVirtualBlock(createInfo)) {}
 
+    // wrapper constructor for command vmaAllocateMemoryForBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Buffer::Buffer(Allocator const & allocator,
+                                     VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& buffer,
+                                     const AllocationCreateInfo& createInfo,
+                                     VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) :
+      Buffer(allocator.allocateMemoryForBuffer(std::move(buffer), createInfo, allocationInfo)) {}
+
     // wrapper constructor for command vmaCreateBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_INLINE Buffer::Buffer(Allocator const & allocator,
                                      const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
@@ -1443,12 +1484,45 @@ namespace VMA_HPP_NAMESPACE {
                                      VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) :
       Buffer(allocator.createBufferWithAlignment(bufferCreateInfo, allocationCreateInfo, minAlignment, allocationInfo)) {}
 
+    // wrapper constructor for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Buffer::Buffer(Allocator const & allocator,
+                                     Allocation&& allocation,
+                                     const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) :
+      Buffer(allocator.createAliasingBuffer(std::move(allocation), bufferCreateInfo)) {}
+
+    // wrapper constructor for command vmaCreateAliasingBuffer2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Buffer::Buffer(Allocator const & allocator,
+                                     Allocation&& allocation,
+                                     VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                     const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) :
+      Buffer(allocator.createAliasingBuffer2(std::move(allocation), allocationLocalOffset, bufferCreateInfo)) {}
+
+    // wrapper constructor for command vmaAllocateMemoryForImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Image::Image(Allocator const & allocator,
+                                   VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& image,
+                                   const AllocationCreateInfo& createInfo,
+                                   VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) :
+      Image(allocator.allocateMemoryForImage(std::move(image), createInfo, allocationInfo)) {}
+
     // wrapper constructor for command vmaCreateImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
     VULKAN_HPP_INLINE Image::Image(Allocator const & allocator,
                                    const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
                                    const AllocationCreateInfo& allocationCreateInfo,
                                    VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) :
       Image(allocator.createImage(imageCreateInfo, allocationCreateInfo, allocationInfo)) {}
+
+    // wrapper constructor for command vmaCreateAliasingImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Image::Image(Allocator const & allocator,
+                                   Allocation&& allocation,
+                                   const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) :
+      Image(allocator.createAliasingImage(std::move(allocation), imageCreateInfo)) {}
+
+    // wrapper constructor for command vmaCreateAliasingImage2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+    VULKAN_HPP_INLINE Image::Image(Allocator const & allocator,
+                                   Allocation&& allocation,
+                                   VULKAN_HPP_NAMESPACE::DeviceSize allocationLocalOffset,
+                                   const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo) :
+      Image(allocator.createAliasingImage2(std::move(allocation), allocationLocalOffset, imageCreateInfo)) {}
 
 #if VMA_STATS_STRING_ENABLED
     // wrapper constructor for command vmaBuildVirtualBlockStatsString, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
