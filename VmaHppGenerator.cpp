@@ -1333,9 +1333,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         raii.body << function.methodName << "(" << raiiPass.pop() << ")";
         if (hasRAIIVariant || combinedHandle) {
             if (hasRAIIVariant) raii.body <<
-                (!combining)[", detail::wrap<$0>($1detail::placeholder)"_seg.replace(raiiReturn, function.handle ? "*this, " : "")];
+                (!combining)[",\n  detail::wrap<$0>($1detail::placeholder)"_seg.replace(raiiReturn, function.handle ? "*this, " : "")];
             if (combinedHandle) {
-                Segment s = ", detail::wrap<$0>("_seg.replace(raiiReturn);
+                Segment s = ",\n  detail::wrap<$0>("_seg.replace(raiiReturn);
                 if (function.handle && !function.secondHandleParam) s << "*this, ";
                 for (const auto& param : function.methodParams()) {
                     if (!param.handle) continue;
@@ -1434,7 +1434,8 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
                 createInfo.device = device;
                 const VulkanFunctions functions = functionsFromDispatcher(instance.getDispatcher(), device.getDispatcher());
                 createInfo.pVulkanFunctions = &functions;
-                return VMA_HPP_NAMESPACE::createAllocator(createInfo), detail::wrap<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(device, detail::placeholder, createInfo.pAllocationCallbacks, device.getDispatcher());
+                return VMA_HPP_NAMESPACE::createAllocator(createInfo),
+                  detail::wrap<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(device, detail::placeholder, createInfo.pAllocationCallbacks, device.getDispatcher());
                 )"_seg;
             }
             Handle& r = function.handle ? *function.handle : namespaceHandle;
@@ -1575,8 +1576,15 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     content << navigate.reset;
 
     // Generate RAII handle declarations.
-    Segment raiiContent;
-    for (Handle& h : handleVector) raiiContent << n << navigate(h) << "class " << h.name << ";";
+    Segment raiiContent, raiiSpecializations;
+    for (Handle& h : handleVector) {
+        raiiContent << n << navigate(h) << "class " << h.name << ";";
+        raiiSpecializations << n << navigate(h) << R"(
+        template <> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::$0> {
+          static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
+        };
+        )"_seg.replace(h.name);
+    }
     raiiContent << navigate.reset << nn << namespaceHandle.raiiDecl << navigate.reset;
     for (Handle& h : handleVector) {
         // Generate body pieces.
@@ -1890,26 +1898,119 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
 
     #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     namespace VMA_HPP_NAMESPACE {
-      namespace detail {
-        template<class T> struct VulkanRAIIResourceConverter : private T {
-          using T::T;
-          template<class Allocator> static T create(const Allocator& alloc, typename T::CppType t) {
-            return VulkanRAIIResourceConverter(alloc.getDevice(), t, alloc.getAllocationCallbacks(), alloc.getDispatcher());
-          }
-        };
-        template<> struct Converter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> :
-        VulkanRAIIResourceConverter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> {};
-        template<> struct Converter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> :
-        VulkanRAIIResourceConverter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> {};
-      }
-
       namespace VMA_HPP_RAII_NAMESPACE {
+        namespace detail {
+          template<int N, int... I> struct Seq : Seq<N-1, N-1, I...> {};
+          template<int... I> struct Seq<0, I...> {};
+          struct Placeholder {} VULKAN_HPP_CONST_OR_CONSTEXPR placeholder;
+
+          // Base converter, creates an object (delegating to the final converter), substituting argument placeholders.
+          template<class Dst, class Wrapper = void, class... Src> struct Converter {
+            Dst convert(Src&&... src) const {
+              return create(static_cast<const Wrapper&>(*this), std::forward<Src>(src)...);
+            }
+          private:
+            template<class... Args> Dst create(const std::tuple<Args...>& args, Src&&... src) const {
+              return create(Seq<sizeof...(Args)>(), args, std::forward<Src>(src)...);
+            }
+            template<class... Args, int... I> Dst create(Seq<0, I...>, const std::tuple<Args...>& args, Src&&... src) const {
+              return Converter<Dst>::create(convertParam(std::forward<Args>(std::get<I>(args)), std::forward<Src>(src)...)...);
+            }
+            template<class T> static T&& convertParam(T&& t, Src&&...) { return std::forward<T>(t); }
+            template<class T=typename std::enable_if<true, Src...>::type> // Only when Src exists.
+            static T&& convertParam(Placeholder, Src&&... src) { return std::forward<Src...>(src...); }
+          };
+
+          // Final converter, creates an object from the provided arguments.
+          template<class Dst> struct Converter<Dst> {
+            template<class... Args> static Dst create(Args&&... args) { return Dst(std::forward<Args>(args)...); }
+          };
+
+          // std::vector converter.
+          template<class Dst, class DstAllocator, class Wrapper, class Src, class SrcAllocator>
+          struct Converter<std::vector<Dst, DstAllocator>, Wrapper, std::vector<Src, SrcAllocator>> : Converter<Dst, Wrapper, Src> {
+            std::vector<Dst, DstAllocator> convert(std::vector<Src, SrcAllocator>&& src) const {
+              std::vector<Dst, DstAllocator> result;
+              result.reserve(src.size());
+              for (Src& s : src) result.push_back(Converter<Dst, Wrapper, Src>::convert(std::forward<Src>(s)));
+              return std::move(result);
+            }
+          };
+
+          // ResultValue converter.
+          template<class Dst, class Wrapper, class... Src>
+          struct Converter<VULKAN_HPP_NAMESPACE::ResultValue<Dst>, Wrapper, VULKAN_HPP_NAMESPACE::ResultValue<Src>...> : Converter<Dst, Wrapper, Src...> {
+            VULKAN_HPP_NAMESPACE::ResultValue<Dst> convert(VULKAN_HPP_NAMESPACE::Result result, Src&&... src) const {
+              return VULKAN_HPP_NAMESPACE::ResultValue<Dst>(result, result < VULKAN_HPP_NAMESPACE::Result::eSuccess ?
+                none() : Converter<Dst, Wrapper, Src...>::convert(std::forward<Src>(src)...));
+            }
+            template<class T=typename std::enable_if<true, Src...>::type> // Only when Src exists.
+            VULKAN_HPP_NAMESPACE::ResultValue<Dst> convert(VULKAN_HPP_NAMESPACE::ResultValue<T>&& src) const {
+              return convert(src.result, std::forward<Src...>(src.value));
+            }
+          private:
+            template<class T=Dst> static std::enable_if_t<std::is_default_constructible_v<T>, T> none() { return Dst(); }
+            template<class T=Dst> static std::enable_if_t<!std::is_default_constructible_v<T>, T> none() { return Dst(nullptr); }
+          };
+          template<class Dst, class Wrapper> // Converting from plain vk::Result.
+          struct Converter<VULKAN_HPP_NAMESPACE::ResultValue<Dst>, Wrapper, VULKAN_HPP_NAMESPACE::Result> :
+                 Converter<VULKAN_HPP_NAMESPACE::ResultValue<Dst>, Wrapper> {};
+
+          // vk::raii::Buffer and vk::raii::Image converters.
+          template<class T> struct VulkanRAIIResourceConverter : private T {
+            using T::T;
+            template<class Allocator> static T create(const Allocator& alloc, typename T::CppType t) {
+              return VulkanRAIIResourceConverter(alloc.getDevice(), t, alloc.getAllocationCallbacks(), alloc.getDispatcher());
+            }
+          };
+          template<> struct Converter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> :
+          VulkanRAIIResourceConverter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer> {};
+          template<> struct Converter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> :
+          VulkanRAIIResourceConverter<VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image> {};
+
+          // Wrapper, converting Src with additional Args into Dst.
+          template<class Src, class Dst, class... Args> struct Wrapper :
+          std::tuple<Args&&...>, Converter<Dst, Wrapper<Src, Dst, Args...>, Src> {
+            explicit Wrapper(Wrapper<void, Dst, Args...>&& base, Src&& src) :
+              std::tuple<Args&&...>(std::move(base)), src(std::forward<Src>(src)) {}
+            operator Dst() && { return this->convert(std::forward<Src>(src)); }
+          private:
+            Src src;
+          };
+
+          // Wrapper without an input, converts Args into Dst.
+          template<class Dst, class... Args> struct Wrapper<void, Dst, Args...> :
+          std::tuple<Args&&...>, Converter<Dst, Wrapper<void, Dst, Args...>> {
+            explicit Wrapper(Args&&... args) : std::tuple<Args&&...>(std::forward<Args>(args)...) {}
+            template<class Src> friend Wrapper<Src, Dst, Args...> operator,(Src&& src, Wrapper&& w) {
+              return Wrapper<Src, Dst, Args...>(std::move(w), std::forward<Src>(src));
+            }
+            operator Dst() && { return this->convert(); }
+          };
+
+          template<class Dst, class... Args> Wrapper<void, Dst, Args...> wrap(Args&&... args) {
+            return Wrapper<void, Dst, Args...>(std::forward<Args>(args)...);
+          }
+        }
+
+        #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
+        using VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::operator<=>;
+        #else
+        using VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::operator<;
+        #endif
+        using VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::operator==;
+        using VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::operator!=;
         using VULKAN_HPP_NAMESPACE::exchange;
         $0
       }
     }
+    namespace VULKAN_HPP_NAMESPACE {
+      namespace VULKAN_HPP_RAII_NAMESPACE {
+        $1
+      }
+    }
     #endif
-    )"_seg.replace(raiiContent).resolve(source.tree).generateHpp("raii");
+    )"_seg.replace(raiiContent, raiiSpecializations << navigate.reset).resolve(source.tree).generateHpp("raii");
     return { handles, uniqueHandles, functions };
 }
 

@@ -126,6 +126,13 @@ void checkHandles() {
 
     vma::UniqueAllocator unique;
     vma::UniqueBuffer buffer;
+
+    vma::raii::Allocator raii = nullptr;
+    allocator = raii;
+    allocator = *raii;
+    const auto &rl = raii, &rr = raii;
+    if (rl == rr) {}
+    if (rl != rr) throw;
 }
 
 int main(int, char**) {
