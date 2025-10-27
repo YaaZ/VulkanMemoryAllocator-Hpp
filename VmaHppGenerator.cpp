@@ -911,8 +911,8 @@ Symbols generateStructs(const Source& source) {
     return structs;
 }
 
-std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, const Symbols& structs) {
-    Symbols handles, uniqueHandles, functions;
+std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const Source& source, const Symbols& structs) {
+    Symbols handles, uniqueHandles, functions, raiiHandles, raiiFunctions;
 
     // All handles.
     struct Handle : Symbol {
@@ -1036,8 +1036,11 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
         if (!function.handle) functions.emplace_back(function.methodName, function);
     }
 
-    // Collect unique handles.
-    for (const auto& h : handleVector) if (h.destructor && !h.raiiOnly) uniqueHandles.emplace_back(h);
+    // Collect unique & RAII handles.
+    for (const auto& h : handleVector) {
+        if (h.destructor && !h.raiiOnly) uniqueHandles.emplace_back(h);
+        raiiHandles.emplace_back(h);
+    }
 
     // Iterate VMA functions.
     for (auto& function : functionVector) {
@@ -1120,6 +1123,9 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
             raiiReturn = (outputs[0]->handle = &statsStringHandle)->name;
             hasRAIIVariant = true;
         }
+
+        // Add to RAII function list.
+        if (!handle && hasRAIIVariant) raiiFunctions.emplace_back(function.methodName, function);
 
         // Convert enhanced outputs.
         Handle* raiiOutputHandle = nullptr;
@@ -1897,6 +1903,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     #endif
 
     #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    #pragma warning(disable : 4834) // MSVC thinks we are discarding chained return values, like foo(), detail::wrap<...>(...)
     namespace VMA_HPP_NAMESPACE {
       namespace VMA_HPP_RAII_NAMESPACE {
         namespace detail {
@@ -2011,7 +2018,7 @@ std::tuple<Symbols, Symbols, Symbols> generateHandles(const Source& source, cons
     }
     #endif
     )"_seg.replace(raiiContent, raiiSpecializations << navigate.reset).resolve(source.tree).generateHpp("raii");
-    return { handles, uniqueHandles, functions };
+    return { handles, uniqueHandles, functions, raiiHandles, raiiFunctions };
 }
 
 void generateStaticAssertions(const ConditionalTree& tree, const Symbols& structs, const Symbols& handles) {
@@ -2034,13 +2041,17 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& struct
 }
 
 void generateModule(const ConditionalTree& tree, const Symbols& enums, const Symbols& structs,
-                    const Symbols& handles, const Symbols& uniqueHandles, const Symbols& functions) {
-    Segment exports, specializations;
+                    const Symbols& handles, const Symbols& uniqueHandles, const Symbols& functions,
+                    const Symbols& raiiHandles, const Symbols& raiiFunctions) {
+    Segment exports, raiiExports, specializations, raiiSpecializations;
 
     // Generate export statements.
     for (const auto* list : { &enums, &structs, &handles, &uniqueHandles, &functions })
         for (const Symbol& t : *list)
             exports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << (list == &uniqueHandles ? "Unique" : "") << t.name << ";";
+    for (const auto* list : { &raiiHandles, &raiiFunctions })
+        for (const Symbol& t : *list)
+            raiiExports << n << navigate(t) << "using VMA_HPP_RAII_NAMESPACE::" << t.name << ";";
 
     // Some workarounds for compilation errors on MSVC...
 
@@ -2057,7 +2068,11 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
     for (const Symbol& t : uniqueHandles)
         specializations << n << navigate(t) << "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" << t.name << ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
-    (exports, specializations) << navigate.reset;
+    // error C2676: binary '==': 'const vma::raii::Allocator' does not define this operator or a conversion to a type acceptable to the predefined operator
+    for (const Symbol& t : raiiHandles)
+        raiiSpecializations << n << navigate(t) << "template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::" << t.name << ">;";
+
+    (exports, raiiExports, specializations, raiiSpecializations) << navigate.reset;
 
     // Don't forget Buffer and Image.
     exports << n << "using VMA_HPP_NAMESPACE::UniqueBuffer;" <<
@@ -2088,14 +2103,31 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
       using VMA_HPP_NAMESPACE::operator==;
       using VMA_HPP_NAMESPACE::operator!=;
       $0
+      #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+      namespace VMA_HPP_RAII_NAMESPACE {
+        #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
+        using VMA_HPP_RAII_NAMESPACE::operator<=>;
+        #else
+        using VMA_HPP_RAII_NAMESPACE::operator<;
+        #endif
+        using VMA_HPP_RAII_NAMESPACE::operator==;
+        using VMA_HPP_RAII_NAMESPACE::operator!=;
+        $1
+      }
+      #endif
     }
 
     module : private;
     namespace VULKAN_HPP_NAMESPACE {
       // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
-      $1
+      $2
+      #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+      namespace VULKAN_HPP_RAII_NAMESPACE {
+        $3
+      }
+      #endif
     }
-    )"_seg.replace(exports, specializations).resolve(tree).generate("vk_mem_alloc.cppm");
+    )"_seg.replace(exports, raiiExports, specializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
 }
 
 std::string readSource() {
@@ -2119,9 +2151,9 @@ int main(int, char**) {
 
         const auto enums = generateEnums(source);
         const auto structs = generateStructs(source);
-        const auto [handles, uniqueHandles, functions] = generateHandles(source, structs);
+        const auto [handles, uniqueHandles, functions, raiiHandles, raiiFunctions] = generateHandles(source, structs);
         generateStaticAssertions(source.tree, structs, handles);
-        generateModule(source.tree, enums, structs, handles, uniqueHandles, functions);
+        generateModule(source.tree, enums, structs, handles, uniqueHandles, functions, raiiHandles, raiiFunctions);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

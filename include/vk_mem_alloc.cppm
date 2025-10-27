@@ -71,6 +71,28 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::createVirtualBlock;
   using VMA_HPP_NAMESPACE::UniqueBuffer;
   using VMA_HPP_NAMESPACE::UniqueImage;
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  namespace VMA_HPP_RAII_NAMESPACE {
+#if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
+    using VMA_HPP_RAII_NAMESPACE::operator<=>;
+#else
+    using VMA_HPP_RAII_NAMESPACE::operator<;
+#endif
+    using VMA_HPP_RAII_NAMESPACE::operator==;
+    using VMA_HPP_RAII_NAMESPACE::operator!=;
+    using VMA_HPP_RAII_NAMESPACE::Allocator;
+    using VMA_HPP_RAII_NAMESPACE::Pool;
+    using VMA_HPP_RAII_NAMESPACE::Allocation;
+    using VMA_HPP_RAII_NAMESPACE::DefragmentationContext;
+    using VMA_HPP_RAII_NAMESPACE::VirtualAllocation;
+    using VMA_HPP_RAII_NAMESPACE::VirtualBlock;
+    using VMA_HPP_RAII_NAMESPACE::Buffer;
+    using VMA_HPP_RAII_NAMESPACE::Image;
+    using VMA_HPP_RAII_NAMESPACE::StatsString;
+    using VMA_HPP_RAII_NAMESPACE::createAllocator;
+    using VMA_HPP_RAII_NAMESPACE::createVirtualBlock;
+  }
+#endif
 }
 
 module : private;
@@ -95,4 +117,17 @@ namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualBlock, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  namespace VULKAN_HPP_RAII_NAMESPACE {
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Allocator>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Pool>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Allocation>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::DefragmentationContext>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::VirtualAllocation>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::VirtualBlock>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Buffer>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Image>;
+    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::StatsString>;
+  }
+#endif
 }
