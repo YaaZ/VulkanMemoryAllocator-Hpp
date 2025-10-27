@@ -13,7 +13,7 @@ namespace VMA_HPP_NAMESPACE {
     namespace detail {
       template<int N, int... I> struct Seq : Seq<N-1, N-1, I...> {};
       template<int... I> struct Seq<0, I...> {};
-      struct Placeholder {} VULKAN_HPP_CONST_OR_CONSTEXPR placeholder;
+      struct Placeholder {} VULKAN_HPP_CONSTEXPR_INLINE placeholder;
 
       // Base converter, creates an object (delegating to the final converter), substituting argument placeholders.
       template<class Dst, class Wrapper = void, class... Src> struct Converter {
