@@ -46,9 +46,6 @@ endif ()
 
 add_subdirectory(Vulkan-Headers)
 add_subdirectory(VulkanMemoryAllocator)
-
-# Default overrides for options defined by VulkanMemoryAllocator-Hpp.
-option(VMA_HPP_ENABLE_INSTALL "Install VulkanMemoryAllocator-Hpp" ${PROJECT_IS_TOP_LEVEL})
 add_subdirectory(include)
 
 if (NOT ${PROJECT_VERSION} STREQUAL ${VMA_HPP_PROJECT_VERSION})
