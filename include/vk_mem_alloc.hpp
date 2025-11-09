@@ -63,23 +63,4 @@ namespace VMA_HPP_NAMESPACE {
 
 #include "vk_mem_alloc_funcs.hpp"
 
-namespace VMA_HPP_NAMESPACE {
-  template <class InstanceDispatcher, class DeviceDispatcher> VULKAN_HPP_CONSTEXPR VulkanFunctions
-  functionsFromDispatcher(InstanceDispatcher const * instance, DeviceDispatcher const * device) VULKAN_HPP_NOEXCEPT {
-    return VulkanFunctions { instance->vkGetInstanceProcAddr, device->vkGetDeviceProcAddr };
-  }
-
-  template <class Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE> VULKAN_HPP_CONSTEXPR VulkanFunctions
-  functionsFromDispatcher(Dispatch const & dispatch VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT) VULKAN_HPP_NOEXCEPT {
-    return VulkanFunctions { dispatch.vkGetInstanceProcAddr, dispatch.vkGetDeviceProcAddr };
-  }
-
-#if !defined( VK_NO_PROTOTYPES )
-  template <> VULKAN_HPP_CONSTEXPR VulkanFunctions
-  functionsFromDispatcher<VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE>(VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE const &) VULKAN_HPP_NOEXCEPT {
-    return VulkanFunctions { &vkGetInstanceProcAddr, &vkGetDeviceProcAddr };
-  }
-#endif
-} // namespace VMA_HPP_NAMESPACE
-
 #endif

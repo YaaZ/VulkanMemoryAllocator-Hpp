@@ -901,6 +901,64 @@ Symbols generateStructs(const Source& source) {
           $7
         };
         )"_seg.replace(name, docLink(*name), constructors, setters, reflectTypes, reflectTie, comparison, fields);
+
+        // Generate functionsFromDispatcher.
+        if (name == "VulkanFunctions") {
+            Segment pfns, specs, dynamicInit, staticInit;
+            for (const Var& member : members) {
+                Token pfn = member.kind == Var::Kind::PFN ? member.type.substr(4) : "";
+                (pfns, specs, dynamicInit, staticInit) << n << navigate(member);
+                (dynamicInit, staticInit) << (staticInit ? ", " : "  ");
+                if (pfn) {
+                    pfns << R"(
+                    struct $0 { using type = PFN_$0; };
+                    )"_seg.replace(pfn);
+                    specs << R"(
+                    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::$0, decltype(T::$0), T, Ts...>
+                    { static PFN_$0 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.$0; } };
+                    )"_seg.replace(pfn);
+                    dynamicInit << "detail::VulkanPFN::get<detail::VulkanPFN::" << pfn << ">(dispatch...)";
+                    staticInit << "&" << pfn;
+                } else (dynamicInit, staticInit) << "nullptr";
+            }
+            (pfns, specs, dynamicInit, staticInit) << navigate.reset;
+            content << nn << R"(
+            namespace detail {
+              struct VulkanPFN {
+                $0
+                template<class Fun, class PFN, class T, class... Ts> struct FromDispatchers {
+                  static PFN get(const T&, const Ts&... ts) VULKAN_HPP_NOEXCEPT {
+                    return FromDispatchers<Fun, PFN, Ts...>::get(ts...);
+                  }
+                };
+                template<class Fun, class... Ts> static typename Fun::type get(const Ts&... ts) VULKAN_HPP_NOEXCEPT {
+                  return FromDispatchers<Fun, typename Fun::type, Ts...>::get(ts...);
+                }
+              };
+              $1
+            }
+
+            // utility function for retrieving function table from vk dispatchers
+            template <class... Dispatch> VulkanFunctions
+            functionsFromDispatchers(Dispatch const &... dispatch) VULKAN_HPP_NOEXCEPT {
+              return VulkanFunctions {
+                $2
+              };
+            }
+            template <class Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE> VulkanFunctions
+            functionsFromDispatcher(Dispatch const & dispatch VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT) VULKAN_HPP_NOEXCEPT {
+              return functionsFromDispatchers(dispatch);
+            }
+            #if !defined( VK_NO_PROTOTYPES )
+            template <> VULKAN_HPP_CONSTEXPR_INLINE VulkanFunctions
+            functionsFromDispatcher<VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE>(VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE const &) VULKAN_HPP_NOEXCEPT {
+              return VulkanFunctions {
+                $3
+              };
+            }
+            #endif
+            )"_seg.replace(pfns, specs, dynamicInit, staticInit);
+        }
     }
 
     R"(
@@ -1438,7 +1496,7 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
                 }
                 createInfo.instance = instance;
                 createInfo.device = device;
-                const VulkanFunctions functions = functionsFromDispatcher(instance.getDispatcher(), device.getDispatcher());
+                const VulkanFunctions functions = functionsFromDispatchers(*device.getDispatcher(), *instance.getDispatcher());
                 createInfo.pVulkanFunctions = &functions;
                 return VMA_HPP_NAMESPACE::createAllocator(createInfo),
                   detail::wrap<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(device, detail::placeholder, createInfo.pAllocationCallbacks, device.getDispatcher());
@@ -2091,6 +2149,7 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
     #ifndef VULKAN_HPP_NO_TO_STRING
       using VMA_HPP_NAMESPACE::to_string;
     #endif
+      using VMA_HPP_NAMESPACE::functionsFromDispatchers;
       using VMA_HPP_NAMESPACE::functionsFromDispatcher;
       using VMA_HPP_NAMESPACE::operator&;
       using VMA_HPP_NAMESPACE::operator|;

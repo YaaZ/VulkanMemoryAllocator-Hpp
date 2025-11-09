@@ -9,6 +9,7 @@ export namespace VMA_HPP_NAMESPACE {
 #ifndef VULKAN_HPP_NO_TO_STRING
   using VMA_HPP_NAMESPACE::to_string;
 #endif
+  using VMA_HPP_NAMESPACE::functionsFromDispatchers;
   using VMA_HPP_NAMESPACE::functionsFromDispatcher;
   using VMA_HPP_NAMESPACE::operator&;
   using VMA_HPP_NAMESPACE::operator|;

@@ -1087,7 +1087,7 @@ namespace VMA_HPP_NAMESPACE {
       }
       createInfo.instance = instance;
       createInfo.device = device;
-      const VulkanFunctions functions = functionsFromDispatcher(instance.getDispatcher(), device.getDispatcher());
+      const VulkanFunctions functions = functionsFromDispatchers(*device.getDispatcher(), *instance.getDispatcher());
       createInfo.pVulkanFunctions = &functions;
       return VMA_HPP_NAMESPACE::createAllocator(createInfo),
         detail::wrap<typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocator>::type>(device, detail::placeholder, createInfo.pAllocationCallbacks, device.getDispatcher());
