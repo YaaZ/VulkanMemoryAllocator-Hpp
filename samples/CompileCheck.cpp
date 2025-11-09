@@ -1,17 +1,4 @@
-#ifdef VMA_HPP_ENABLE_MODULE
-#ifdef VMA_HPP_ENABLE_VULKAN_HPP_MODULE
-
-#ifdef VULKAN_HPP_ENABLE_STD_MODULE
-import std;
-#else
-#include <compare>
-#endif
-
-import vulkan_hpp;
-#else
-#include <vulkan/vulkan.hpp>
-#endif
-
+#ifdef USE_MODULES
 import vk_mem_alloc_hpp;
 #else
 #define VMA_IMPLEMENTATION

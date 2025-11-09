@@ -1956,7 +1956,7 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
     R"(
-    #if !defined( VMA_HPP_ENABLE_VULKAN_HPP_MODULE ) && !defined( VULKAN_RAII_HPP )
+    #ifndef VMA_HPP_CXX_MODULE
     #include <vulkan/vulkan_raii.hpp>
     #endif
 
@@ -2140,10 +2140,12 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
 
     R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
     module;
+    #define VMA_HPP_CXX_MODULE
     #define VMA_IMPLEMENTATION
     #include <vk_mem_alloc.hpp>
     #include <vk_mem_alloc_raii.hpp>
     export module vk_mem_alloc_hpp;
+    export import vulkan_hpp;
 
     export namespace VMA_HPP_NAMESPACE {
     #ifndef VULKAN_HPP_NO_TO_STRING

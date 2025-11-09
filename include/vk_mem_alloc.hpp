@@ -16,23 +16,10 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_HPP
 #define VULKAN_MEMORY_ALLOCATOR_HPP
 
-#ifdef VULKAN_HPP_ENABLE_STD_MODULE
-import VULKAN_HPP_STD_MODULE;
-#else
-#include <algorithm>
-#include <array>
-#include <vector>
-#ifndef VULKAN_HPP_NO_TO_STRING
-#include <string>
-#endif
-#endif
-
-#ifdef VMA_HPP_ENABLE_VULKAN_HPP_MODULE
+#ifdef VMA_HPP_CXX_MODULE
 import vulkan_hpp;
 #else
-#ifndef VULKAN_HPP
 #include <vulkan/vulkan.hpp>
-#endif
 #endif
 
 #define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)

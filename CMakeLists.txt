@@ -120,31 +120,19 @@ if (VMA_HPP_RUN_GENERATOR)
 endif ()
 
 if (VMA_HPP_SAMPLES_BUILD)
-    if (VMA_HPP_ENABLE_MODULE)
+    if (TARGET VulkanMemoryAllocator-HppModule)
         add_library(VulkanMemoryAllocator-Hpp-Samples STATIC)
         target_link_libraries(VulkanMemoryAllocator-Hpp-Samples PUBLIC VulkanMemoryAllocator-HppModule)
-        target_compile_definitions(VulkanMemoryAllocator-Hpp-Samples PUBLIC VMA_HPP_ENABLE_MODULE)
-        target_compile_definitions(VulkanMemoryAllocator-HppModule PUBLIC VK_NO_PROTOTYPES) # TODO
-
-        if (TARGET Vulkan-HppModule)
-            target_link_libraries(VulkanMemoryAllocator-Hpp-Samples PUBLIC Vulkan-HppModule)
-            get_target_property(VMA_HPP_COMPILE_FEATURES VulkanMemoryAllocator-HppModule COMPILE_FEATURES)
-            target_compile_features(VulkanMemoryAllocator-Hpp-Samples PUBLIC ${VMA_HPP_COMPILE_FEATURES})
-            target_compile_definitions(Vulkan-HppModule PUBLIC VK_NO_PROTOTYPES) # TODO
-
-            if (VULKAN_HEADERS_ENABLE_MODULE_STD) # TODO std-enabling checks are weird, set directives manually for now.
-                target_compile_definitions(Vulkan-HppModule PUBLIC VULKAN_HPP_ENABLE_STD_MODULE VULKAN_HPP_STD_MODULE=std)
-                target_compile_definitions(VulkanMemoryAllocator-HppModule PUBLIC VULKAN_HPP_ENABLE_STD_MODULE VULKAN_HPP_STD_MODULE=std)
-            endif ()
-        endif ()
+        target_compile_definitions(VulkanMemoryAllocator-Hpp-Samples PUBLIC USE_MODULES)
+        target_compile_definitions(VulkanMemoryAllocator-HppModule PUBLIC VK_NO_PROTOTYPES)
+        target_compile_definitions(Vulkan-HppModule PUBLIC VK_NO_PROTOTYPES)
+        target_compile_features(VulkanMemoryAllocator-Hpp-Samples PUBLIC cxx_std_23)
     else ()
         add_library(VulkanMemoryAllocator-Hpp-Samples INTERFACE)
         target_link_libraries(VulkanMemoryAllocator-Hpp-Samples INTERFACE VulkanMemoryAllocator-Hpp GPUOpen::VulkanMemoryAllocator Vulkan::Headers)
-        target_compile_definitions(VulkanMemoryAllocator-Hpp-Samples INTERFACE VK_NO_PROTOTYPES) # TODO
+        target_compile_definitions(VulkanMemoryAllocator-Hpp-Samples INTERFACE VK_NO_PROTOTYPES)
         target_compile_features(VulkanMemoryAllocator-Hpp-Samples INTERFACE cxx_std_11)
     endif ()
-#    find_package(Vulkan REQUIRED) # TODO
-#    target_link_libraries(VulkanMemoryAllocator-Hpp-Samples PUBLIC Vulkan::Vulkan) # TODO
 
     file(GLOB VMA_HPP_SAMPLES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/samples" "${CMAKE_CURRENT_SOURCE_DIR}/samples/*.cpp")
     foreach(VMA_HPP_SAMPLE_FILE ${VMA_HPP_SAMPLES})

@@ -2,7 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_RAII_HPP
 #define VULKAN_MEMORY_ALLOCATOR_RAII_HPP
 
-#if !defined( VMA_HPP_ENABLE_VULKAN_HPP_MODULE ) && !defined( VULKAN_RAII_HPP )
+#ifndef VMA_HPP_CXX_MODULE
 #include <vulkan/vulkan_raii.hpp>
 #endif
 

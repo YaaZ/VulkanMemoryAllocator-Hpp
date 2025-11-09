@@ -1,9 +1,11 @@
 // Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
 module;
+#define VMA_HPP_CXX_MODULE
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>
 #include <vk_mem_alloc_raii.hpp>
 export module vk_mem_alloc_hpp;
+export import vulkan_hpp;
 
 export namespace VMA_HPP_NAMESPACE {
 #ifndef VULKAN_HPP_NO_TO_STRING
