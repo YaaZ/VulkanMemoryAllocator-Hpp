@@ -77,7 +77,8 @@ if (VMA_HPP_DO_UPDATE)
 // See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#providing-a-header-to-skip-parsing-redundant-headers")
     file(GLOB VMA_HPP_HEADER_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/vk_mem_alloc*.hpp")
     foreach(VMA_HPP_HEADER_FILE ${VMA_HPP_HEADER_FILES})
-        if (NOT ${VMA_HPP_HEADER_FILE} STREQUAL "vk_mem_alloc_imported.hpp")
+        if (NOT ${VMA_HPP_HEADER_FILE} STREQUAL "vk_mem_alloc_imported.hpp" AND
+            NOT ${VMA_HPP_HEADER_FILE} STREQUAL "vk_mem_alloc_static_assertions.hpp")
             string(REGEX MATCH "vk_mem_alloc(.*)\.hpp" _ ${VMA_HPP_HEADER_FILE})
             string(TOUPPER "${CMAKE_MATCH_1}" VMA_HPP_HEADER_GUARD)
             string(APPEND VMA_HPP_IMPORTED_HEADER "
