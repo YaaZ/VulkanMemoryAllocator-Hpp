@@ -8,7 +8,7 @@ namespace VMA_HPP_NAMESPACE {
   struct DeviceMemoryCallbacks {
     using NativeType = VmaDeviceMemoryCallbacks;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR DeviceMemoryCallbacks(
         PFN_vmaAllocateDeviceMemoryFunction pfnAllocate_ = {}
       , PFN_vmaFreeDeviceMemoryFunction pfnFree_ = {}
@@ -96,7 +96,7 @@ namespace VMA_HPP_NAMESPACE {
   struct VulkanFunctions {
     using NativeType = VmaVulkanFunctions;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR VulkanFunctions(
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr_ = {}
       , PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr_ = {}
@@ -752,7 +752,7 @@ namespace VMA_HPP_NAMESPACE {
   struct AllocatorCreateInfo {
     using NativeType = VmaAllocatorCreateInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR AllocatorCreateInfo(
         AllocatorCreateFlags flags_ = {}
       , VULKAN_HPP_NAMESPACE::PhysicalDevice physicalDevice_ = {}
@@ -950,7 +950,7 @@ namespace VMA_HPP_NAMESPACE {
   struct AllocatorInfo {
     using NativeType = VmaAllocatorInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR AllocatorInfo(
         VULKAN_HPP_NAMESPACE::Instance instance_ = {}
       , VULKAN_HPP_NAMESPACE::PhysicalDevice physicalDevice_ = {}
@@ -1042,7 +1042,7 @@ namespace VMA_HPP_NAMESPACE {
   struct Statistics {
     using NativeType = VmaStatistics;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR Statistics(
         uint32_t blockCount_ = {}
       , uint32_t allocationCount_ = {}
@@ -1145,7 +1145,7 @@ namespace VMA_HPP_NAMESPACE {
   struct DetailedStatistics {
     using NativeType = VmaDetailedStatistics;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR DetailedStatistics(
         Statistics statistics_ = {}
       , uint32_t unusedRangeCount_ = {}
@@ -1270,7 +1270,7 @@ namespace VMA_HPP_NAMESPACE {
   struct TotalStatistics {
     using NativeType = VmaTotalStatistics;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR_14 TotalStatistics(
         std::array<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryTypes> memoryType_ = {}
       , std::array<DetailedStatistics, VULKAN_HPP_NAMESPACE::MaxMemoryHeaps> memoryHeap_ = {}
@@ -1362,7 +1362,7 @@ namespace VMA_HPP_NAMESPACE {
   struct Budget {
     using NativeType = VmaBudget;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR Budget(
         Statistics statistics_ = {}
       , VULKAN_HPP_NAMESPACE::DeviceSize usage_ = {}
@@ -1454,7 +1454,7 @@ namespace VMA_HPP_NAMESPACE {
   struct AllocationCreateInfo {
     using NativeType = VmaAllocationCreateInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR AllocationCreateInfo(
         AllocationCreateFlags flags_ = {}
       , MemoryUsage usage_ = {}
@@ -1601,7 +1601,7 @@ namespace VMA_HPP_NAMESPACE {
   struct PoolCreateInfo {
     using NativeType = VmaPoolCreateInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR PoolCreateInfo(
         uint32_t memoryTypeIndex_ = {}
       , PoolCreateFlags flags_ = {}
@@ -1748,7 +1748,7 @@ namespace VMA_HPP_NAMESPACE {
   struct AllocationInfo {
     using NativeType = VmaAllocationInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR AllocationInfo(
         uint32_t memoryType_ = {}
       , VULKAN_HPP_NAMESPACE::DeviceMemory deviceMemory_ = {}
@@ -1884,7 +1884,7 @@ namespace VMA_HPP_NAMESPACE {
   struct AllocationInfo2 {
     using NativeType = VmaAllocationInfo2;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR AllocationInfo2(
         AllocationInfo allocationInfo_ = {}
       , VULKAN_HPP_NAMESPACE::DeviceSize blockSize_ = {}
@@ -1976,7 +1976,7 @@ namespace VMA_HPP_NAMESPACE {
   struct DefragmentationInfo {
     using NativeType = VmaDefragmentationInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR DefragmentationInfo(
         DefragmentationFlags flags_ = {}
       , Pool pool_ = {}
@@ -2097,7 +2097,7 @@ namespace VMA_HPP_NAMESPACE {
   struct DefragmentationMove {
     using NativeType = VmaDefragmentationMove;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR DefragmentationMove(
         DefragmentationMoveOperation operation_ = {}
       , Allocation srcAllocation_ = {}
@@ -2189,7 +2189,7 @@ namespace VMA_HPP_NAMESPACE {
   struct DefragmentationPassMoveInfo {
     using NativeType = VmaDefragmentationPassMoveInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR DefragmentationPassMoveInfo(
         uint32_t moveCount_ = {}
       , DefragmentationMove* pMoves_ = {}
@@ -2286,7 +2286,7 @@ namespace VMA_HPP_NAMESPACE {
   struct DefragmentationStats {
     using NativeType = VmaDefragmentationStats;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR DefragmentationStats(
         VULKAN_HPP_NAMESPACE::DeviceSize bytesMoved_ = {}
       , VULKAN_HPP_NAMESPACE::DeviceSize bytesFreed_ = {}
@@ -2389,7 +2389,7 @@ namespace VMA_HPP_NAMESPACE {
   struct VirtualBlockCreateInfo {
     using NativeType = VmaVirtualBlockCreateInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR VirtualBlockCreateInfo(
         VULKAN_HPP_NAMESPACE::DeviceSize size_ = {}
       , VirtualBlockCreateFlags flags_ = {}
@@ -2481,7 +2481,7 @@ namespace VMA_HPP_NAMESPACE {
   struct VirtualAllocationCreateInfo {
     using NativeType = VmaVirtualAllocationCreateInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR VirtualAllocationCreateInfo(
         VULKAN_HPP_NAMESPACE::DeviceSize size_ = {}
       , VULKAN_HPP_NAMESPACE::DeviceSize alignment_ = {}
@@ -2584,7 +2584,7 @@ namespace VMA_HPP_NAMESPACE {
   struct VirtualAllocationInfo {
     using NativeType = VmaVirtualAllocationInfo;
 
-#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+#if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
     VULKAN_HPP_CONSTEXPR VirtualAllocationInfo(
         VULKAN_HPP_NAMESPACE::DeviceSize offset_ = {}
       , VULKAN_HPP_NAMESPACE::DeviceSize size_ = {}

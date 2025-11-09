@@ -861,7 +861,7 @@ void generateStructs(const Source& source, Symbols& symbols) {
         struct $0 {
           using NativeType = Vma$0;
 
-        #if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+        #if !defined( VULKAN_HPP_NO_CONSTRUCTORS ) && !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
           $2
 
           $0& operator=($0 const &) VULKAN_HPP_NOEXCEPT = default;
