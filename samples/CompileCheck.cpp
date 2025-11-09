@@ -1,14 +1,4 @@
-#ifdef USE_MODULES
-import vk_mem_alloc_hpp;
-#else
-#define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.hpp>
-#include <vk_mem_alloc_raii.hpp>
-#endif
-
-#include <vk_mem_alloc_imported.hpp>
-#include <vk_mem_alloc_static_assertions.hpp>
-VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+#include "common.hpp"
 
 void checkEnums() {
     static_assert(vk::FlagTraits<vma::AllocationCreateFlagBits>::isBitmask, "FlagTraits specialization is not visible");
