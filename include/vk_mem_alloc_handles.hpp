@@ -30,6 +30,7 @@ namespace VMA_HPP_NAMESPACE {
   class VirtualBlock;
 
   namespace detail { class Dispatcher; } // VMA dispatcher is a no-op.
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
   using UniqueBuffer = VULKAN_HPP_NAMESPACE::UniqueHandle<VULKAN_HPP_NAMESPACE::Buffer, detail::Dispatcher>;
   using UniqueImage = VULKAN_HPP_NAMESPACE::UniqueHandle<VULKAN_HPP_NAMESPACE::Image, detail::Dispatcher>;
   using UniqueAllocator = VULKAN_HPP_NAMESPACE::UniqueHandle<Allocator, detail::Dispatcher>;
@@ -37,6 +38,7 @@ namespace VMA_HPP_NAMESPACE {
   using UniqueAllocation = VULKAN_HPP_NAMESPACE::UniqueHandle<Allocation, detail::Dispatcher>;
   using UniqueVirtualAllocation = VULKAN_HPP_NAMESPACE::UniqueHandle<VirtualAllocation, detail::Dispatcher>;
   using UniqueVirtualBlock = VULKAN_HPP_NAMESPACE::UniqueHandle<VirtualBlock, detail::Dispatcher>;
+#endif
 
   // wrapper class for handle VmaAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_allocator.html
   class Allocator {
@@ -1223,6 +1225,7 @@ namespace VMA_HPP_NAMESPACE {
   VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::Result createVirtualBlock(const VirtualBlockCreateInfo* pCreateInfo,
                                                                        VirtualBlock* pVirtualBlock) VULKAN_HPP_NOEXCEPT;
 
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
   namespace detail {
     template <typename OwnerType> class UniqueBase {
     public:
@@ -1234,6 +1237,7 @@ namespace VMA_HPP_NAMESPACE {
     };
     template <> class UniqueBase<void> {};
   }
+#endif
 }
 
 namespace VULKAN_HPP_NAMESPACE {

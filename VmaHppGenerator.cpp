@@ -514,7 +514,6 @@ struct Symbol {
     Symbol(const Symbol&) = default;
     template<class... T> explicit Symbol(Token name, const T&... t) : name(std::move(name)), sourcePosition((navigate.sourcePosition(t) + ...)) {}
 };
-using Symbols = std::vector<Symbol>;
 
 /**
  * Parsed variable declaration (field or function parameter).
@@ -627,8 +626,15 @@ public:
     }
 };
 
-Symbols generateEnums(const Source& source) {
-    Symbols enums;
+struct Symbols {
+    std::vector<Symbol> enums, structs;
+    struct : std::vector<Symbol> {
+        std::vector<Symbol> unique, raii;
+        const std::vector<Symbol>* operator&() const { return this; }
+    } handles, functions;
+};
+
+void generateEnums(const Source& source, Symbols& symbols) {
     const std::regex typedefPattern { R"(typedef\s+enum\s+Vma(\w+))" };
     const std::regex entryPattern { R"((VMA_\w+)[^,}]*)" };
 
@@ -639,8 +645,8 @@ Symbols generateEnums(const Source& source) {
         Token flagBits;                       // E.g. AllocationCreateFlags
         if (endsWith(*name, "FlagBits")) flagBits = std::string(name.substr(0, name.length() - 4)) + "s";
         Token baseName = flagBits ? name.substr(0, name.length() - 8) : name; // E.g. AllocationCreate
-        enums.emplace_back(name, match);
-        if (flagBits) enums.emplace_back(flagBits, match);
+        symbols.enums.emplace_back(name, match);
+        if (flagBits) symbols.enums.emplace_back(flagBits, match);
 
         Segment::Vector<4> entryPieces;
         auto& [entries, entryToString, allFlags, flagsToString] = *entryPieces;
@@ -730,17 +736,15 @@ Symbols generateEnums(const Source& source) {
       $0
     }
     )"_seg.replace(toString).resolve(source.tree).generateHpp("to_string");
-    return enums;
 }
 
-Symbols generateStructs(const Source& source) {
-    Symbols structs;
+void generateStructs(const Source& source, Symbols& symbols) {
     const std::regex typedefPattern { R"(typedef\s+struct\s+Vma(\w+))" };
 
     Segment content;
     for (const auto& match : iterate(source, typedefPattern)) {
         Token name = group(source, match, 1); // E.g. DeviceMemoryCallbacks
-        structs.emplace_back(name, match);
+        symbols.structs.emplace_back(name, match);
 
         const auto begin = match.position() + match.length();
         const auto body = source.substr(begin, source.find("}", begin) - begin);
@@ -966,12 +970,9 @@ Symbols generateStructs(const Source& source) {
       $0
     }
     )"_seg.replace(content << navigate.reset).resolve(source.tree).generateHpp("structs");
-    return structs;
 }
 
-std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const Source& source, const Symbols& structs) {
-    Symbols handles, uniqueHandles, functions, raiiHandles, raiiFunctions;
-
+void generateHandles(const Source& source, Symbols& symbols) {
     // All handles.
     struct Handle : Symbol {
         using Symbol::Symbol;
@@ -986,9 +987,9 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
     // Find all handles.
     const std::regex handlePattern { R"(VK_DEFINE_(NON_DISPATCHABLE_)?HANDLE\s*\(\s*Vma(\w+)\s*\))" };
     for (const auto& match : iterate(source, handlePattern)) {
-        handles.emplace_back(handleVector.emplace_back(group(source, match, 2), match));
-        handleVector.back().memberName = handleVector.back().name.capitalize(false);
-        handleVector.back().raiiOnly = false;
+        auto& h = handleVector.emplace_back(group(source, match, 2), match);
+        h.memberName = h.name.capitalize(false);
+        h.raiiOnly = false;
     }
     handleVector.emplace_back("Buffer", -1).destructor = "destroyBuffer";
     handleVector.emplace_back("Image", -1).destructor = "destroyImage";
@@ -1089,15 +1090,15 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
             function.handle->destructor = function.methodName;
             function.raiiName = {}; // Destructors do not have separate methods in RAII.
         }
-
-        // Add function symbol.
-        if (!function.handle) functions.emplace_back(function.methodName, function);
     }
 
     // Collect unique & RAII handles.
     for (const auto& h : handleVector) {
-        if (h.destructor && !h.raiiOnly) uniqueHandles.emplace_back(h);
-        raiiHandles.emplace_back(h);
+        if (!h.raiiOnly) {
+            symbols.handles.emplace_back(h);
+            if (h.destructor) symbols.handles.unique.emplace_back(h);
+        }
+        symbols.handles.raii.emplace_back(h);
     }
 
     // Iterate VMA functions.
@@ -1182,9 +1183,6 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
             hasRAIIVariant = true;
         }
 
-        // Add to RAII function list.
-        if (!handle && hasRAIIVariant) raiiFunctions.emplace_back(function.methodName, function);
-
         // Convert enhanced outputs.
         Handle* raiiOutputHandle = nullptr;
         if (!enhancedReturn) {
@@ -1255,6 +1253,13 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
             }
         } else if (!outputs.empty()) simpleReturn = {}; // Trigger error.
         if (uniqueWrap) enhancedReturn >>= " " >>= enhancedOutput >>= "Unique" >>= uniqueWrap;
+
+        // Add function symbols.
+        if (!handle) {
+            symbols.functions.emplace_back(function.methodName, function);
+            if (hasUniqueVariant) symbols.functions.unique.emplace_back(function.methodName, function);
+            if (hasRAIIVariant) symbols.functions.raii.emplace_back(function.methodName, function);
+        }
 
         // Verify that conversion succeeded.
         if (!simpleReturn || (!enhancedReturn && !outputs.empty()))
@@ -1531,7 +1536,7 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
     // Generate handle declarations.
     Segment::Vector<7> content;
     auto& [forwardDecls, uniqueDecls, declarations, handleTraits, cppTypeTraits, uniqueTraits, definitions] = *content;
-    for (const Symbol& s : structs) forwardDecls << n << navigate(s) << "struct " << s.name << ";";
+    for (const Symbol& s : symbols.structs) forwardDecls << n << navigate(s) << "struct " << s.name << ";";
     for (Handle& h : handleVector) {
         if (h.raiiOnly) continue;
         (forwardDecls, handleTraits, cppTypeTraits) << n << navigate(h);
@@ -1896,12 +1901,15 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
       $0
 
       namespace detail { class Dispatcher; } // VMA dispatcher is a no-op.
+    #ifndef VULKAN_HPP_NO_SMART_HANDLE
       using UniqueBuffer = VULKAN_HPP_NAMESPACE::UniqueHandle<VULKAN_HPP_NAMESPACE::Buffer, detail::Dispatcher>;
       using UniqueImage = VULKAN_HPP_NAMESPACE::UniqueHandle<VULKAN_HPP_NAMESPACE::Image, detail::Dispatcher>;
       $1
+    #endif
 
       $2
 
+    #ifndef VULKAN_HPP_NO_SMART_HANDLE
       namespace detail {
         template <typename OwnerType> class UniqueBase {
         public:
@@ -1913,6 +1921,7 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
         };
         template <> class UniqueBase<void> {};
       }
+    #endif
     }
 
     namespace VULKAN_HPP_NAMESPACE {
@@ -2076,19 +2085,18 @@ std::tuple<Symbols, Symbols, Symbols, Symbols, Symbols> generateHandles(const So
     }
     #endif
     )"_seg.replace(raiiContent, raiiSpecializations << navigate.reset).resolve(source.tree).generateHpp("raii");
-    return { handles, uniqueHandles, functions, raiiHandles, raiiFunctions };
 }
 
-void generateStaticAssertions(const ConditionalTree& tree, const Symbols& structs, const Symbols& handles) {
+void generateStaticAssertions(const ConditionalTree& tree, const Symbols& symbols) {
     Segment content;
-    for (const Symbol& s : structs) {
+    for (const Symbol& s : symbols.structs) {
         content << nn << navigate(s) << R"(
         VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::$0) == sizeof(Vma$0), "struct and wrapper have different size!");
         VULKAN_HPP_STATIC_ASSERT(std::is_standard_layout<VMA_HPP_NAMESPACE::$0>::value, "struct wrapper is not a standard layout!");
         VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not nothrow_move_constructible!");
         )"_seg.replace(s.name);
     }
-    for (const Symbol& h : handles) {
+    for (const Symbol& h : symbols.handles) {
         content << nn << navigate(h) << R"(
         VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::$0) == sizeof(Vma$0), "handle and wrapper have different size!");
         VULKAN_HPP_STATIC_ASSERT(std::is_copy_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not copy_constructible!");
@@ -2098,43 +2106,45 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& struct
     std::move("#include <vk_mem_alloc.hpp>" >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
 }
 
-void generateModule(const ConditionalTree& tree, const Symbols& enums, const Symbols& structs,
-                    const Symbols& handles, const Symbols& uniqueHandles, const Symbols& functions,
-                    const Symbols& raiiHandles, const Symbols& raiiFunctions) {
-    Segment exports, raiiExports, specializations, raiiSpecializations;
+void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
+    Segment exports, uniqueExports, raiiExports, specializations, raiiSpecializations;
 
     // Generate export statements.
-    for (const auto* list : { &enums, &structs, &handles, &uniqueHandles, &functions })
+    for (const auto* list : { &symbols.enums, &symbols.structs, &symbols.handles, &symbols.functions })
         for (const Symbol& t : *list)
-            exports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << (list == &uniqueHandles ? "Unique" : "") << t.name << ";";
-    for (const auto* list : { &raiiHandles, &raiiFunctions })
+            exports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << t.name << ";";
+    for (const Symbol& t : symbols.handles.unique)
+        uniqueExports << n << navigate(t) << "using VMA_HPP_NAMESPACE::Unique" << t.name << ";";
+    for (const Symbol& t : symbols.functions.unique)
+        uniqueExports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << t.name << "Unique;";
+    for (const auto* list : { &symbols.handles.raii, &symbols.functions.raii })
         for (const Symbol& t : *list)
             raiiExports << n << navigate(t) << "using VMA_HPP_RAII_NAMESPACE::" << t.name << ";";
 
     // Some workarounds for compilation errors on MSVC...
 
     // error C2678: binary '|': no operator found which takes a left-hand operand of type 'const vma::AllocationCreateFlagBits' (or there is no acceptable conversion)
-    for (const Symbol& t : enums)
+    for (const Symbol& t : symbols.enums)
         if (endsWith(*t.name, "FlagBits"))
             specializations << n << navigate(t) << "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" << t.name << ">;";
 
     // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc_hpp'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
-    for (const Symbol& t : handles)
+    for (const Symbol& t : symbols.handles)
         specializations << n << navigate(t) << "template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::" << t.name << ">;";
 
     // error C2027: use of undefined type 'vk::UniqueHandleTraits<Type,Dispatch>'
-    for (const Symbol& t : uniqueHandles)
+    for (const Symbol& t : symbols.handles.unique)
         specializations << n << navigate(t) << "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" << t.name << ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     // error C2676: binary '==': 'const vma::raii::Allocator' does not define this operator or a conversion to a type acceptable to the predefined operator
-    for (const Symbol& t : raiiHandles)
+    for (const Symbol& t : symbols.handles.raii)
         raiiSpecializations << n << navigate(t) << "template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::" << t.name << ">;";
 
     (exports, raiiExports, specializations, raiiSpecializations) << navigate.reset;
 
     // Don't forget Buffer and Image.
-    exports << n << "using VMA_HPP_NAMESPACE::UniqueBuffer;" <<
-               n << "using VMA_HPP_NAMESPACE::UniqueImage;";
+    uniqueExports << n << "using VMA_HPP_NAMESPACE::UniqueBuffer;" <<
+                     n << "using VMA_HPP_NAMESPACE::UniqueImage;";
     specializations << n << "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  <<
                        n << "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
@@ -2164,6 +2174,9 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
       using VMA_HPP_NAMESPACE::operator==;
       using VMA_HPP_NAMESPACE::operator!=;
       $0
+      #ifndef VULKAN_HPP_NO_SMART_HANDLE
+      $1
+      #endif
       #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
       namespace VMA_HPP_RAII_NAMESPACE {
         #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
@@ -2173,7 +2186,7 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
         #endif
         using VMA_HPP_RAII_NAMESPACE::operator==;
         using VMA_HPP_RAII_NAMESPACE::operator!=;
-        $1
+        $2
       }
       #endif
     }
@@ -2181,14 +2194,14 @@ void generateModule(const ConditionalTree& tree, const Symbols& enums, const Sym
     module : private;
     namespace VULKAN_HPP_NAMESPACE {
       // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
-      $2
+      $3
       #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
       namespace VULKAN_HPP_RAII_NAMESPACE {
-        $3
+        $4
       }
       #endif
     }
-    )"_seg.replace(exports, raiiExports, specializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
+    )"_seg.replace(exports, uniqueExports, raiiExports, specializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
 }
 
 std::string readSource() {
@@ -2210,11 +2223,12 @@ int main(int, char**) {
         const auto sourceString = readSource();
         const Source source { sourceString };
 
-        const auto enums = generateEnums(source);
-        const auto structs = generateStructs(source);
-        const auto [handles, uniqueHandles, functions, raiiHandles, raiiFunctions] = generateHandles(source, structs);
-        generateStaticAssertions(source.tree, structs, handles);
-        generateModule(source.tree, enums, structs, handles, uniqueHandles, functions, raiiHandles, raiiFunctions);
+        Symbols symbols;
+        generateEnums(source, symbols);
+        generateStructs(source, symbols);
+        generateHandles(source, symbols);
+        generateStaticAssertions(source.tree, symbols);
+        generateModule(source.tree, symbols);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

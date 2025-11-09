@@ -62,18 +62,22 @@ export namespace VMA_HPP_NAMESPACE {
   using VMA_HPP_NAMESPACE::DefragmentationContext;
   using VMA_HPP_NAMESPACE::VirtualAllocation;
   using VMA_HPP_NAMESPACE::VirtualBlock;
-  using VMA_HPP_NAMESPACE::UniqueAllocator;
-  using VMA_HPP_NAMESPACE::UniquePool;
-  using VMA_HPP_NAMESPACE::UniqueAllocation;
-  using VMA_HPP_NAMESPACE::UniqueVirtualAllocation;
-  using VMA_HPP_NAMESPACE::UniqueVirtualBlock;
 #ifdef VOLK_HEADER_VERSION
   using VMA_HPP_NAMESPACE::importVulkanFunctionsFromVolk;
 #endif
   using VMA_HPP_NAMESPACE::createAllocator;
   using VMA_HPP_NAMESPACE::createVirtualBlock;
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+  using VMA_HPP_NAMESPACE::UniqueAllocator;
+  using VMA_HPP_NAMESPACE::UniquePool;
+  using VMA_HPP_NAMESPACE::UniqueAllocation;
+  using VMA_HPP_NAMESPACE::UniqueVirtualAllocation;
+  using VMA_HPP_NAMESPACE::UniqueVirtualBlock;
+  using VMA_HPP_NAMESPACE::createAllocatorUnique;
+  using VMA_HPP_NAMESPACE::createVirtualBlockUnique;
   using VMA_HPP_NAMESPACE::UniqueBuffer;
   using VMA_HPP_NAMESPACE::UniqueImage;
+#endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   namespace VMA_HPP_RAII_NAMESPACE {
 #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
