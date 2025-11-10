@@ -1,0 +1,101 @@
+name: Build
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+jobs:
+  build:
+    name: ${{matrix.env.os}} ${{matrix.env.name || matrix.env.c}} ${{matrix.env.modules && 'cppm' || 'cpp'}}-${{matrix.standard}}
+    runs-on: ${{matrix.env.os}}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [
+          { os: macos-15, cxx: clang++, name: apple-clang },
+#          { os: macos-15, cxx: /opt/homebrew/opt/llvm/bin/clang++, name: clang, cxx_flags: '-I/opt/homebrew/opt/llvm/include/c++/v1 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk', linker_flags: '-L/opt/homebrew/opt/llvm/lib/c++', modules: true }, # TODO Enable when https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/issues/65 is fixed
+          { os: ubuntu-24.04, cxx: clang++-16, c: clang-16 },
+          { os: ubuntu-24.04, cxx: clang++-17, c: clang-17 },
+          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18 },
+#          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true }, # TODO Enable when https://github.com/KhronosGroup/Vulkan-Hpp/pull/2357 is fixed
+          { os: ubuntu-24.04, cxx: g++-12, c: gcc-12 },
+          { os: ubuntu-24.04, cxx: g++-13, c: gcc-13 },
+          { os: ubuntu-24.04, cxx: g++-14, c: gcc-14 },
+          { os: windows-2025, name: msvc },
+          { os: windows-2025, name: msvc, modules: true, extra_flags: '-DVMA_HPP_SAMPLES_BUILD=OFF' }, # TODO Build samples when MSVC stops failing with ICE
+          { os: windows-2025, cxx: clang-cl, c: clang-cl, cxx_flags: '//EHsc' },
+          { os: windows-2025, cxx: c++, c: cc, name: gcc },
+        ]
+        standard: [ 11, 14, 17, 20, 23 ]
+        exclude:
+          - env:
+              modules: true
+            standard: 11
+          - env:
+              modules: true
+            standard: 14
+          - env:
+              modules: true
+            standard: 17
+          - env:
+              modules: true
+            standard: 20
+          - env:
+              cxx: clang++-17
+            standard: 23
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+        with:
+          submodules: true
+      - name: Setup CMake and Ninja
+        if: matrix.env.modules
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 4.1.2
+          ninjaVersion: latest
+      - name: Setup MSVC
+        if: contains(matrix.env.os, 'windows') && matrix.env.name == 'msvc'
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: x64
+      - name: Setup libc
+        if: contains(matrix.env.os, 'ubuntu') && matrix.env.modules
+        run: sudo apt install libc++-dev libc++abi-dev
+      - name: Setup libc & fix 'import std'
+        if: contains(matrix.env.os, 'macos') && matrix.env.modules
+        run: |
+          brew install llvm
+          # export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+          CMAKE_FIX=`which cmake`
+          CMAKE_FIX="`dirname $CMAKE_FIX`/../share/cmake-4.1/Modules/Compiler/Clang-CXX-CXXImportStd.cmake"
+          sed -i '' 's|\${_clang_modules_json_impl}.modules.json|/opt/homebrew/opt/llvm/lib/c++/libc++.modules.json|g' $CMAKE_FIX # https://gitlab.kitware.com/cmake/cmake/-/issues/25965#note_1523575
+      - name: Build
+        run: |
+          CXX_FLAGS="${{matrix.env.cxx_flags || ''}}"
+          FLAGS=(
+              -B build -G Ninja --fresh
+              -DVMA_HPP_GENERATOR_BUILD=OFF
+              -DVMA_HPP_RUN_GENERATOR=OFF
+              -DCMAKE_CXX_STANDARD=${{matrix.standard}}
+              -DCMAKE_BUILD_TYPE=Release
+              ${{matrix.env.cxx && format('-DCMAKE_CXX_COMPILER={0}', matrix.env.cxx)}}
+              ${{matrix.env.c && format('-DCMAKE_C_COMPILER={0}', matrix.env.c)}}
+              ${{matrix.env.linker_flags && format('-DCMAKE_EXE_LINKER_FLAGS=''{0}''', matrix.env.linker_flags)}}
+              ${{matrix.env.modules && '-DCMAKE_EXPERIMENTAL_CXX_IMPORT_STD=d0edc3af-4c50-42ea-a356-e2862fe7a444' || ''}}
+              ${{matrix.env.extra_flags || ''}}
+          )
+          
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
+          cmake --build build --clean-first
+          
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_REFLECT"
+          cmake --build build --clean-first
+          
+          mv VulkanMemoryAllocator/include/vk_mem_alloc.h include
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
+          cmake --build build --clean-first
+          
+          ${{matrix.env.modules && 'ls build/include/CMakeFiles | grep VulkanMemoryAllocator-HppModule &> /dev/null || (echo "VulkanMemoryAllocator-HppModule was not built"; exit 1)'}}

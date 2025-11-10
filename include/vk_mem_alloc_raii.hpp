@@ -60,8 +60,8 @@ namespace VMA_HPP_NAMESPACE {
           return convert(src.result, std::forward<Src...>(src.value));
         }
       private:
-        template<class T=Dst> static std::enable_if_t<std::is_default_constructible_v<T>, T> none() { return Dst(); }
-        template<class T=Dst> static std::enable_if_t<!std::is_default_constructible_v<T>, T> none() { return Dst(nullptr); }
+        template<class T=Dst> static typename std::enable_if<std::is_default_constructible<T>::value, T>::type none() { return Dst(); }
+        template<class T=Dst> static typename std::enable_if<!std::is_default_constructible<T>::value, T>::type none() { return Dst(nullptr); }
       };
       template<class Dst, class Wrapper> // Converting from plain vk::Result.
       struct Converter<VULKAN_HPP_NAMESPACE::ResultValue<Dst>, Wrapper, VULKAN_HPP_NAMESPACE::Result> :

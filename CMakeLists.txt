@@ -129,7 +129,6 @@ if (VMA_HPP_SAMPLES_BUILD)
         add_library(VulkanMemoryAllocator-Hpp-Samples INTERFACE)
         target_link_libraries(VulkanMemoryAllocator-Hpp-Samples INTERFACE VulkanMemoryAllocator-Hpp GPUOpen::VulkanMemoryAllocator Vulkan::Headers)
         target_compile_definitions(VulkanMemoryAllocator-Hpp-Samples INTERFACE VK_NO_PROTOTYPES)
-        target_compile_features(VulkanMemoryAllocator-Hpp-Samples INTERFACE cxx_std_11)
     endif ()
 
     file(GLOB VMA_HPP_SAMPLES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/samples" "${CMAKE_CURRENT_SOURCE_DIR}/samples/*.cpp")
