@@ -1731,18 +1731,17 @@ void generateHandles(const Source& source, Symbols& symbols) {
             private:
               friend class detail::Converter<StatsString>;
               using Destructor = void (*)(uint64_t, char*);
+              template<class T, void (*destructor)(T, char*)>
+              static void destroy(uint64_t owner, char* string) VULKAN_HPP_NOEXCEPT { destructor(reinterpret_cast<T>(owner), string); }
               template<class T> static uint64_t erase(T t) { return reinterpret_cast<uint64_t>(static_cast<typename T::CType>(t)); }
-              template<class T, void (*destructor)(T, char*)> static Destructor erase() {
-                return [](uint64_t owner, char* string) { destructor(reinterpret_cast<T>(owner), string); };
-              }
               $0(const VMA_HPP_NAMESPACE::Allocator allocator, char* string) VULKAN_HPP_NOEXCEPT
                 : m_owner(erase(allocator))
                 , m_string(string)
-                , m_destructor(erase<VmaAllocator, &vmaFreeStatsString>()) {}
+                , m_destructor(&destroy<VmaAllocator, &vmaFreeStatsString>) {}
               $0(const VMA_HPP_NAMESPACE::VirtualBlock virtualBlock, char* string) VULKAN_HPP_NOEXCEPT
                 : m_owner(erase(virtualBlock))
                 , m_string(string)
-                , m_destructor(erase<VmaVirtualBlock, &vmaFreeVirtualBlockStatsString>()) {}
+                , m_destructor(&destroy<VmaVirtualBlock, &vmaFreeVirtualBlockStatsString>) {}
 
               uint64_t   m_owner      = 0;
               char*      m_string     = nullptr;
