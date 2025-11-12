@@ -11,5 +11,6 @@ int main(int, char**) {
     auto buffer = value(allocator->createBufferUnique(
       vk::BufferCreateInfo { {}, 1024, vk::BufferUsageFlagBits::eTransferSrc },
       vma::AllocationCreateInfo { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite, vma::MemoryUsage::eAuto }));
+
     return 0;
 }

@@ -10,5 +10,8 @@ int main(int, char**) {
     auto buffer = value(allocator.createBuffer(
       vk::BufferCreateInfo { {}, 1024, vk::BufferUsageFlagBits::eTransferSrc },
       vma::AllocationCreateInfo { vma::AllocationCreateFlagBits::eHostAccessSequentialWrite, vma::MemoryUsage::eAuto }));
+
+    auto statsString = allocator.buildStatsString(false);
+
     return 0;
 }
