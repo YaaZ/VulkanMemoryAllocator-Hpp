@@ -4,56 +4,56 @@ on:
 jobs:
   build:
     uses: ./.github/workflows/build.yml
-#  release:
-#    runs-on: ubuntu-latest
-#    permissions:
-#      contents: write
-#    needs:
-#      build
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v5.0.0
-#        with:
-#          submodules: true
-#          fetch-tags: true
-#      - name: Package
-#        id: package
-#        run: |
-#          cmake -B build || true
-#          VERSION=`cat build/CMakeCache.txt | grep VMA_HPP_PROJECT_VERSION | cut -d= -f2`
-#          echo "VMA version: $VERSION"
-#          echo "version=$VERSION" >> $GITHUB_OUTPUT
-#
-#          git fetch --unshallow --tags --recurse-submodules=no
-#          BUILD=`git tag -l --sort=-version:refname | grep $VERSION | head -n 1 | cut -d+ -f2`
-#          BUILD=$((BUILD+1))
-#          echo "Build number: $BUILD"
-#          echo "build=$BUILD" >> $GITHUB_OUTPUT
-#
-#          cp VulkanMemoryAllocator/include/vk_mem_alloc.h include
-#          mv include vma-hpp
-#          tar czf VulkanMemoryAllocator-Hpp-$VERSION.tar.gz vma-hpp
-#      - name: Release
-#        uses: actions/github-script@v8.0.0
-#        with:
-#          script: |
-#            const tar = 'VulkanMemoryAllocator-Hpp-${{ steps.package.outputs.version }}.tar.gz'
-#            const response = await github.rest.repos.createRelease({
-#                owner: context.repo.owner,
-#                repo: context.repo.repo,
-#                name: 'v${{ steps.package.outputs.version }}',
-#                tag_name: 'v${{ steps.package.outputs.version }}+${{ steps.package.outputs.build }}',
-#                target_commitish: '${{ github.ref_name }}',
-#                draft: true,
-#                prerelease: false,
-#                generate_release_notes: true,
-#            });
-#            var fs = require('fs');
-#            await github.rest.repos.uploadReleaseAsset({
-#                owner: context.repo.owner,
-#                repo: context.repo.repo,
-#                url: response.data.upload_url,
-#                headers: { "content-type": "application/java-archive" },
-#                name: tar,
-#                data: fs.readFileSync(tar),
-#            });
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+        with:
+          submodules: true
+          fetch-tags: true
+      - name: Package
+        id: package
+        run: |
+          cmake -B build || true
+          VERSION=`cat build/CMakeCache.txt | grep VMA_HPP_PROJECT_VERSION | cut -d= -f2`
+          echo "VMA version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          git fetch --unshallow --tags --recurse-submodules=no
+          BUILD=`git tag -l --sort=-version:refname | grep $VERSION | head -n 1 | cut -d+ -f2`
+          BUILD=$((BUILD+1))
+          echo "Build number: $BUILD"
+          echo "build=$BUILD" >> $GITHUB_OUTPUT
+
+          cp VulkanMemoryAllocator/include/vk_mem_alloc.h include
+          mv include vma-hpp
+          tar czf VulkanMemoryAllocator-Hpp-$VERSION.tar.gz vma-hpp
+      - name: Release
+        uses: actions/github-script@v8.0.0
+        with:
+          script: |
+            const tar = 'VulkanMemoryAllocator-Hpp-${{ steps.package.outputs.version }}.tar.gz'
+            const response = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'v${{ steps.package.outputs.version }}',
+                tag_name: 'v${{ steps.package.outputs.version }}+${{ steps.package.outputs.build }}',
+                target_commitish: '${{ github.ref_name }}',
+                draft: true,
+                prerelease: false,
+                generate_release_notes: true,
+            });
+            var fs = require('fs');
+            await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                url: response.data.upload_url,
+                headers: { "content-type": "application/java-archive" },
+                name: tar,
+                data: fs.readFileSync(tar),
+            });
