@@ -65,8 +65,9 @@ if (VMA_HPP_DO_UPDATE)
     # Update versions in README.
     message("-- Updating README with VMA ${VMA_HPP_VMA_VERSION} and Vulkan ${VMA_HPP_VULKAN_VERSION}")
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/README.md" VMA_HPP_README)
-    string(REGEX REPLACE "<!--VER-->[^<]*<!--/VER-->" "<!--VER-->${VMA_HPP_VMA_VERSION}<!--/VER-->" VMA_HPP_README ${VMA_HPP_README})
-    string(REGEX REPLACE "<!--VK-->[^<]*<!--/VK-->" "<!--VK-->${VMA_HPP_VULKAN_VERSION}<!--/VK-->" VMA_HPP_README ${VMA_HPP_README})
+    string(REPLACE ";" "\\;" VMA_HPP_README "${VMA_HPP_README}") # Do not mess up semicolons in the README
+    string(REGEX REPLACE "<!--VER-->[^<]*<!--/VER-->" "<!--VER-->${VMA_HPP_VMA_VERSION}<!--/VER-->" VMA_HPP_README "${VMA_HPP_README}")
+    string(REGEX REPLACE "<!--VK-->[^<]*<!--/VK-->" "<!--VK-->${VMA_HPP_VULKAN_VERSION}<!--/VK-->" VMA_HPP_README "${VMA_HPP_README}")
     file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/README.md" ${VMA_HPP_README})
 
     # Generate "imported" utility header.
