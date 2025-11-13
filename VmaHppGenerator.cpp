@@ -914,6 +914,8 @@ void generateStructs(const Source& source, Symbols& symbols) {
                 (pfns, specs, dynamicInit, staticInit) << n << navigate(member);
                 (dynamicInit, staticInit) << (staticInit ? ", " : "  ");
                 if (pfn) {
+                    // Use promoted version for extension functions.
+                    if (endsWith(*pfn, "KHR") && pfn != "vkGetMemoryWin32HandleKHR") pfn = pfn.substr(0, pfn.length() - 3);
                     pfns << R"(
                     struct $0 { using type = PFN_$0; };
                     )"_seg.replace(pfn);

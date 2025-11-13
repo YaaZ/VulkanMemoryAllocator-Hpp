@@ -558,19 +558,19 @@ namespace VMA_HPP_NAMESPACE {
       struct vkDestroyImage { using type = PFN_vkDestroyImage; };
       struct vkCmdCopyBuffer { using type = PFN_vkCmdCopyBuffer; };
 #if VMA_DEDICATED_ALLOCATION || VMA_VULKAN_VERSION >= 1001000
-      struct vkGetBufferMemoryRequirements2KHR { using type = PFN_vkGetBufferMemoryRequirements2KHR; };
-      struct vkGetImageMemoryRequirements2KHR { using type = PFN_vkGetImageMemoryRequirements2KHR; };
+      struct vkGetBufferMemoryRequirements2 { using type = PFN_vkGetBufferMemoryRequirements2; };
+      struct vkGetImageMemoryRequirements2 { using type = PFN_vkGetImageMemoryRequirements2; };
 #endif
 #if VMA_BIND_MEMORY2 || VMA_VULKAN_VERSION >= 1001000
-      struct vkBindBufferMemory2KHR { using type = PFN_vkBindBufferMemory2KHR; };
-      struct vkBindImageMemory2KHR { using type = PFN_vkBindImageMemory2KHR; };
+      struct vkBindBufferMemory2 { using type = PFN_vkBindBufferMemory2; };
+      struct vkBindImageMemory2 { using type = PFN_vkBindImageMemory2; };
 #endif
 #if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
-      struct vkGetPhysicalDeviceMemoryProperties2KHR { using type = PFN_vkGetPhysicalDeviceMemoryProperties2KHR; };
+      struct vkGetPhysicalDeviceMemoryProperties2 { using type = PFN_vkGetPhysicalDeviceMemoryProperties2; };
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
-      struct vkGetDeviceBufferMemoryRequirementsKHR { using type = PFN_vkGetDeviceBufferMemoryRequirementsKHR; };
-      struct vkGetDeviceImageMemoryRequirementsKHR { using type = PFN_vkGetDeviceImageMemoryRequirementsKHR; };
+      struct vkGetDeviceBufferMemoryRequirements { using type = PFN_vkGetDeviceBufferMemoryRequirements; };
+      struct vkGetDeviceImageMemoryRequirements { using type = PFN_vkGetDeviceImageMemoryRequirements; };
 #endif
 #if VMA_EXTERNAL_MEMORY_WIN32
       struct vkGetMemoryWin32HandleKHR { using type = PFN_vkGetMemoryWin32HandleKHR; };
@@ -624,26 +624,26 @@ namespace VMA_HPP_NAMESPACE {
     template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkCmdCopyBuffer, decltype(T::vkCmdCopyBuffer), T, Ts...>
     { static PFN_vkCmdCopyBuffer get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkCmdCopyBuffer; } };
 #if VMA_DEDICATED_ALLOCATION || VMA_VULKAN_VERSION >= 1001000
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetBufferMemoryRequirements2KHR, decltype(T::vkGetBufferMemoryRequirements2KHR), T, Ts...>
-    { static PFN_vkGetBufferMemoryRequirements2KHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetBufferMemoryRequirements2KHR; } };
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetImageMemoryRequirements2KHR, decltype(T::vkGetImageMemoryRequirements2KHR), T, Ts...>
-    { static PFN_vkGetImageMemoryRequirements2KHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetImageMemoryRequirements2KHR; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetBufferMemoryRequirements2, decltype(T::vkGetBufferMemoryRequirements2), T, Ts...>
+    { static PFN_vkGetBufferMemoryRequirements2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetBufferMemoryRequirements2; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetImageMemoryRequirements2, decltype(T::vkGetImageMemoryRequirements2), T, Ts...>
+    { static PFN_vkGetImageMemoryRequirements2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetImageMemoryRequirements2; } };
 #endif
 #if VMA_BIND_MEMORY2 || VMA_VULKAN_VERSION >= 1001000
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkBindBufferMemory2KHR, decltype(T::vkBindBufferMemory2KHR), T, Ts...>
-    { static PFN_vkBindBufferMemory2KHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkBindBufferMemory2KHR; } };
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkBindImageMemory2KHR, decltype(T::vkBindImageMemory2KHR), T, Ts...>
-    { static PFN_vkBindImageMemory2KHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkBindImageMemory2KHR; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkBindBufferMemory2, decltype(T::vkBindBufferMemory2), T, Ts...>
+    { static PFN_vkBindBufferMemory2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkBindBufferMemory2; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkBindImageMemory2, decltype(T::vkBindImageMemory2), T, Ts...>
+    { static PFN_vkBindImageMemory2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkBindImageMemory2; } };
 #endif
 #if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetPhysicalDeviceMemoryProperties2KHR, decltype(T::vkGetPhysicalDeviceMemoryProperties2KHR), T, Ts...>
-    { static PFN_vkGetPhysicalDeviceMemoryProperties2KHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetPhysicalDeviceMemoryProperties2KHR; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetPhysicalDeviceMemoryProperties2, decltype(T::vkGetPhysicalDeviceMemoryProperties2), T, Ts...>
+    { static PFN_vkGetPhysicalDeviceMemoryProperties2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetPhysicalDeviceMemoryProperties2; } };
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetDeviceBufferMemoryRequirementsKHR, decltype(T::vkGetDeviceBufferMemoryRequirementsKHR), T, Ts...>
-    { static PFN_vkGetDeviceBufferMemoryRequirementsKHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetDeviceBufferMemoryRequirementsKHR; } };
-    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetDeviceImageMemoryRequirementsKHR, decltype(T::vkGetDeviceImageMemoryRequirementsKHR), T, Ts...>
-    { static PFN_vkGetDeviceImageMemoryRequirementsKHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetDeviceImageMemoryRequirementsKHR; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetDeviceBufferMemoryRequirements, decltype(T::vkGetDeviceBufferMemoryRequirements), T, Ts...>
+    { static PFN_vkGetDeviceBufferMemoryRequirements get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetDeviceBufferMemoryRequirements; } };
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetDeviceImageMemoryRequirements, decltype(T::vkGetDeviceImageMemoryRequirements), T, Ts...>
+    { static PFN_vkGetDeviceImageMemoryRequirements get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetDeviceImageMemoryRequirements; } };
 #endif
 #if VMA_EXTERNAL_MEMORY_WIN32
     template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetMemoryWin32HandleKHR, decltype(T::vkGetMemoryWin32HandleKHR), T, Ts...>
@@ -676,19 +676,19 @@ namespace VMA_HPP_NAMESPACE {
       , detail::VulkanPFN::get<detail::VulkanPFN::vkDestroyImage>(dispatch...)
       , detail::VulkanPFN::get<detail::VulkanPFN::vkCmdCopyBuffer>(dispatch...)
 #if VMA_DEDICATED_ALLOCATION || VMA_VULKAN_VERSION >= 1001000
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetBufferMemoryRequirements2KHR>(dispatch...)
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetImageMemoryRequirements2KHR>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetBufferMemoryRequirements2>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetImageMemoryRequirements2>(dispatch...)
 #endif
 #if VMA_BIND_MEMORY2 || VMA_VULKAN_VERSION >= 1001000
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkBindBufferMemory2KHR>(dispatch...)
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkBindImageMemory2KHR>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkBindBufferMemory2>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkBindImageMemory2>(dispatch...)
 #endif
 #if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetPhysicalDeviceMemoryProperties2KHR>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetPhysicalDeviceMemoryProperties2>(dispatch...)
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetDeviceBufferMemoryRequirementsKHR>(dispatch...)
-      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetDeviceImageMemoryRequirementsKHR>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetDeviceBufferMemoryRequirements>(dispatch...)
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetDeviceImageMemoryRequirements>(dispatch...)
 #endif
 #if VMA_EXTERNAL_MEMORY_WIN32
       , detail::VulkanPFN::get<detail::VulkanPFN::vkGetMemoryWin32HandleKHR>(dispatch...)
@@ -725,19 +725,19 @@ namespace VMA_HPP_NAMESPACE {
       , &vkDestroyImage
       , &vkCmdCopyBuffer
 #if VMA_DEDICATED_ALLOCATION || VMA_VULKAN_VERSION >= 1001000
-      , &vkGetBufferMemoryRequirements2KHR
-      , &vkGetImageMemoryRequirements2KHR
+      , &vkGetBufferMemoryRequirements2
+      , &vkGetImageMemoryRequirements2
 #endif
 #if VMA_BIND_MEMORY2 || VMA_VULKAN_VERSION >= 1001000
-      , &vkBindBufferMemory2KHR
-      , &vkBindImageMemory2KHR
+      , &vkBindBufferMemory2
+      , &vkBindImageMemory2
 #endif
 #if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
-      , &vkGetPhysicalDeviceMemoryProperties2KHR
+      , &vkGetPhysicalDeviceMemoryProperties2
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
-      , &vkGetDeviceBufferMemoryRequirementsKHR
-      , &vkGetDeviceImageMemoryRequirementsKHR
+      , &vkGetDeviceBufferMemoryRequirements
+      , &vkGetDeviceImageMemoryRequirements
 #endif
 #if VMA_EXTERNAL_MEMORY_WIN32
       , &vkGetMemoryWin32HandleKHR
