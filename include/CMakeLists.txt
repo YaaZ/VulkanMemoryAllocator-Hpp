@@ -14,7 +14,7 @@ add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp ALIAS VulkanMem
 target_include_directories(VulkanMemoryAllocator-Hpp INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 if (TARGET Vulkan::HppModule)
-    message("VMA-Hpp module is available")
+    message(STATUS "VMA-Hpp module is available")
 
     # Set up VulkanMemoryAllocator-HppModule.
     add_library(VulkanMemoryAllocator-HppModule OBJECT)

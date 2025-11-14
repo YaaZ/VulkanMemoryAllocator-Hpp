@@ -1,6 +1,6 @@
 # VulkanMemoryAllocator-Hpp <!--VER-->3.3.0<!--/VER-->
 
-### Supports Vulkan <!--VK-->1.4<!--/VK-->
+### Supports Vulkan <!--VK-->1.4.327<!--/VK--> and newer
 
 VMA-Hpp provides C++ bindings for [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator),
 consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp)).
@@ -8,9 +8,8 @@ consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.
 
 ## Getting Started
 
-VMA-Hpp needs [Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp) and inherits its requirements (C++11 or newer).
-A known compatible version is specified in the [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules "git submodule update"),
-but VMA-Hpp is not tied to any specific version of Vulkan headers, feel free to use your own version as long as it compiles.
+VMA-Hpp needs [Vulkan headers](**https://github.com/KhronosGroup/Vulkan-Hpp**) and inherits their requirements (C++11 or newer).
+VMA-Hpp is tested and compatible with Vulkan <!--VK-->1.4.327<!--/VK--> and newer.
 
 VMA-Hpp also needs [VMA](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator), and this dependency is strict.
 Patch revisions of VMA are interchangeable, but anything affecting the API may fail to compile or introduce runtime bugs.
@@ -18,20 +17,33 @@ Patch revisions of VMA are interchangeable, but anything affecting the API may f
 *[GitHub releases](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases) are the recommended way to get VMA-Hpp,
 they already include a compatible `vk_mem_alloc.h` header.*
 
-#### Header-Only
+#### Get the library
 
 ```cmake
-# Add VMA-Hpp as a CMake subdirectory
-add_subdirectory(VulkanMemoryAllocator-Hpp/include)
-# Or find installed VMA-Hpp
-find_package(VulkanMemoryAllocator-Hpp CONFIG REQUIRED)
+# Download VMA-Hpp release
+include(FetchContent)
+FetchContent_Declare(
+        vmahpp
+        URL      https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases/download/v<version>/VulkanMemoryAllocator-Hpp-<version>.tar.gz
+        URL_HASH SHA256=<hash> # Copy from the asset list on the release page
+)
+FetchContent_MakeAvailable(vmahpp)
 
-# Then link the interface library
+# Or add a local directory
+add_subdirectory(VulkanMemoryAllocator-Hpp/include) # You don't need the top-level dir
+
+# Or find an installed library
+find_package(VulkanMemoryAllocator-Hpp CONFIG REQUIRED)
+```
+
+#### Use headers
+
+```cmake
+# Link the interface library
 target_link_libraries(<target> PRIVATE VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
 
-# ...
 # Or don't bother and just include the headers
-target_include_directories(<target> PRIVATE VulkanMemoryAllocator-Hpp/include)
+target_include_directories(<target> PRIVATE ${vmahpp_SOURCE_DIR})
 ```
 
 ```c++
@@ -41,25 +53,21 @@ target_include_directories(<target> PRIVATE VulkanMemoryAllocator-Hpp/include)
 #include "vk_mem_alloc.hpp"
 ```
 
-#### C++23 Module
+#### Use C++23 module
 
 ```cmake
 # VMA-Hpp module requires Vulkan::HppModule target:
-add_subdirectory(Vulkan-Headers)
-add_subdirectory(VulkanMemoryAllocator-Hpp/include)
-# Or
-find_package(VulkanHeaders CONFIG)
-find_package(VulkanMemoryAllocator-Hpp CONFIG REQUIRED)
+find_package(VulkanHeaders CONFIG) # Or fetch from https://github.com/KhronosGroup/Vulkan-Headers
 
-# Then link the library
+# Link the library
 target_link_libraries(<target> PRIVATE VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-HppModule)
 
 # ...
 # Or compile it yourself:
-target_include_directories(<target> PRIVATE VulkanMemoryAllocator-Hpp/include)
+target_include_directories(<target> PRIVATE ${vmahpp_SOURCE_DIR})
 target_sources(<target> PRIVATE
         FILE_SET CXX_MODULES
-        FILES VulkanMemoryAllocator-Hpp/include/vk_mem_alloc.cppm)
+        FILES ${vmahpp_SOURCE_DIR}/vk_mem_alloc.cppm)
 ```
 
 ```c++
@@ -72,12 +80,7 @@ import vk_mem_alloc_hpp; // Also imports vulkan_hpp and std
 If your VMA-Hpp is missing a bundled `vk_mem_alloc.h`, or you need a custom one:
 
 ```cmake
-# Add VMA as a CMake subdirectory
-add_subdirectory(VulkanMemoryAllocator)
-# Or find installed VMA
-find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-
-# Then link the interface library
+find_package(VulkanMemoryAllocator CONFIG REQUIRED) # Or fetch from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 target_link_libraries(<target> PRIVATE GPUOpen::VulkanMemoryAllocator)
 ```
 
@@ -88,7 +91,7 @@ You can also include `vk_mem_alloc.h` from an arbitrary location before includin
 
 #### Vulkan-Hpp compatibility
 
-VMA-Hpp is built on top of Vulkan-Hpp and reflects most of its
+VMA-Hpp is built on top of [Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp) and reflects most of its
 [features](https://github.com/KhronosGroup/Vulkan-Hpp?tab=readme-ov-file#usage-):
 
 - `vma::` and `vma::raii::` namespaces

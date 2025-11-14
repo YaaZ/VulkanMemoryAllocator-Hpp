@@ -68,7 +68,6 @@ jobs:
         if: contains(matrix.env.os, 'macos') && matrix.env.modules
         run: |
           brew install llvm
-          # export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
           CMAKE_FIX=`which cmake`
           CMAKE_FIX="`dirname $CMAKE_FIX`/../share/cmake-4.1/Modules/Compiler/Clang-CXX-CXXImportStd.cmake"
           sed -i '' 's|\${_clang_modules_json_impl}.modules.json|/opt/homebrew/opt/llvm/lib/c++/libc++.modules.json|g' $CMAKE_FIX # https://gitlab.kitware.com/cmake/cmake/-/issues/25965#note_1523575
@@ -87,6 +86,17 @@ jobs:
               ${{matrix.env.modules && '-DCMAKE_EXPERIMENTAL_CXX_IMPORT_STD=d0edc3af-4c50-42ea-a356-e2862fe7a444' || ''}}
               ${{matrix.env.extra_flags || ''}}
           )
+          
+          echo Building with minimal Vulkan...
+          
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
+          cmake --build build --clean-first
+          
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_REFLECT"
+          cmake --build build --clean-first
+          
+          echo Building with latest Vulkan...
+          FLAGS+=('-DVMA_HPP_VULKAN_REVISION=main')
           
           cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
           cmake --build build --clean-first

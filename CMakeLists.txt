@@ -12,12 +12,11 @@ option(VMA_HPP_RUN_GENERATOR     "Run the HPP generator"        ${PROJECT_IS_TOP
 option(VMA_HPP_SAMPLES_BUILD     "Build samples"                ${PROJECT_IS_TOP_LEVEL})
 option(VMA_HPP_DO_UPDATE         "Update Vulkan & VMA versions" OFF)
 set(VMA_HPP_INPUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include/vk_mem_alloc.h" CACHE FILEPATH "Input vk_mem_alloc.h file")
-set(VMA_HPP_VMA_SUBMODULE    "v${PROJECT_VERSION}" CACHE STRING "VulkanMemoryAllocator submodule revision" FORCE)
-set(VMA_HPP_VULKAN_SUBMODULE "main"                CACHE STRING "Vulkan-Hpp submodule revision")
+set(VMA_HPP_VULKAN_MIN_REVISION "1.4.327"                         CACHE INTERNAL "Minimal Vulkan-Headers revision")
+set(VMA_HPP_VULKAN_REVISION     "v${VMA_HPP_VULKAN_MIN_REVISION}" CACHE STRING   "Vulkan-Headers revision")
+set(VMA_HPP_VMA_REVISION        "v${PROJECT_VERSION}"             CACHE STRING   "VulkanMemoryAllocator revision" FORCE)
 
-if (VMA_HPP_DO_UPDATE
-        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/.git"
-        OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/.git")
+if (VMA_HPP_DO_UPDATE OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/.git")
     # Init submodules.
     find_package(Git)
     if (Git_FOUND)
@@ -32,19 +31,29 @@ endif ()
 
 if (VMA_HPP_DO_UPDATE)
     # Checkout proper revisions.
-    message("-- Updating VulkanMemoryAllocator submodule to ${VMA_HPP_VMA_SUBMODULE}")
-    execute_process(COMMAND ${GIT_EXECUTABLE} -c advice.detachedHead=false checkout "${VMA_HPP_VMA_SUBMODULE}"
+    message(STATUS "Updating VulkanMemoryAllocator submodule to ${VMA_HPP_VMA_REVISION}")
+    execute_process(COMMAND ${GIT_EXECUTABLE} -c advice.detachedHead=false checkout "${VMA_HPP_VMA_REVISION}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator" COMMAND_ERROR_IS_FATAL ANY)
     execute_process(COMMAND ${GIT_EXECUTABLE} pull
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator" ERROR_QUIET)
-    message("-- Updating Vulkan-Headers submodule to ${VMA_HPP_VULKAN_SUBMODULE}")
-    execute_process(COMMAND ${GIT_EXECUTABLE} -c advice.detachedHead=false checkout "${VMA_HPP_VULKAN_SUBMODULE}"
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers" COMMAND_ERROR_IS_FATAL ANY)
-    execute_process(COMMAND ${GIT_EXECUTABLE} pull
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers" ERROR_QUIET)
 endif ()
 
-add_subdirectory(Vulkan-Headers)
+if (${VMA_HPP_VULKAN_REVISION} STREQUAL "system")
+    find_package(VulkanHeaders CONFIG)
+    if (NOT VulkanHeaders_FOUND)
+        find_package(Vulkan REQUIRED)
+    endif ()
+else ()
+    include(FetchContent)
+    FetchContent_Declare(
+            vulkan
+            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+            GIT_TAG ${VMA_HPP_VULKAN_REVISION}
+            GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(vulkan)
+endif ()
+
 add_subdirectory(VulkanMemoryAllocator)
 add_subdirectory(include)
 
@@ -53,21 +62,17 @@ if (NOT ${PROJECT_VERSION} STREQUAL ${VMA_HPP_PROJECT_VERSION})
 endif ()
 
 if (VMA_HPP_DO_UPDATE)
-    # Find VMA and Vulkan versions from VMA header.
+    # Find VMA version from VMA header.
     file(READ "${VMA_HPP_INPUT_HEADER}" VMA_HPP_VMA_SOURCE)
     string(REGEX MATCH "<b>Version\\s*([^<]+)\\s*</b>" _ ${VMA_HPP_VMA_SOURCE})
     string(STRIP ${CMAKE_MATCH_1} VMA_HPP_VMA_VERSION)
-    string(REGEX MATCHALL "VK_VERSION_([0-9]+)_([0-9]+)" VMA_HPP_VULKAN_VERSION ${VMA_HPP_VMA_SOURCE})
-    list(SORT VMA_HPP_VULKAN_VERSION COMPARE NATURAL ORDER DESCENDING)
-    list(GET VMA_HPP_VULKAN_VERSION 0 VMA_HPP_VULKAN_VERSION)
-    string(REGEX REPLACE "VK_VERSION_([0-9]+)_([0-9]+)" "\\1.\\2" VMA_HPP_VULKAN_VERSION ${VMA_HPP_VULKAN_VERSION})
 
     # Update versions in README.
-    message("-- Updating README with VMA ${VMA_HPP_VMA_VERSION} and Vulkan ${VMA_HPP_VULKAN_VERSION}")
+    message(STATUS "Updating README with VMA ${VMA_HPP_VMA_VERSION} and Vulkan ${VMA_HPP_VULKAN_MIN_REVISION}")
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/README.md" VMA_HPP_README)
     string(REPLACE ";" "\\;" VMA_HPP_README "${VMA_HPP_README}") # Do not mess up semicolons in the README
     string(REGEX REPLACE "<!--VER-->[^<]*<!--/VER-->" "<!--VER-->${VMA_HPP_VMA_VERSION}<!--/VER-->" VMA_HPP_README "${VMA_HPP_README}")
-    string(REGEX REPLACE "<!--VK-->[^<]*<!--/VK-->" "<!--VK-->${VMA_HPP_VULKAN_VERSION}<!--/VK-->" VMA_HPP_README "${VMA_HPP_README}")
+    string(REGEX REPLACE "<!--VK-->[^<]*<!--/VK-->" "<!--VK-->${VMA_HPP_VULKAN_MIN_REVISION}<!--/VK-->" VMA_HPP_README "${VMA_HPP_README}")
     file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/README.md" ${VMA_HPP_README})
 
     # Generate "imported" utility header.
