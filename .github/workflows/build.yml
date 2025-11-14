@@ -19,7 +19,7 @@ jobs:
           { os: ubuntu-24.04, cxx: clang++-16, c: clang-16 },
           { os: ubuntu-24.04, cxx: clang++-17, c: clang-17 },
           { os: ubuntu-24.04, cxx: clang++-18, c: clang-18 },
-#          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true }, # TODO Enable when https://github.com/KhronosGroup/Vulkan-Hpp/pull/2357 is fixed
+          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true },
           { os: ubuntu-24.04, cxx: g++-12, c: gcc-12 },
           { os: ubuntu-24.04, cxx: g++-13, c: gcc-13 },
           { os: ubuntu-24.04, cxx: g++-14, c: gcc-14 },

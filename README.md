@@ -64,7 +64,7 @@ target_sources(<target> PRIVATE
 
 ```c++
 // Do not define VMA_IMPLEMENTATION
-import vk_mem_alloc_hpp; // Also imports vulkan_hpp and std.compat
+import vk_mem_alloc_hpp; // Also imports vulkan_hpp and std
 ```
 
 #### External VulkanMemoryAllocator
