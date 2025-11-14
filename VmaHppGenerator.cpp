@@ -2130,7 +2130,7 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
         if (endsWith(*t.name, "FlagBits"))
             specializations << n << navigate(t) << "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" << t.name << ">;";
 
-    // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc_hpp'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
+    // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
     for (const Symbol& t : symbols.handles)
         specializations << n << navigate(t) << "template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::" << t.name << ">;";
 
@@ -2156,8 +2156,8 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
     #define VMA_IMPLEMENTATION
     #include "vk_mem_alloc.hpp"
     #include "vk_mem_alloc_raii.hpp"
-    export module vk_mem_alloc_hpp;
-    export import vulkan_hpp;
+    export module vk_mem_alloc;
+    export import vulkan;
 
     export namespace VMA_HPP_NAMESPACE {
     #ifndef VULKAN_HPP_NO_TO_STRING
@@ -2195,7 +2195,7 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
 
     module : private;
     namespace VULKAN_HPP_NAMESPACE {
-      // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
+      // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
       $3
       #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
       namespace VULKAN_HPP_RAII_NAMESPACE {
