@@ -1,6 +1,6 @@
 # VulkanMemoryAllocator-Hpp <!--VER-->3.3.0<!--/VER-->
 
-### Supports Vulkan <!--VK-->1.4.327<!--/VK--> and newer
+### Compatible with Vulkan <!--VK-->1.4.327<!--/VK--> and newer
 
 VMA-Hpp provides C++ bindings for [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator),
 consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp)).
@@ -8,7 +8,7 @@ consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.
 
 ## Getting Started
 
-VMA-Hpp needs [Vulkan headers](**https://github.com/KhronosGroup/Vulkan-Hpp**) and inherits their requirements (C++11 or newer).
+VMA-Hpp needs [Vulkan headers](https://github.com/KhronosGroup/Vulkan-Headers) and inherits their requirements (C++11 or newer).
 VMA-Hpp is tested and compatible with Vulkan <!--VK-->1.4.327<!--/VK--> and newer.
 
 VMA-Hpp also needs [VMA](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator), and this dependency is strict.
@@ -30,7 +30,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(vmahpp)
 
 # Or add a local directory
-add_subdirectory(VulkanMemoryAllocator-Hpp/include) # You don't need the top-level dir
+add_subdirectory(VulkanMemoryAllocator-Hpp/include) # You don't need the top-level one
 
 # Or find an installed library
 find_package(VulkanMemoryAllocator-Hpp CONFIG REQUIRED)

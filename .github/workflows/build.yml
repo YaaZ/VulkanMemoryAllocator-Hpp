@@ -23,8 +23,8 @@ jobs:
           { os: ubuntu-24.04, cxx: g++-12, c: gcc-12 },
           { os: ubuntu-24.04, cxx: g++-13, c: gcc-13 },
           { os: ubuntu-24.04, cxx: g++-14, c: gcc-14 },
-          { os: windows-2025, name: msvc },
-          { os: windows-2025, name: msvc, modules: true, extra_flags: '-DVMA_HPP_SAMPLES_BUILD=OFF' }, # TODO Build samples when MSVC stops failing with ICE
+          { os: windows-2025, name: msvc, cxx_flags: '//EHsc' },
+          { os: windows-2025, name: msvc, cxx_flags: '//EHsc', modules: true, extra_flags: '-DVMA_HPP_SAMPLES_BUILD=OFF' }, # TODO Build samples when MSVC stops failing with ICE
           { os: windows-2025, cxx: clang-cl, c: clang-cl, cxx_flags: '//EHsc' },
           { os: windows-2025, cxx: c++, c: cc, name: gcc },
         ]
