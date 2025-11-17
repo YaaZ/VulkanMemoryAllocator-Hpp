@@ -1,21 +1,19 @@
 # VulkanMemoryAllocator-Hpp <!--VER-->3.3.0<!--/VER-->
 
-### Compatible with Vulkan <!--VK-->1.4.327<!--/VK--> and newer
-
 VMA-Hpp provides C++ bindings for [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator),
 consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp)).
 
 
 ## Getting Started
 
-VMA-Hpp needs [Vulkan headers](https://github.com/KhronosGroup/Vulkan-Headers) and inherits their requirements (C++11 or newer).
-VMA-Hpp is tested and compatible with Vulkan <!--VK-->1.4.327<!--/VK--> and newer.
+#### Requirements
 
-VMA-Hpp also needs [VMA](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator), and this dependency is strict.
-Patch revisions of VMA are interchangeable, but anything affecting the API may fail to compile or introduce runtime bugs.
-
-*[GitHub releases](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases) are the recommended way to get VMA-Hpp,
-they already include a compatible `vk_mem_alloc.h` header.*
+- C++11 or newer
+- [Vulkan headers](https://github.com/KhronosGroup/Vulkan-Headers) **<!--VK-->1.4.334<!--/VK-->** or newer
+- [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+  - *[GitHub releases](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases) is the recommended way to get VMA-Hpp,
+    they already include a compatible `vk_mem_alloc.h` header*
+  - *Compatible VMA version is tracked as a git submodule, use any other version at your own risk*
 
 #### Get the library
 
@@ -24,7 +22,7 @@ they already include a compatible `vk_mem_alloc.h` header.*
 include(FetchContent)
 FetchContent_Declare(
         vmahpp
-        URL      https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases/download/v<version>/VulkanMemoryAllocator-Hpp-<version>.tar.gz
+        URL      https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases/download/<tag>/VulkanMemoryAllocator-Hpp-<version>.tar.gz
         URL_HASH SHA256=<hash> # Copy from the asset list on the release page
 )
 FetchContent_MakeAvailable(vmahpp)
@@ -75,23 +73,12 @@ target_sources(<target> PRIVATE
 import vk_mem_alloc_hpp; // Also imports vulkan_hpp and std
 ```
 
-#### External VulkanMemoryAllocator
-
-If your VMA-Hpp is missing a bundled `vk_mem_alloc.h`, or you need a custom one:
-
-```cmake
-find_package(VulkanMemoryAllocator CONFIG REQUIRED) # Or fetch from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-target_link_libraries(<target> PRIVATE GPUOpen::VulkanMemoryAllocator)
-```
-
-You can also include `vk_mem_alloc.h` from an arbitrary location before including `vk_mem_alloc.hpp`.
-
 
 ## Features
 
 #### Vulkan-Hpp compatibility
 
-VMA-Hpp is built on top of [Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp) and reflects most of its
+VMA-Hpp is built on top of [Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp) and mirrors most of its
 [features](https://github.com/KhronosGroup/Vulkan-Hpp?tab=readme-ov-file#usage-):
 
 - `vma::` and `vma::raii::` namespaces
@@ -145,7 +132,7 @@ Special handle variants combine resource and allocation in a single RAII object:
 ```c++
 vma::raii::Allocator alloc = ...;
 vma::raii::Buffer buffer = alloc.createBuffer(...);
-// VMA variant inherits from the base Vulkan one
+// VMA handle inherits from the Vulkan one
 const vk::raii::Buffer& vkbuf = buffer;
 // And also contains an allocation handle
 const vma::raii::Allocation& allocation = buffer.getAllocation();

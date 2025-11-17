@@ -12,7 +12,7 @@ option(VMA_HPP_RUN_GENERATOR     "Run the HPP generator"        ${PROJECT_IS_TOP
 option(VMA_HPP_SAMPLES_BUILD     "Build samples"                ${PROJECT_IS_TOP_LEVEL})
 option(VMA_HPP_DO_UPDATE         "Update Vulkan & VMA versions" OFF)
 set(VMA_HPP_INPUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include/vk_mem_alloc.h" CACHE FILEPATH "Input vk_mem_alloc.h file")
-set(VMA_HPP_VULKAN_MIN_REVISION "1.4.327"                         CACHE INTERNAL "Minimal Vulkan-Headers revision")
+set(VMA_HPP_VULKAN_MIN_REVISION "1.4.334"                         CACHE INTERNAL "Minimal Vulkan-Headers revision")
 set(VMA_HPP_VULKAN_REVISION     "v${VMA_HPP_VULKAN_MIN_REVISION}" CACHE STRING   "Vulkan-Headers revision")
 set(VMA_HPP_VMA_REVISION        "v${PROJECT_VERSION}"             CACHE STRING   "VulkanMemoryAllocator revision" FORCE)
 

@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   workflow_call:
   pull_request:
+  schedule:
+    - cron: "50 5 * * 6" # 05:50 UTC each Saturday, after releases of https://github.com/KhronosGroup/Vulkan-Headers
 jobs:
   build:
     name: ${{matrix.env.os}} ${{matrix.env.name || matrix.env.c}} ${{matrix.env.modules && 'cppm' || 'cpp'}}-${{matrix.standard}}
