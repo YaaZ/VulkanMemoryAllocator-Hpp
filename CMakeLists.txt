@@ -7,30 +7,27 @@ if (CMAKE_VERSION VERSION_LESS "3.21")
     string(COMPARE EQUAL ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} PROJECT_IS_TOP_LEVEL)
 endif ()
 
-option(VMA_HPP_GENERATOR_BUILD   "Build the HPP generator"      ${PROJECT_IS_TOP_LEVEL})
-option(VMA_HPP_RUN_GENERATOR     "Run the HPP generator"        ${PROJECT_IS_TOP_LEVEL})
-option(VMA_HPP_SAMPLES_BUILD     "Build samples"                ${PROJECT_IS_TOP_LEVEL})
-option(VMA_HPP_DO_UPDATE         "Update Vulkan & VMA versions" OFF)
+option(VMA_HPP_GENERATOR_BUILD   "Build the HPP generator" ${PROJECT_IS_TOP_LEVEL})
+option(VMA_HPP_RUN_GENERATOR     "Run the HPP generator"   ${PROJECT_IS_TOP_LEVEL})
+option(VMA_HPP_SAMPLES_BUILD     "Build samples"           ${PROJECT_IS_TOP_LEVEL})
+option(VMA_HPP_DO_UPDATE         "Update VMA submodule"    OFF)
 set(VMA_HPP_INPUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include/vk_mem_alloc.h" CACHE FILEPATH "Input vk_mem_alloc.h file")
 set(VMA_HPP_VULKAN_MIN_REVISION "1.4.334"                         CACHE INTERNAL "Minimal Vulkan-Headers revision")
 set(VMA_HPP_VULKAN_REVISION     "v${VMA_HPP_VULKAN_MIN_REVISION}" CACHE STRING   "Vulkan-Headers revision")
 set(VMA_HPP_VMA_REVISION        "v${PROJECT_VERSION}"             CACHE STRING   "VulkanMemoryAllocator revision" FORCE)
 
-if (VMA_HPP_DO_UPDATE OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/.git")
-    # Init submodules.
-    find_package(Git)
-    if (Git_FOUND)
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" COMMAND_ERROR_IS_FATAL ANY)
-    elseif (VMA_HPP_DO_UPDATE)
-        message(FATAL_ERROR "Git not found. VMA_HPP_DO_UPDATE is not available.")
-    else ()
-        message(FATAL_ERROR "Git not found. You need to init submodules manually (`git submodule update`).")
-    endif ()
-endif ()
-
 if (VMA_HPP_DO_UPDATE)
-    # Checkout proper revisions.
+    # Find Git.
+    find_package(Git)
+    if (NOT Git_FOUND)
+        message(FATAL_ERROR "Git not found. VMA_HPP_DO_UPDATE is not available.")
+    endif ()
+
+    # Init the submodule.
+    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" COMMAND_ERROR_IS_FATAL ANY)
+
+    # Checkout proper revision.
     message(STATUS "Updating VulkanMemoryAllocator submodule to ${VMA_HPP_VMA_REVISION}")
     execute_process(COMMAND ${GIT_EXECUTABLE} -c advice.detachedHead=false checkout "${VMA_HPP_VMA_REVISION}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator" COMMAND_ERROR_IS_FATAL ANY)
@@ -62,12 +59,12 @@ if (NOT ${PROJECT_VERSION} STREQUAL ${VMA_HPP_PROJECT_VERSION})
 endif ()
 
 if (VMA_HPP_DO_UPDATE)
-    # Find VMA version from VMA header.
+    # Find VMA version in the VMA header.
     file(READ "${VMA_HPP_INPUT_HEADER}" VMA_HPP_VMA_SOURCE)
     string(REGEX MATCH "<b>Version\\s*([^<]+)\\s*</b>" _ ${VMA_HPP_VMA_SOURCE})
     string(STRIP ${CMAKE_MATCH_1} VMA_HPP_VMA_VERSION)
 
-    # Update versions in README.
+    # Update versions in the README.
     message(STATUS "Updating README with VMA ${VMA_HPP_VMA_VERSION} and Vulkan ${VMA_HPP_VULKAN_MIN_REVISION}")
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/README.md" VMA_HPP_README)
     string(REPLACE ";" "\\;" VMA_HPP_README "${VMA_HPP_README}") # Do not mess up semicolons in the README
@@ -99,7 +96,7 @@ if (VMA_HPP_GENERATOR_BUILD)
     set_property(TARGET VmaHppGenerator PROPERTY CXX_STANDARD 17)
     set_property(TARGET VmaHppGenerator PROPERTY CXX_STANDARD_REQUIRED ON)
     set_property(TARGET VmaHppGenerator PROPERTY CXX_EXTENSIONS OFF)
-    target_compile_definitions(VmaHppGenerator PRIVATE BASE_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+    target_compile_definitions(VmaHppGenerator PRIVATE BASE_PATH="${CMAKE_CURRENT_SOURCE_DIR}" INPUT_HEADER="${VMA_HPP_INPUT_HEADER}")
 endif ()
 
 if (VMA_HPP_RUN_GENERATOR)

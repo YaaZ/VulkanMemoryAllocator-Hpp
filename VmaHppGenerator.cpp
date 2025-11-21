@@ -2206,7 +2206,7 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
 }
 
 std::string readSource() {
-    std::ifstream in(BASE_PATH "/VulkanMemoryAllocator/include/vk_mem_alloc.h");
+    std::ifstream in(INPUT_HEADER);
     std::string text;
     in.seekg(0, std::ios::end);
     text.reserve(in.tellg());
