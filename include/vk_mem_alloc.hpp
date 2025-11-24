@@ -9,7 +9,7 @@
 
 // VMA header
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
-#include <vk_mem_alloc.h>
+#include "vk_mem_alloc.h"
 #endif
 
 // The body

@@ -2,8 +2,8 @@
 module;
 #define VMA_HPP_CXX_MODULE
 #define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.hpp>
-#include <vk_mem_alloc_raii.hpp>
+#include "vk_mem_alloc.hpp"
+#include "vk_mem_alloc_raii.hpp"
 export module vk_mem_alloc_hpp;
 export import vulkan_hpp;
 
