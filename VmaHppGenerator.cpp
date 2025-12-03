@@ -1966,6 +1966,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
     R"(
+    #include "vk_mem_alloc.hpp"
     #ifndef VMA_HPP_CXX_MODULE
     #include <vulkan/vulkan_raii.hpp>
     #endif
@@ -2104,7 +2105,7 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& symbol
         VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not nothrow_move_constructible!");
         )"_seg.replace(h.name);
     }
-    std::move("#include <vk_mem_alloc.hpp>" >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
+    std::move("#include \"vk_mem_alloc.hpp\"" >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
 }
 
 void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
@@ -2153,8 +2154,8 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
     module;
     #define VMA_HPP_CXX_MODULE
     #define VMA_IMPLEMENTATION
-    #include <vk_mem_alloc.hpp>
-    #include <vk_mem_alloc_raii.hpp>
+    #include "vk_mem_alloc.hpp"
+    #include "vk_mem_alloc_raii.hpp"
     export module vk_mem_alloc_hpp;
     export import vulkan_hpp;
 
