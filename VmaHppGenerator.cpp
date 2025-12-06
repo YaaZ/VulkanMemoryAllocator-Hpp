@@ -1,8 +1,11 @@
 #include <algorithm>
 #include <array>
+#include <cstdint>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <regex>
 #include <string>
@@ -2214,9 +2217,9 @@ std::string readSource() {
     in.seekg(0, std::ios::beg);
     text.assign(std::istreambuf_iterator(in), {});
 
+    text = text.substr(0, text.find("#ifdef VMA_IMPLEMENTATION")); // Strip implementation part
     text = std::regex_replace(text, std::regex(R"(/\*[\s\S]*?\*/)"), ""); // Delete multi-line comments
     text = std::regex_replace(text, std::regex("//.*"), ""); // Delete single-line comments
-    text = text.substr(0, text.find("#ifdef VMA_IMPLEMENTATION")); // Strip implementation part
     return text;
 }
 

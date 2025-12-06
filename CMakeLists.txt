@@ -116,7 +116,7 @@ if (VMA_HPP_RUN_GENERATOR)
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             COMMENT "Running VmaHppGenerator"
             DEPENDS VmaHppGenerator "${VMA_HPP_INPUT_HEADER}")
-    add_custom_target(GenerateVmaHpp DEPENDS ${VMA_HPP_GENERATED_FILES})
+    add_custom_target(GenerateVmaHpp ALL DEPENDS ${VMA_HPP_GENERATED_FILES})
     add_dependencies(VulkanMemoryAllocator-Hpp GenerateVmaHpp)
 endif ()
 
