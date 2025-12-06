@@ -1,5 +1,5 @@
 #ifdef USE_MODULES
-import vk_mem_alloc_hpp;
+import vk_mem_alloc;
 #else
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.hpp>

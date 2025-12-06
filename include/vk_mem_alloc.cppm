@@ -4,8 +4,8 @@ module;
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.hpp"
 #include "vk_mem_alloc_raii.hpp"
-export module vk_mem_alloc_hpp;
-export import vulkan_hpp;
+export module vk_mem_alloc;
+export import vulkan;
 
 export namespace VMA_HPP_NAMESPACE {
 #ifndef VULKAN_HPP_NO_TO_STRING
@@ -104,7 +104,7 @@ export namespace VMA_HPP_NAMESPACE {
 
 module : private;
 namespace VULKAN_HPP_NAMESPACE {
-  // This is needed for template specializations to be visible outside the module when importing vulkan_hpp (is this a MSVC bug?).
+  // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocationCreateFlagBits>;
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::PoolCreateFlagBits>;

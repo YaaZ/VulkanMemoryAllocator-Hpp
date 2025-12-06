@@ -17,7 +17,7 @@
 #define VULKAN_MEMORY_ALLOCATOR_HPP
 
 #ifdef VMA_HPP_CXX_MODULE
-import vulkan_hpp;
+import vulkan;
 #else
 #include <vulkan/vulkan.hpp>
 #endif
