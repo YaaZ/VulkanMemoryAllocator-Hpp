@@ -1,0 +1,21 @@
+name: Generate Headers
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+        with:
+          submodules: true
+          fetch-tags: true
+      - name: Generate Headers
+        run: |
+          git fetch --unshallow --tags
+          cmake -B build -DVMA_HPP_GENERATOR_BUILD=ON -DVMA_HPP_RUN_GENERATOR=ON -DVMA_HPP_DO_UPDATE=ON -DVMA_HPP_SAMPLES_BUILD=OFF
+          cmake --build build
+          git diff --exit-code

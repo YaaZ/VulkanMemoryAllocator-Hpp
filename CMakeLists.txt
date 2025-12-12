@@ -12,9 +12,9 @@ option(VMA_HPP_RUN_GENERATOR     "Run the HPP generator"   ${PROJECT_IS_TOP_LEVE
 option(VMA_HPP_SAMPLES_BUILD     "Build samples"           ${PROJECT_IS_TOP_LEVEL})
 option(VMA_HPP_DO_UPDATE         "Update VMA submodule"    OFF)
 set(VMA_HPP_INPUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include/vk_mem_alloc.h" CACHE FILEPATH "Input vk_mem_alloc.h file")
-set(VMA_HPP_VULKAN_MIN_REVISION "1.4.334"                         CACHE INTERNAL "Minimal Vulkan-Headers revision")
-set(VMA_HPP_VULKAN_REVISION     "v${VMA_HPP_VULKAN_MIN_REVISION}" CACHE STRING   "Vulkan-Headers revision")
-set(VMA_HPP_VMA_REVISION        "v${PROJECT_VERSION}"             CACHE STRING   "VulkanMemoryAllocator revision" FORCE)
+set(VMA_HPP_VULKAN_MIN_VERSION "1.4.336"                         CACHE INTERNAL "Minimal Vulkan-Headers revision")
+set(VMA_HPP_VULKAN_REVISION    "v${VMA_HPP_VULKAN_MIN_VERSION}" CACHE STRING   "Vulkan-Headers revision")
+set(VMA_HPP_VMA_REVISION       "v${PROJECT_VERSION}"             CACHE STRING   "VulkanMemoryAllocator revision" FORCE)
 
 if (VMA_HPP_DO_UPDATE)
     # Find Git.
@@ -65,11 +65,11 @@ if (VMA_HPP_DO_UPDATE)
     string(STRIP ${CMAKE_MATCH_1} VMA_HPP_VMA_VERSION)
 
     # Update versions in the README.
-    message(STATUS "Updating README with VMA ${VMA_HPP_VMA_VERSION} and Vulkan ${VMA_HPP_VULKAN_MIN_REVISION}")
+    message(STATUS "Updating README with VMA ${VMA_HPP_VMA_VERSION} and Vulkan ${VMA_HPP_VULKAN_MIN_VERSION}")
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/README.md" VMA_HPP_README)
     string(REPLACE ";" "\\;" VMA_HPP_README "${VMA_HPP_README}") # Do not mess up semicolons in the README
     string(REGEX REPLACE "<!--VER-->[^<]*<!--/VER-->" "<!--VER-->${VMA_HPP_VMA_VERSION}<!--/VER-->" VMA_HPP_README "${VMA_HPP_README}")
-    string(REGEX REPLACE "<!--VK-->[^<]*<!--/VK-->" "<!--VK-->${VMA_HPP_VULKAN_MIN_REVISION}<!--/VK-->" VMA_HPP_README "${VMA_HPP_README}")
+    string(REGEX REPLACE "<!--VK-->[^<]*<!--/VK-->" "<!--VK-->${VMA_HPP_VULKAN_MIN_VERSION}<!--/VK-->" VMA_HPP_README "${VMA_HPP_README}")
     file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/README.md" ${VMA_HPP_README})
 
     # Generate "imported" utility header.
@@ -116,7 +116,7 @@ if (VMA_HPP_RUN_GENERATOR)
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             COMMENT "Running VmaHppGenerator"
             DEPENDS VmaHppGenerator "${VMA_HPP_INPUT_HEADER}")
-    add_custom_target(GenerateVmaHpp DEPENDS ${VMA_HPP_GENERATED_FILES})
+    add_custom_target(GenerateVmaHpp ALL DEPENDS ${VMA_HPP_GENERATED_FILES})
     add_dependencies(VulkanMemoryAllocator-Hpp GenerateVmaHpp)
 endif ()
 
