@@ -2112,7 +2112,8 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& symbol
 }
 
 void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
-    Segment exports, uniqueExports, raiiExports, specializations, raiiSpecializations;
+    Segment::Vector<6> segments;
+    auto& [exports, uniqueExports, raiiExports, specializations, uniqueSpecializations, raiiSpecializations] = *segments;
 
     // Generate export statements.
     for (const auto* list : { &symbols.enums, &symbols.structs, &symbols.handles, &symbols.functions })
@@ -2139,19 +2140,19 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
 
     // error C2027: use of undefined type 'vk::UniqueHandleTraits<Type,Dispatch>'
     for (const Symbol& t : symbols.handles.unique)
-        specializations << n << navigate(t) << "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" << t.name << ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+        uniqueSpecializations << n << navigate(t) << "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" << t.name << ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     // error C2676: binary '==': 'const vma::raii::Allocator' does not define this operator or a conversion to a type acceptable to the predefined operator
     for (const Symbol& t : symbols.handles.raii)
         raiiSpecializations << n << navigate(t) << "template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::" << t.name << ">;";
 
-    (exports, raiiExports, specializations, raiiSpecializations) << navigate.reset;
+    segments << navigate.reset;
 
     // Don't forget Buffer and Image.
     uniqueExports << n << "using VMA_HPP_NAMESPACE::UniqueBuffer;" <<
                      n << "using VMA_HPP_NAMESPACE::UniqueImage;";
-    specializations << n << "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  <<
-                       n << "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
+    uniqueSpecializations << n << "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  <<
+                             n << "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
     module;
@@ -2200,13 +2201,16 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
     namespace VULKAN_HPP_NAMESPACE {
       // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
       $3
+      #ifndef VULKAN_HPP_NO_SMART_HANDLE
+      $4
+      #endif
       #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
       namespace VULKAN_HPP_RAII_NAMESPACE {
-        $4
+        $5
       }
       #endif
     }
-    )"_seg.replace(exports, uniqueExports, raiiExports, specializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
+    )"_seg.replace(exports, uniqueExports, raiiExports, specializations, uniqueSpecializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
 }
 
 std::string readSource() {

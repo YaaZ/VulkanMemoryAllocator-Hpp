@@ -117,6 +117,7 @@ namespace VULKAN_HPP_NAMESPACE {
   template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::DefragmentationContext>;
   template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::VirtualAllocation>;
   template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::VirtualBlock>;
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocator, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::detail::Dispatcher>;
@@ -124,6 +125,7 @@ namespace VULKAN_HPP_NAMESPACE {
   template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualBlock, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;
   template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;
+#endif
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   namespace VULKAN_HPP_RAII_NAMESPACE {
     template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Allocator>;

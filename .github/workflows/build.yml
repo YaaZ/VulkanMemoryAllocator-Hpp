@@ -92,7 +92,7 @@ jobs:
           echo Building with minimal Vulkan...
           FLAGS+=('-DVMA_HPP_VULKAN_REVISION=${{matrix.env.modules && 'min-modules' || 'min-headers'}}')
           
-          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS -DVULKAN_HPP_NO_SMART_HANDLE"
           cmake --build build --clean-first
           
           cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_REFLECT"
@@ -102,7 +102,7 @@ jobs:
           unset 'FLAGS[${#FLAGS[@]}-1]'
           FLAGS+=('-DVMA_HPP_VULKAN_REVISION=main')
           
-          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
+          cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS -DVULKAN_HPP_NO_SMART_HANDLE"
           cmake --build build --clean-first
           
           cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_REFLECT"
