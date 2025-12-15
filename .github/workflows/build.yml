@@ -90,6 +90,7 @@ jobs:
           )
           
           echo Building with minimal Vulkan...
+          FLAGS+=('-DVMA_HPP_VULKAN_REVISION=${{matrix.env.modules && 'min-modules' || 'min-headers'}}')
           
           cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
           cmake --build build --clean-first
@@ -98,6 +99,7 @@ jobs:
           cmake --build build --clean-first
           
           echo Building with latest Vulkan...
+          unset FLAGS[-1]
           FLAGS+=('-DVMA_HPP_VULKAN_REVISION=main')
           
           cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
