@@ -99,7 +99,7 @@ jobs:
           cmake --build build --clean-first
           
           echo Building with latest Vulkan...
-          unset FLAGS[-1]
+          unset 'FLAGS[${#FLAGS[@]}-1]'
           FLAGS+=('-DVMA_HPP_VULKAN_REVISION=main')
           
           cmake "${FLAGS[@]}" -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
