@@ -101,8 +101,10 @@ void checkHandles() {
     if (al == ar) {}
     if (al != ar) throw;
 
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
     vma::UniqueAllocator unique;
     vma::UniqueBuffer buffer;
+#endif
 
     vma::raii::Allocator raii = nullptr;
     allocator = raii;

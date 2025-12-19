@@ -9,7 +9,7 @@ consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.
 #### Requirements
 
 - C++11 or newer
-- [Vulkan](https://github.com/KhronosGroup/Vulkan-Headers) **<!--VK_HEADERS-->1.4.327<!--/VK_HEADERS-->** (headers) / **<!--VK_MODULES-->1.4.336<!--/VK_MODULES-->** (module) or newer
+- [Vulkan](https://github.com/KhronosGroup/Vulkan-Headers) **<!--VK_HEADERS-->1.4.327<!--/VK_HEADERS-->** (headers) / **<!--VK_MODULES-->1.4.337<!--/VK_MODULES-->** (module) or newer
 - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
   - *[GitHub releases](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases) is the recommended way to get VMA-Hpp,
     they already include a compatible `vk_mem_alloc.h` header*

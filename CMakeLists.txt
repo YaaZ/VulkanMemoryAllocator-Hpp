@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.8...3.30 FATAL_ERROR)
 project(VulkanMemoryAllocator-Hpp-Generator VERSION 3.3.0 LANGUAGES CXX)
 
 set(VMA_HPP_VULKAN_MIN_HEADERS "1.4.327" CACHE INTERNAL "Minimal Vulkan-Headers revision (headers)")
-set(VMA_HPP_VULKAN_MIN_MODULES "1.4.336" CACHE INTERNAL "Minimal Vulkan-Headers revision (modules)")
+set(VMA_HPP_VULKAN_MIN_MODULES "1.4.337" CACHE INTERNAL "Minimal Vulkan-Headers revision (modules)")
 
 if (CMAKE_VERSION VERSION_LESS "3.21")
     # https://cmake.org/cmake/help/latest/variable/PROJECT_IS_TOP_LEVEL.html
