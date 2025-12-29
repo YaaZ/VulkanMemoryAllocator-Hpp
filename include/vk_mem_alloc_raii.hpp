@@ -345,7 +345,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif 
 
     private:
-      friend class detail::Converter<Allocator>;
+      friend struct detail::Converter<Allocator>;
       explicit Allocator(VULKAN_HPP_NAMESPACE::Device device, VMA_HPP_NAMESPACE::Allocator allocator, const VULKAN_HPP_NAMESPACE::AllocationCallbacks * allocationCallbacks, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::detail::DeviceDispatcher const * dispatcher) VULKAN_HPP_NOEXCEPT :
         m_device(device), m_allocator(allocator), m_allocationCallbacks(allocationCallbacks), m_dispatcher(dispatcher) {}
 
@@ -425,7 +425,7 @@ namespace VMA_HPP_NAMESPACE {
       void setName(const char* name) const VULKAN_HPP_NOEXCEPT;
 
     private:
-      friend class detail::Converter<Pool>;
+      friend struct detail::Converter<Pool>;
       explicit Pool(VMA_HPP_NAMESPACE::Allocator allocator, VMA_HPP_NAMESPACE::Pool pool) VULKAN_HPP_NOEXCEPT :
         m_allocator(allocator), m_pool(pool) {}
 
@@ -578,7 +578,7 @@ namespace VMA_HPP_NAMESPACE {
                                                                                                                      const void* next) && VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
     private:
-      friend class detail::Converter<Allocation>;
+      friend struct detail::Converter<Allocation>;
       explicit Allocation(VMA_HPP_NAMESPACE::Allocator allocator, VMA_HPP_NAMESPACE::Allocation allocation) VULKAN_HPP_NOEXCEPT :
         m_allocator(allocator), m_allocation(allocation) {}
 
@@ -650,7 +650,7 @@ namespace VMA_HPP_NAMESPACE {
       VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::ResultValue<DefragmentationPassMoveInfo> endDefragmentationPass() const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS;
 
     private:
-      friend class detail::Converter<DefragmentationContext>;
+      friend struct detail::Converter<DefragmentationContext>;
       explicit DefragmentationContext(VMA_HPP_NAMESPACE::Allocator allocator, VMA_HPP_NAMESPACE::DefragmentationContext defragmentationContext) VULKAN_HPP_NOEXCEPT :
         m_allocator(allocator), m_defragmentationContext(defragmentationContext) {}
 
@@ -720,7 +720,7 @@ namespace VMA_HPP_NAMESPACE {
       void setUserData(void* userData) const VULKAN_HPP_NOEXCEPT;
 
     private:
-      friend class detail::Converter<VirtualAllocation>;
+      friend struct detail::Converter<VirtualAllocation>;
       explicit VirtualAllocation(VMA_HPP_NAMESPACE::VirtualBlock virtualBlock, VMA_HPP_NAMESPACE::VirtualAllocation virtualAllocation) VULKAN_HPP_NOEXCEPT :
         m_virtualBlock(virtualBlock), m_virtualAllocation(virtualAllocation) {}
 
@@ -796,7 +796,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif 
 
     private:
-      friend class detail::Converter<VirtualBlock>;
+      friend struct detail::Converter<VirtualBlock>;
       explicit VirtualBlock(VMA_HPP_NAMESPACE::VirtualBlock virtualBlock) VULKAN_HPP_NOEXCEPT :
         m_virtualBlock(virtualBlock) {}
 
@@ -887,7 +887,7 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      friend class detail::Converter<Buffer>;
+      friend struct detail::Converter<Buffer>;
       explicit Buffer(Allocation&& allocation, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer&& t) VULKAN_HPP_NOEXCEPT :
         VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Buffer(std::move(t)),
         m_allocation(std::move(allocation)) {}
@@ -979,7 +979,7 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      friend class detail::Converter<Image>;
+      friend struct detail::Converter<Image>;
       explicit Image(Allocation&& allocation, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image&& t) VULKAN_HPP_NOEXCEPT :
         VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::Image(std::move(t)),
         m_allocation(std::move(allocation)) {}
@@ -1056,7 +1056,7 @@ namespace VMA_HPP_NAMESPACE {
       }
 
     private:
-      friend class detail::Converter<StatsString>;
+      friend struct detail::Converter<StatsString>;
       using Destructor = void (*)(uint64_t, char*);
       template<class T, void (*destructor)(T, char*)>
       static void destroy(uint64_t owner, char* string) VULKAN_HPP_NOEXCEPT { destructor(reinterpret_cast<T>(owner), string); }

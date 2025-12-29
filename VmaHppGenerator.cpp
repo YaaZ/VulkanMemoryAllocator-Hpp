@@ -1677,7 +1677,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
               $1
 
             private:
-              friend class detail::Converter<$0>;
+              friend struct detail::Converter<$0>;
               explicit $0(Allocation&& allocation, VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0&& t) VULKAN_HPP_NOEXCEPT :
                 VULKAN_HPP_NAMESPACE::VULKAN_HPP_RAII_NAMESPACE::$0(std::move(t)),
                 m_allocation(std::move(allocation)) {}
@@ -1734,7 +1734,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
               $1
 
             private:
-              friend class detail::Converter<StatsString>;
+              friend struct detail::Converter<StatsString>;
               using Destructor = void (*)(uint64_t, char*);
               template<class T, void (*destructor)(T, char*)>
               static void destroy(uint64_t owner, char* string) VULKAN_HPP_NOEXCEPT { destructor(reinterpret_cast<T>(owner), string); }
@@ -1825,7 +1825,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
             clear << "if (m_" << h.memberName << ") m_" << (h.owner ? h.owner->memberName : h.memberName) << "." << h.destructor << "(";
             if (h.owner) clear << "m_" << h.memberName;
             clear << ");";
-            priv << "friend class detail::Converter<$0>;\nexplicit $0("_seg;
+            priv << "friend struct detail::Converter<$0>;\nexplicit $0("_seg;
             for (const auto& [type, name] : members) priv << type << " " << name << ", ";
             priv.pop() << ") VULKAN_HPP_NOEXCEPT :" << n << "  ";
             for (const auto& [type, name] : members) priv << "m_" << name << "(" << name << ")" << ", ";
