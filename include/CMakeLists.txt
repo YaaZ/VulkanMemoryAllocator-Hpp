@@ -12,6 +12,7 @@ option(VMA_HPP_ENABLE_INSTALL "Install VulkanMemoryAllocator-Hpp" OFF)
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
 add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp ALIAS VulkanMemoryAllocator-Hpp)
 target_include_directories(VulkanMemoryAllocator-Hpp INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(VulkanMemoryAllocator-Hpp INTERFACE GPUOpen::VulkanMemoryAllocator)
 
 if (TARGET Vulkan::HppModule)
     message(STATUS "VMA-Hpp module is available")
@@ -24,14 +25,6 @@ if (TARGET Vulkan::HppModule)
             FILES "${CMAKE_CURRENT_SOURCE_DIR}/vk_mem_alloc.cppm")
     target_compile_features(VulkanMemoryAllocator-HppModule PUBLIC cxx_std_23)
     set_target_properties(VulkanMemoryAllocator-HppModule PROPERTIES CXX_MODULE_STD ON)
-    target_link_libraries(VulkanMemoryAllocator-HppModule PUBLIC VulkanMemoryAllocator-Hpp Vulkan::HppModule)
-
-    # VulkanMemoryAllocator dependency.
-    if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vk_mem_alloc.h")
-        if (NOT TARGET GPUOpen::VulkanMemoryAllocator)
-            find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-        endif ()
-        target_link_libraries(VulkanMemoryAllocator-HppModule PUBLIC GPUOpen::VulkanMemoryAllocator)
     endif ()
 endif ()
 
