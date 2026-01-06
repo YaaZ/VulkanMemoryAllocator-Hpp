@@ -8,7 +8,9 @@
 #endif
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-#pragma warning(disable : 4834) // MSVC thinks we are discarding chained return values, like foo(), detail::wrap<...>(...)
+#if defined( _MSC_VER )
+#  pragma warning(disable : 4834) // MSVC thinks we are discarding chained return values, like foo(), detail::wrap<...>(...)
+#endif
 namespace VMA_HPP_NAMESPACE {
   namespace VMA_HPP_RAII_NAMESPACE {
     namespace detail {
