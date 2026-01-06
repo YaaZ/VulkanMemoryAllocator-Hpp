@@ -70,7 +70,7 @@ if (NOT TARGET GPUOpen::VulkanMemoryAllocator)
         FetchContent_Declare(
                 vulkanmemoryallocator
                 GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-                GIT_TAG ${VMA_HPP_VULKAN_REVISION}
+                GIT_TAG "v${PROJECT_VERSION}"
                 GIT_SHALLOW ON
         )
         FetchContent_MakeAvailable(vulkanmemoryallocator)
