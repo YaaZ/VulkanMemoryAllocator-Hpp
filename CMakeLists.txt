@@ -37,28 +37,46 @@ if (VMA_HPP_DO_UPDATE)
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator" ERROR_QUIET)
 endif ()
 
-if (${VMA_HPP_VULKAN_REVISION} STREQUAL "system")
-    find_package(VulkanHeaders CONFIG)
-    if (NOT VulkanHeaders_FOUND)
-        find_package(Vulkan REQUIRED)
+# create vulkan target if either Hpp or HppModule do not exist
+if (NOT TARGET Vulkan::Hpp AND NOT TARGET Vulkan::HppModule)
+    if (${VMA_HPP_VULKAN_REVISION} STREQUAL "system")
+        find_package(VulkanHeaders CONFIG)
+        if (NOT VulkanHeaders_FOUND)
+            find_package(Vulkan REQUIRED)
+        endif ()
+    else ()
+        if (${VMA_HPP_VULKAN_REVISION} STREQUAL "min-headers")
+            set(VMA_HPP_VULKAN_REVISION "v${VMA_HPP_VULKAN_MIN_HEADERS}" CACHE STRING "Vulkan-Headers revision" FORCE)
+        elseif (${VMA_HPP_VULKAN_REVISION} STREQUAL "min-modules")
+            set(VMA_HPP_VULKAN_REVISION "v${VMA_HPP_VULKAN_MIN_MODULES}" CACHE STRING "Vulkan-Headers revision" FORCE)
+        endif ()
+        include(FetchContent)
+        FetchContent_Declare(
+                vulkan-headers
+                GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+                GIT_TAG ${VMA_HPP_VULKAN_REVISION}
+                GIT_SHALLOW ON
+        )
+        FetchContent_MakeAvailable(vulkan-headers)
     endif ()
-else ()
-    if (${VMA_HPP_VULKAN_REVISION} STREQUAL "min-headers")
-        set(VMA_HPP_VULKAN_REVISION "v${VMA_HPP_VULKAN_MIN_HEADERS}" CACHE STRING "Vulkan-Headers revision" FORCE)
-    elseif (${VMA_HPP_VULKAN_REVISION} STREQUAL "min-modules")
-        set(VMA_HPP_VULKAN_REVISION "v${VMA_HPP_VULKAN_MIN_MODULES}" CACHE STRING "Vulkan-Headers revision" FORCE)
+endif()
+
+# create VMA target if it does not exist
+if (NOT TARGET GPUOpen::VulkanMemoryAllocator)
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/CMakeLists.txt")
+        add_subdirectory(VulkanMemoryAllocator)
+    else ()
+        include(FetchContent)
+        FetchContent_Declare(
+                vulkanmemoryallocator
+                GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+                GIT_TAG ${VMA_HPP_VULKAN_REVISION}
+                GIT_SHALLOW ON
+        )
+        FetchContent_MakeAvailable(vulkanmemoryallocator)
     endif ()
-    include(FetchContent)
-    FetchContent_Declare(
-            vulkan
-            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-            GIT_TAG ${VMA_HPP_VULKAN_REVISION}
-            GIT_SHALLOW TRUE
-    )
-    FetchContent_MakeAvailable(vulkan)
 endif ()
 
-add_subdirectory(VulkanMemoryAllocator)
 add_subdirectory(include)
 
 if (NOT ${PROJECT_VERSION} STREQUAL ${VMA_HPP_PROJECT_VERSION})
