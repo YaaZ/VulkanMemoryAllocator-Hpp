@@ -19,6 +19,7 @@ consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.
     <tr><td>1.4.327</td><td>1.4.344</td><td>-DVULKAN_HPP_NO_EXCEPTIONS</td></tr>
     <tr><td>1.4.327</td><td>1.4.344</td><td>-DVULKAN_HPP_NO_SMART_HANDLE</td></tr>
     <tr><td>1.4.327</td><td>1.4.344</td><td>-DVULKAN_HPP_USE_REFLECT -DVULKAN_HPP_HANDLES_MOVE_EXCHANGE</td></tr>
+    <tr><td>1.4.345</td><td>1.4.345</td><td>-DVULKAN_HPP_TYPESAFE_CONVERSION=0</td></tr>
   </table><!--/MIN_VK_TABLE--></details>
 - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
   - *[GitHub releases](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases) is the recommended way to get VMA-Hpp,

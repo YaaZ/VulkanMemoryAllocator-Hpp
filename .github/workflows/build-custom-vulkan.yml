@@ -125,3 +125,5 @@ jobs:
         run: build ${{env.vk || env.modules && 'v1.4.344' || 'v1.4.327'}} -DVULKAN_HPP_NO_SMART_HANDLE
       - if: ${{!cancelled()}}
         run: build ${{env.vk || env.modules && 'v1.4.344' || 'v1.4.327'}} -DVULKAN_HPP_USE_REFLECT -DVULKAN_HPP_HANDLES_MOVE_EXCHANGE
+      - if: ${{!cancelled()}}
+        run: build ${{env.vk || env.modules && 'v1.4.345' || 'v1.4.345'}} -DVULKAN_HPP_TYPESAFE_CONVERSION=0

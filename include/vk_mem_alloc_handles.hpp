@@ -1290,7 +1290,7 @@ namespace VULKAN_HPP_NAMESPACE {
       using UniqueBase::UniqueBase;
     protected:
       template <typename T> void destroy(T t) VULKAN_HPP_NOEXCEPT {
-        vmaDestroyBuffer(getOwner(), t, nullptr);
+        vmaDestroyBuffer(static_cast<VmaAllocator>(getOwner()), static_cast<VkBuffer>(t), nullptr);
       }
     };
   };
@@ -1301,7 +1301,7 @@ namespace VULKAN_HPP_NAMESPACE {
       using UniqueBase::UniqueBase;
     protected:
       template <typename T> void destroy(T t) VULKAN_HPP_NOEXCEPT {
-        vmaDestroyImage(getOwner(), t, nullptr);
+        vmaDestroyImage(static_cast<VmaAllocator>(getOwner()), static_cast<VkImage>(t), nullptr);
       }
     };
   };

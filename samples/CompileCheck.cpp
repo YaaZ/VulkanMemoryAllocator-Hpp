@@ -84,7 +84,7 @@ void checkStructs() {
 void checkHandles() {
     vma::Allocator allocator;
     allocator = nullptr;
-    allocator = static_cast<VmaAllocator>(VK_NULL_HANDLE);
+    allocator = VK_NULL_HANDLE;
 
     if (allocator) throw;
     if (!allocator) {}
