@@ -22,6 +22,11 @@ import vulkan;
 #include <vulkan/vulkan.hpp>
 #endif
 
+// volk
+#ifdef VMA_HPP_ENABLE_VOLK
+#include <volk.h>
+#endif
+
 #define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
 #define VMA_HPP_RAII_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE)
 
