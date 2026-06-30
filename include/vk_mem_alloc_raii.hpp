@@ -11,7 +11,7 @@
 #if defined( _MSC_VER )
 #  pragma warning(disable : 4834) // MSVC thinks we are discarding chained return values, like foo(), detail::wrap<...>(...)
 #endif
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
   namespace VMA_HPP_RAII_NAMESPACE {
     namespace detail {
       template<int N, int... I> struct Seq : Seq<N-1, N-1, I...> {};
@@ -1661,7 +1661,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
   }
 }
-namespace VULKAN_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
   namespace VULKAN_HPP_RAII_NAMESPACE {
     template <> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Allocator> {
       static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;

@@ -726,16 +726,16 @@ void generateEnums(const Source& source, Symbols& symbols) {
     }
 
     R"(
-    namespace VMA_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       $0
     }
 
-    namespace VULKAN_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
       $1
     }
     )"_seg.replace(content, flagTraits).resolve(source.tree).generateHpp("enums");
     R"(
-    namespace VMA_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       $0
     }
     )"_seg.replace(toString).resolve(source.tree).generateHpp("to_string");
@@ -971,7 +971,7 @@ void generateStructs(const Source& source, Symbols& symbols) {
     }
 
     R"(
-    namespace VMA_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       $0
     }
     )"_seg.replace(content << navigate.reset).resolve(source.tree).generateHpp("structs");
@@ -1901,7 +1901,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
 
     // Generate files.
     R"(
-    namespace VMA_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       $0
 
       namespace detail { class Dispatcher; } // VMA dispatcher is a no-op.
@@ -1929,7 +1929,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
     #endif
     }
 
-    namespace VULKAN_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
       $3
 
     #if (VK_USE_64_BIT_PTR_DEFINES == 1)
@@ -1965,7 +1965,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
     )"_seg.replace(forwardDecls, uniqueDecls, declarations, handleTraits, cppTypeTraits, uniqueTraits)
         .resolve(source.tree).generateHpp("handles");
     R"(
-    namespace VMA_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       $0
     }
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
@@ -1979,7 +1979,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
     #if defined( _MSC_VER )
     #  pragma warning(disable : 4834) // MSVC thinks we are discarding chained return values, like foo(), detail::wrap<...>(...)
     #endif
-    namespace VMA_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       namespace VMA_HPP_RAII_NAMESPACE {
         namespace detail {
           template<int N, int... I> struct Seq : Seq<N-1, N-1, I...> {};
@@ -2086,7 +2086,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
         $0
       }
     }
-    namespace VULKAN_HPP_NAMESPACE {
+    VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
       namespace VULKAN_HPP_RAII_NAMESPACE {
         $1
       }
@@ -2115,20 +2115,8 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& symbol
 }
 
 void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
-    Segment::Vector<6> segments;
-    auto& [exports, uniqueExports, raiiExports, specializations, uniqueSpecializations, raiiSpecializations] = *segments;
-
-    // Generate export statements.
-    for (const auto* list : { &symbols.enums, &symbols.structs, &symbols.handles, &symbols.functions })
-        for (const Symbol& t : *list)
-            exports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << t.name << ";";
-    for (const Symbol& t : symbols.handles.unique)
-        uniqueExports << n << navigate(t) << "using VMA_HPP_NAMESPACE::Unique" << t.name << ";";
-    for (const Symbol& t : symbols.functions.unique)
-        uniqueExports << n << navigate(t) << "using VMA_HPP_NAMESPACE::" << t.name << "Unique;";
-    for (const auto* list : { &symbols.handles.raii, &symbols.functions.raii })
-        for (const Symbol& t : *list)
-            raiiExports << n << navigate(t) << "using VMA_HPP_RAII_NAMESPACE::" << t.name << ";";
+    Segment::Vector<3> segments;
+    auto& [specializations, uniqueSpecializations, raiiSpecializations] = *segments;
 
     // Some workarounds for compilation errors on MSVC...
 
@@ -2152,71 +2140,39 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
     segments << navigate.reset;
 
     // Don't forget Buffer and Image.
-    uniqueExports << n << "using VMA_HPP_NAMESPACE::UniqueBuffer;" <<
-                     n << "using VMA_HPP_NAMESPACE::UniqueImage;";
     uniqueSpecializations << n << "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  <<
                              n << "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
 
     R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
     module;
     #define VMA_HPP_CXX_MODULE
+
+    #define VULKAN_HPP_CXX_MODULE
+    #include <vulkan/vulkan_hpp_macros.hpp>
+
     #define VMA_IMPLEMENTATION
-    #include "vk_mem_alloc.hpp"
-    #include "vk_mem_alloc_raii.hpp"
+    #include "vk_mem_alloc.h"
+
     export module vk_mem_alloc;
     export import vulkan;
 
-    export namespace VMA_HPP_NAMESPACE {
-    #ifndef VULKAN_HPP_NO_TO_STRING
-      using VMA_HPP_NAMESPACE::to_string;
-    #endif
-      using VMA_HPP_NAMESPACE::functionsFromDispatchers;
-      using VMA_HPP_NAMESPACE::functionsFromDispatcher;
-      using VMA_HPP_NAMESPACE::operator&;
-      using VMA_HPP_NAMESPACE::operator|;
-      using VMA_HPP_NAMESPACE::operator^;
-      using VMA_HPP_NAMESPACE::operator~;
-      using VMA_HPP_NAMESPACE::operator<;
-      using VMA_HPP_NAMESPACE::operator<=;
-      using VMA_HPP_NAMESPACE::operator>;
-      using VMA_HPP_NAMESPACE::operator>=;
-      using VMA_HPP_NAMESPACE::operator==;
-      using VMA_HPP_NAMESPACE::operator!=;
-    #ifdef VULKAN_HPP_HAS_SPACESHIP_OPERATOR
-      using VMA_HPP_NAMESPACE::operator<=>;
-    #endif
+    #include "vk_mem_alloc.hpp"
+    #include "vk_mem_alloc_raii.hpp"
+
+    module : private;
+    namespace VULKAN_HPP_NAMESPACE {
+      // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
       $0
       #ifndef VULKAN_HPP_NO_SMART_HANDLE
       $1
       #endif
       #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-      namespace VMA_HPP_RAII_NAMESPACE {
-        #if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
-        using VMA_HPP_RAII_NAMESPACE::operator<=>;
-        #else
-        using VMA_HPP_RAII_NAMESPACE::operator<;
-        #endif
-        using VMA_HPP_RAII_NAMESPACE::operator==;
-        using VMA_HPP_RAII_NAMESPACE::operator!=;
+      namespace VULKAN_HPP_RAII_NAMESPACE {
         $2
       }
       #endif
     }
-
-    module : private;
-    namespace VULKAN_HPP_NAMESPACE {
-      // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
-      $3
-      #ifndef VULKAN_HPP_NO_SMART_HANDLE
-      $4
-      #endif
-      #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-      namespace VULKAN_HPP_RAII_NAMESPACE {
-        $5
-      }
-      #endif
-    }
-    )"_seg.replace(exports, uniqueExports, raiiExports, specializations, uniqueSpecializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
+    )"_seg.replace(specializations, uniqueSpecializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
 }
 
 std::string readSource() {
