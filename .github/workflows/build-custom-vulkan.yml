@@ -28,7 +28,7 @@ jobs:
       matrix:
         env: [
           { os: macos-15, cxx: clang++, name: apple-clang },
-#          { os: macos-15, cxx: /opt/homebrew/opt/llvm/bin/clang++, name: clang, cxx_flags: '-I/opt/homebrew/opt/llvm/include/c++/v1 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk', linker_flags: '-L/opt/homebrew/opt/llvm/lib/c++', modules: true }, # TODO Enable when https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/issues/65 is fixed
+          { os: macos-15, cxx: /opt/homebrew/opt/llvm/bin/clang++, name: clang, cxx_flags: '-I/opt/homebrew/opt/llvm/include/c++/v1 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk', linker_flags: '-L/opt/homebrew/opt/llvm/lib/c++', modules: true },
           { os: ubuntu-24.04, cxx: clang++-16, c: clang-16 },
           { os: ubuntu-24.04, cxx: clang++-17, c: clang-17 },
           { os: ubuntu-24.04, cxx: clang++-18, c: clang-18 },
