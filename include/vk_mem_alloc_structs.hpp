@@ -2,7 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_STRUCTS_HPP
 #define VULKAN_MEMORY_ALLOCATOR_STRUCTS_HPP
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
 
   // wrapper struct for struct VmaDeviceMemoryCallbacks, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_device_memory_callbacks.html
   struct DeviceMemoryCallbacks {

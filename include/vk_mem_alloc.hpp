@@ -7,6 +7,10 @@
 #endif
 #include <vulkan/vulkan_hpp_macros.hpp>
 
+#ifndef VULKAN_HPP_EXPORT
+#define VULKAN_HPP_EXPORT
+#endif
+
 // VMA header
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
 #include "vk_mem_alloc.h"
@@ -34,7 +38,7 @@ import vulkan;
 // https://github.com/KhronosGroup/Vulkan-Hpp/commit/a0a4c22975c89f70202542cc52d0f182db296002
 // Just add dummy operators, so that using declarations would always compile.
 namespace VMA_HPP_NAMESPACE { class Dummy; }
-namespace VULKAN_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
   void operator<(VMA_HPP_NAMESPACE::Dummy, VMA_HPP_NAMESPACE::Dummy);
   void operator<=(VMA_HPP_NAMESPACE::Dummy, VMA_HPP_NAMESPACE::Dummy);
   void operator>(VMA_HPP_NAMESPACE::Dummy, VMA_HPP_NAMESPACE::Dummy);
@@ -44,7 +48,7 @@ namespace VULKAN_HPP_NAMESPACE {
 #endif
 }
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
   using VULKAN_HPP_NAMESPACE::operator&;
   using VULKAN_HPP_NAMESPACE::operator|;
   using VULKAN_HPP_NAMESPACE::operator^;

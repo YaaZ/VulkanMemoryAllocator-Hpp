@@ -2,7 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_TO_STRING_HPP
 #define VULKAN_MEMORY_ALLOCATOR_TO_STRING_HPP
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
 
   VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR_20 std::string to_string(AllocatorCreateFlagBits value) {
     if (value == AllocatorCreateFlagBits::eExternallySynchronized) return "ExternallySynchronized";

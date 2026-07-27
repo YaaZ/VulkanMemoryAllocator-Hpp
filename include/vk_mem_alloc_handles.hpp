@@ -2,7 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
 #define VULKAN_MEMORY_ALLOCATOR_HANDLES_HPP
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
   struct DeviceMemoryCallbacks;
   struct VulkanFunctions;
   struct AllocatorCreateInfo;
@@ -1318,7 +1318,7 @@ namespace VMA_HPP_NAMESPACE {
 #endif
 }
 
-namespace VULKAN_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
   template <> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Allocator> {
     static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = true;
   };

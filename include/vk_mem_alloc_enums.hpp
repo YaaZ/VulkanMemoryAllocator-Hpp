@@ -2,7 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_ENUMS_HPP
 #define VULKAN_MEMORY_ALLOCATOR_ENUMS_HPP
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
 
   // wrapper class for enum VmaAllocatorCreateFlagBits, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   enum class AllocatorCreateFlagBits : VmaAllocatorCreateFlags {
@@ -104,7 +104,7 @@ namespace VMA_HPP_NAMESPACE {
   using VirtualAllocationCreateFlags = VULKAN_HPP_NAMESPACE::Flags<VirtualAllocationCreateFlagBits>;
 }
 
-namespace VULKAN_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits> {
     using WrappedType = VmaAllocatorCreateFlagBits;

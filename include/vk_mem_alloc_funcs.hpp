@@ -2,7 +2,7 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_FUNCS_HPP
 #define VULKAN_MEMORY_ALLOCATOR_FUNCS_HPP
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   // wrapper function for command vmaDestroyAllocator, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
