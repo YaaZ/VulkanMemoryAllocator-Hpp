@@ -7,6 +7,10 @@
 #endif
 #include <vulkan/vulkan_hpp_macros.hpp>
 
+#ifndef VULKAN_HPP_EXPORT
+#define VULKAN_HPP_EXPORT
+#endif
+
 // VMA header
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
 #include "vk_mem_alloc.h"
