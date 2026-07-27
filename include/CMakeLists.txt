@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8...3.30 FATAL_ERROR)
 
 project(
     VulkanMemoryAllocator-Hpp
-    VERSION 3.3.0
+    VERSION 3.4.0
     DESCRIPTION "C++ bindings for the VulkanMemoryAllocator library."
     LANGUAGES CXX)
 set(VMA_HPP_PROJECT_VERSION ${PROJECT_VERSION} CACHE INTERNAL "VulkanMemoryAllocator Version")
