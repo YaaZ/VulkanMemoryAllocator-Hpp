@@ -11,6 +11,7 @@ option(VMA_HPP_ENABLE_INSTALL "Install VulkanMemoryAllocator-Hpp" OFF)
 
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
 add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp ALIAS VulkanMemoryAllocator-Hpp)
+add_library(VulkanMemoryAllocator::Hpp ALIAS VulkanMemoryAllocator-Hpp)
 target_include_directories(VulkanMemoryAllocator-Hpp INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 if (TARGET Vulkan::HppModule)
@@ -19,6 +20,7 @@ if (TARGET Vulkan::HppModule)
     # Set up VulkanMemoryAllocator-HppModule.
     add_library(VulkanMemoryAllocator-HppModule OBJECT)
     add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-HppModule ALIAS VulkanMemoryAllocator-HppModule)
+    add_library(VulkanMemoryAllocator::HppModule ALIAS VulkanMemoryAllocator-HppModule)
     target_sources(VulkanMemoryAllocator-HppModule PUBLIC
             FILE_SET CXX_MODULES
             FILES "${CMAKE_CURRENT_SOURCE_DIR}/vk_mem_alloc.cppm")
