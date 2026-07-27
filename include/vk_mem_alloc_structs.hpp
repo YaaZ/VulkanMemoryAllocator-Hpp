@@ -125,7 +125,7 @@ namespace VMA_HPP_NAMESPACE {
       , PFN_vkBindBufferMemory2KHR vkBindBufferMemory2KHR_ = {}
       , PFN_vkBindImageMemory2KHR vkBindImageMemory2KHR_ = {}
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
       , PFN_vkGetPhysicalDeviceMemoryProperties2KHR vkGetPhysicalDeviceMemoryProperties2KHR_ = {}
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -136,6 +136,9 @@ namespace VMA_HPP_NAMESPACE {
       , PFN_vkGetMemoryWin32HandleKHR vkGetMemoryWin32HandleKHR_ = {}
 #else
       , void* vkGetMemoryWin32HandleKHR_ = {}
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+      , PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR_ = {}
 #endif
     ) VULKAN_HPP_NOEXCEPT
       : vkGetInstanceProcAddr { vkGetInstanceProcAddr_ }
@@ -165,7 +168,7 @@ namespace VMA_HPP_NAMESPACE {
       , vkBindBufferMemory2KHR { vkBindBufferMemory2KHR_ }
       , vkBindImageMemory2KHR { vkBindImageMemory2KHR_ }
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
       , vkGetPhysicalDeviceMemoryProperties2KHR { vkGetPhysicalDeviceMemoryProperties2KHR_ }
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -176,6 +179,9 @@ namespace VMA_HPP_NAMESPACE {
       , vkGetMemoryWin32HandleKHR { vkGetMemoryWin32HandleKHR_ }
 #else
       , vkGetMemoryWin32HandleKHR { vkGetMemoryWin32HandleKHR_ }
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+      , vkGetPhysicalDeviceProperties2KHR { vkGetPhysicalDeviceProperties2KHR_ }
 #endif
          {}
 
@@ -310,7 +316,7 @@ namespace VMA_HPP_NAMESPACE {
     }
 
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
     VULKAN_HPP_CONSTEXPR_14 VulkanFunctions& setVkGetPhysicalDeviceMemoryProperties2KHR(PFN_vkGetPhysicalDeviceMemoryProperties2KHR vkGetPhysicalDeviceMemoryProperties2KHR_) VULKAN_HPP_NOEXCEPT {
       vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR_;
       return *this;
@@ -338,6 +344,13 @@ namespace VMA_HPP_NAMESPACE {
 #else
     VULKAN_HPP_CONSTEXPR_14 VulkanFunctions& setVkGetMemoryWin32HandleKHR(void* vkGetMemoryWin32HandleKHR_) VULKAN_HPP_NOEXCEPT {
       vkGetMemoryWin32HandleKHR = vkGetMemoryWin32HandleKHR_;
+      return *this;
+    }
+
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+    VULKAN_HPP_CONSTEXPR_14 VulkanFunctions& setVkGetPhysicalDeviceProperties2KHR(PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR_) VULKAN_HPP_NOEXCEPT {
+      vkGetPhysicalDeviceProperties2KHR = vkGetPhysicalDeviceProperties2KHR_;
       return *this;
     }
 #endif
@@ -387,7 +400,7 @@ namespace VMA_HPP_NAMESPACE {
              , PFN_vkBindBufferMemory2KHR const &
              , PFN_vkBindImageMemory2KHR const &
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
              , PFN_vkGetPhysicalDeviceMemoryProperties2KHR const &
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -398,6 +411,9 @@ namespace VMA_HPP_NAMESPACE {
              , PFN_vkGetMemoryWin32HandleKHR const &
 #else
              , void* const &
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+             , PFN_vkGetPhysicalDeviceProperties2KHR const &
 #endif
                >
     reflect() const VULKAN_HPP_NOEXCEPT {
@@ -428,7 +444,7 @@ namespace VMA_HPP_NAMESPACE {
                     , vkBindBufferMemory2KHR
                     , vkBindImageMemory2KHR
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
                     , vkGetPhysicalDeviceMemoryProperties2KHR
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -439,6 +455,9 @@ namespace VMA_HPP_NAMESPACE {
                     , vkGetMemoryWin32HandleKHR
 #else
                     , vkGetMemoryWin32HandleKHR
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+                    , vkGetPhysicalDeviceProperties2KHR
 #endif
                       );
     }
@@ -475,7 +494,7 @@ namespace VMA_HPP_NAMESPACE {
         && vkBindBufferMemory2KHR == rhs.vkBindBufferMemory2KHR
         && vkBindImageMemory2KHR == rhs.vkBindImageMemory2KHR
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
         && vkGetPhysicalDeviceMemoryProperties2KHR == rhs.vkGetPhysicalDeviceMemoryProperties2KHR
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -486,6 +505,9 @@ namespace VMA_HPP_NAMESPACE {
         && vkGetMemoryWin32HandleKHR == rhs.vkGetMemoryWin32HandleKHR
 #else
         && vkGetMemoryWin32HandleKHR == rhs.vkGetMemoryWin32HandleKHR
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+        && vkGetPhysicalDeviceProperties2KHR == rhs.vkGetPhysicalDeviceProperties2KHR
 #endif
            ;
 #endif
@@ -522,7 +544,7 @@ namespace VMA_HPP_NAMESPACE {
     PFN_vkBindBufferMemory2KHR vkBindBufferMemory2KHR = {};
     PFN_vkBindImageMemory2KHR vkBindImageMemory2KHR = {};
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
     PFN_vkGetPhysicalDeviceMemoryProperties2KHR vkGetPhysicalDeviceMemoryProperties2KHR = {};
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -533,6 +555,9 @@ namespace VMA_HPP_NAMESPACE {
     PFN_vkGetMemoryWin32HandleKHR vkGetMemoryWin32HandleKHR = {};
 #else
     void* vkGetMemoryWin32HandleKHR = {};
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+    PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR = {};
 #endif
   };
 
@@ -565,7 +590,7 @@ namespace VMA_HPP_NAMESPACE {
       struct vkBindBufferMemory2 { using type = PFN_vkBindBufferMemory2; };
       struct vkBindImageMemory2 { using type = PFN_vkBindImageMemory2; };
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
       struct vkGetPhysicalDeviceMemoryProperties2 { using type = PFN_vkGetPhysicalDeviceMemoryProperties2; };
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -575,6 +600,9 @@ namespace VMA_HPP_NAMESPACE {
 #if VMA_EXTERNAL_MEMORY_WIN32
       struct vkGetMemoryWin32HandleKHR { using type = PFN_vkGetMemoryWin32HandleKHR; };
 #else
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+      struct vkGetPhysicalDeviceProperties2 { using type = PFN_vkGetPhysicalDeviceProperties2; };
 #endif
       template<class Fun, class PFN, class T, class... Ts> struct FromDispatchers {
         static PFN get(const T&, const Ts&... ts) VULKAN_HPP_NOEXCEPT {
@@ -635,7 +663,7 @@ namespace VMA_HPP_NAMESPACE {
     template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkBindImageMemory2, decltype(T::vkBindImageMemory2), T, Ts...>
     { static PFN_vkBindImageMemory2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkBindImageMemory2; } };
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
     template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetPhysicalDeviceMemoryProperties2, decltype(T::vkGetPhysicalDeviceMemoryProperties2), T, Ts...>
     { static PFN_vkGetPhysicalDeviceMemoryProperties2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetPhysicalDeviceMemoryProperties2; } };
 #endif
@@ -649,6 +677,10 @@ namespace VMA_HPP_NAMESPACE {
     template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetMemoryWin32HandleKHR, decltype(T::vkGetMemoryWin32HandleKHR), T, Ts...>
     { static PFN_vkGetMemoryWin32HandleKHR get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetMemoryWin32HandleKHR; } };
 #else
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+    template<class T, class... Ts> struct VulkanPFN::FromDispatchers<VulkanPFN::vkGetPhysicalDeviceProperties2, decltype(T::vkGetPhysicalDeviceProperties2), T, Ts...>
+    { static PFN_vkGetPhysicalDeviceProperties2 get(const T& t, const Ts&...) VULKAN_HPP_NOEXCEPT { return t.vkGetPhysicalDeviceProperties2; } };
 #endif
   }
 
@@ -683,7 +715,7 @@ namespace VMA_HPP_NAMESPACE {
       , detail::VulkanPFN::get<detail::VulkanPFN::vkBindBufferMemory2>(dispatch...)
       , detail::VulkanPFN::get<detail::VulkanPFN::vkBindImageMemory2>(dispatch...)
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
       , detail::VulkanPFN::get<detail::VulkanPFN::vkGetPhysicalDeviceMemoryProperties2>(dispatch...)
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -694,6 +726,9 @@ namespace VMA_HPP_NAMESPACE {
       , detail::VulkanPFN::get<detail::VulkanPFN::vkGetMemoryWin32HandleKHR>(dispatch...)
 #else
       , nullptr
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+      , detail::VulkanPFN::get<detail::VulkanPFN::vkGetPhysicalDeviceProperties2>(dispatch...)
 #endif
     };
   }
@@ -732,7 +767,7 @@ namespace VMA_HPP_NAMESPACE {
       , &vkBindBufferMemory2
       , &vkBindImageMemory2
 #endif
-#if VMA_MEMORY_BUDGET || VMA_VULKAN_VERSION >= 1001000
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
       , &vkGetPhysicalDeviceMemoryProperties2
 #endif
 #if VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
@@ -743,6 +778,9 @@ namespace VMA_HPP_NAMESPACE {
       , &vkGetMemoryWin32HandleKHR
 #else
       , nullptr
+#endif
+#if VMA_GET_PHYSICAL_DEVICE_PROPERTIES2
+      , &vkGetPhysicalDeviceProperties2
 #endif
     };
   }
@@ -1464,6 +1502,7 @@ namespace VMA_HPP_NAMESPACE {
       , Pool pool_ = {}
       , void* pUserData_ = {}
       , float priority_ = {}
+      , VULKAN_HPP_NAMESPACE::DeviceSize minAlignment_ = {}
     ) VULKAN_HPP_NOEXCEPT
       : flags { flags_ }
       , usage { usage_ }
@@ -1472,7 +1511,8 @@ namespace VMA_HPP_NAMESPACE {
       , memoryTypeBits { memoryTypeBits_ }
       , pool { pool_ }
       , pUserData { pUserData_ }
-      , priority { priority_ } {}
+      , priority { priority_ }
+      , minAlignment { minAlignment_ } {}
 
     VULKAN_HPP_CONSTEXPR AllocationCreateInfo(AllocationCreateInfo const &) VULKAN_HPP_NOEXCEPT = default;
     AllocationCreateInfo(VmaAllocationCreateInfo const & rhs) VULKAN_HPP_NOEXCEPT : AllocationCreateInfo(*reinterpret_cast<AllocationCreateInfo const *>(&rhs)) {}
@@ -1525,6 +1565,11 @@ namespace VMA_HPP_NAMESPACE {
       priority = priority_;
       return *this;
     }
+
+    VULKAN_HPP_CONSTEXPR_14 AllocationCreateInfo& setMinAlignment(VULKAN_HPP_NAMESPACE::DeviceSize minAlignment_) VULKAN_HPP_NOEXCEPT {
+      minAlignment = minAlignment_;
+      return *this;
+    }
 #endif
 
     operator VmaAllocationCreateInfo const &() const VULKAN_HPP_NOEXCEPT {
@@ -1551,7 +1596,8 @@ namespace VMA_HPP_NAMESPACE {
              , uint32_t const &
              , Pool const &
              , void* const &
-             , float const &>
+             , float const &
+             , VULKAN_HPP_NAMESPACE::DeviceSize const &>
     reflect() const VULKAN_HPP_NOEXCEPT {
       return std::tie(flags
                     , usage
@@ -1560,7 +1606,8 @@ namespace VMA_HPP_NAMESPACE {
                     , memoryTypeBits
                     , pool
                     , pUserData
-                    , priority);
+                    , priority
+                    , minAlignment);
     }
 #endif
 
@@ -1578,7 +1625,8 @@ namespace VMA_HPP_NAMESPACE {
         && memoryTypeBits == rhs.memoryTypeBits
         && pool == rhs.pool
         && pUserData == rhs.pUserData
-        && priority == rhs.priority;
+        && priority == rhs.priority
+        && minAlignment == rhs.minAlignment;
 #endif
   }
   bool operator!=(AllocationCreateInfo const & rhs) const VULKAN_HPP_NOEXCEPT {
@@ -1595,6 +1643,7 @@ namespace VMA_HPP_NAMESPACE {
     Pool pool = {};
     void* pUserData = {};
     float priority = {};
+    VULKAN_HPP_NAMESPACE::DeviceSize minAlignment = {};
   };
 
   // wrapper struct for struct VmaPoolCreateInfo, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/struct_vma_pool_create_info.html

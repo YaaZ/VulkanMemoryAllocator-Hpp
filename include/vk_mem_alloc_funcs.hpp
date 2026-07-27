@@ -327,6 +327,41 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaAllocateDedicatedMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<Allocation>::type Allocator::allocateDedicatedMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
+                                                                                                                                             const AllocationCreateInfo& createInfo,
+                                                                                                                                             void* memoryAllocateNext,
+                                                                                                                                             VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    Allocation allocation;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaAllocateDedicatedMemory(m_allocator, reinterpret_cast<const VkMemoryRequirements*>(&vkMemoryRequirements), reinterpret_cast<const VmaAllocationCreateInfo*>(&createInfo), memoryAllocateNext, reinterpret_cast<VmaAllocation*>(&allocation), reinterpret_cast<VmaAllocationInfo*>(static_cast<AllocationInfo*>(allocationInfo))) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::allocateDedicatedMemory");
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, allocation);
+  }
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaAllocateDedicatedMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<UniqueAllocation>::type Allocator::allocateDedicatedMemoryUnique(const VULKAN_HPP_NAMESPACE::MemoryRequirements& vkMemoryRequirements,
+                                                                                                                                                         const AllocationCreateInfo& createInfo,
+                                                                                                                                                         void* memoryAllocateNext,
+                                                                                                                                                         VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    Allocation allocation;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaAllocateDedicatedMemory(m_allocator, reinterpret_cast<const VkMemoryRequirements*>(&vkMemoryRequirements), reinterpret_cast<const VmaAllocationCreateInfo*>(&createInfo), memoryAllocateNext, reinterpret_cast<VmaAllocation*>(&allocation), reinterpret_cast<VmaAllocationInfo*>(static_cast<AllocationInfo*>(allocationInfo))) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::allocateDedicatedMemoryUnique");
+    UniqueAllocation allocationUnique { allocation, *this };
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, std::move(allocationUnique));
+  }
+#endif
+#endif
+  // wrapper function for command vmaAllocateDedicatedMemory, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::allocateDedicatedMemory(const VULKAN_HPP_NAMESPACE::MemoryRequirements* pVkMemoryRequirements,
+                                                                                                         const AllocationCreateInfo* pCreateInfo,
+                                                                                                         void* pMemoryAllocateNext,
+                                                                                                         Allocation* pAllocation,
+                                                                                                         AllocationInfo* pAllocationInfo) const VULKAN_HPP_NOEXCEPT {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaAllocateDedicatedMemory(m_allocator, reinterpret_cast<const VkMemoryRequirements*>(pVkMemoryRequirements), reinterpret_cast<const VmaAllocationCreateInfo*>(pCreateInfo), pMemoryAllocateNext, reinterpret_cast<VmaAllocation*>(pAllocation), reinterpret_cast<VmaAllocationInfo*>(pAllocationInfo)) );
+    return result;
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   // wrapper function for command vmaAllocateMemoryPages, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   template <typename AllocationAllocator>
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::vector<Allocation, AllocationAllocator>>::type Allocator::allocateMemoryPages(VULKAN_HPP_NAMESPACE::ArrayProxy<const VULKAN_HPP_NAMESPACE::MemoryRequirements> const & vkMemoryRequirements,
@@ -630,6 +665,26 @@ namespace VMA_HPP_NAMESPACE {
                                                                                                       HANDLE hTargetProcess,
                                                                                                       HANDLE* pHandle) const VULKAN_HPP_NOEXCEPT {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaGetMemoryWin32Handle(m_allocator, static_cast<VmaAllocation>(allocation), hTargetProcess, pHandle) );
+    return result;
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaGetMemoryWin32Handle2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<HANDLE>::type Allocator::getMemoryWin32Handle2(Allocation allocation,
+                                                                                                                                       VULKAN_HPP_NAMESPACE::ExternalMemoryHandleTypeFlagBits handleType,
+                                                                                                                                       HANDLE hTargetProcess) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    HANDLE handle;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaGetMemoryWin32Handle2(m_allocator, static_cast<VmaAllocation>(allocation), static_cast<VkExternalMemoryHandleTypeFlagBits>(handleType), hTargetProcess, &handle) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::getMemoryWin32Handle2");
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, handle);
+  }
+#endif
+  // wrapper function for command vmaGetMemoryWin32Handle2, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::getMemoryWin32Handle2(Allocation allocation,
+                                                                                                       VULKAN_HPP_NAMESPACE::ExternalMemoryHandleTypeFlagBits handleType,
+                                                                                                       HANDLE hTargetProcess,
+                                                                                                       HANDLE* pHandle) const VULKAN_HPP_NOEXCEPT {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaGetMemoryWin32Handle2(m_allocator, static_cast<VmaAllocation>(allocation), static_cast<VkExternalMemoryHandleTypeFlagBits>(handleType), hTargetProcess, pHandle) );
     return result;
   }
 
@@ -1036,6 +1091,49 @@ namespace VMA_HPP_NAMESPACE {
   }
 
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateDedicatedBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer>>::type Allocator::createDedicatedBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                                                                                    const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                                                    void* memoryAllocateNext,
+                                                                                                                                                                                    VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer> pair;
+    VULKAN_HPP_NAMESPACE::Buffer& buffer = pair.second;
+    Allocation& allocation = pair.first;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateDedicatedBuffer(m_allocator, reinterpret_cast<const VkBufferCreateInfo*>(&bufferCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(&allocationCreateInfo), memoryAllocateNext, reinterpret_cast<VkBuffer*>(&buffer), reinterpret_cast<VmaAllocation*>(&allocation), reinterpret_cast<VmaAllocationInfo*>(static_cast<AllocationInfo*>(allocationInfo))) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::createDedicatedBuffer");
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pair);
+  }
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateDedicatedBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueBuffer>>::type Allocator::createDedicatedBufferUnique(const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo,
+                                                                                                                                                                                const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                                                void* memoryAllocateNext,
+                                                                                                                                                                                VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    std::pair<Allocation, VULKAN_HPP_NAMESPACE::Buffer> pair;
+    VULKAN_HPP_NAMESPACE::Buffer& buffer = pair.second;
+    Allocation& allocation = pair.first;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateDedicatedBuffer(m_allocator, reinterpret_cast<const VkBufferCreateInfo*>(&bufferCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(&allocationCreateInfo), memoryAllocateNext, reinterpret_cast<VkBuffer*>(&buffer), reinterpret_cast<VmaAllocation*>(&allocation), reinterpret_cast<VmaAllocationInfo*>(static_cast<AllocationInfo*>(allocationInfo))) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::createDedicatedBufferUnique");
+    std::pair<UniqueAllocation, UniqueBuffer> pairUnique {
+      UniqueAllocation(allocation, *this),
+      UniqueBuffer(buffer, *this)
+    };
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, std::move(pairUnique));
+  }
+#endif
+#endif
+  // wrapper function for command vmaCreateDedicatedBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createDedicatedBuffer(const VULKAN_HPP_NAMESPACE::BufferCreateInfo* pBufferCreateInfo,
+                                                                                                       const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                                                       void* pMemoryAllocateNext,
+                                                                                                       VULKAN_HPP_NAMESPACE::Buffer* pBuffer,
+                                                                                                       Allocation* pAllocation,
+                                                                                                       AllocationInfo* pAllocationInfo) const VULKAN_HPP_NOEXCEPT {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateDedicatedBuffer(m_allocator, reinterpret_cast<const VkBufferCreateInfo*>(pBufferCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(pAllocationCreateInfo), pMemoryAllocateNext, reinterpret_cast<VkBuffer*>(pBuffer), reinterpret_cast<VmaAllocation*>(pAllocation), reinterpret_cast<VmaAllocationInfo*>(pAllocationInfo)) );
+    return result;
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   // wrapper function for command vmaCreateAliasingBuffer, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
   VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<VULKAN_HPP_NAMESPACE::Buffer>::type Allocator::createAliasingBuffer(Allocation allocation,
                                                                                                                                                             const VULKAN_HPP_NAMESPACE::BufferCreateInfo& bufferCreateInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
@@ -1161,6 +1259,49 @@ namespace VMA_HPP_NAMESPACE {
                                                                                              Allocation* pAllocation,
                                                                                              AllocationInfo* pAllocationInfo) const VULKAN_HPP_NOEXCEPT {
     VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateImage(m_allocator, reinterpret_cast<const VkImageCreateInfo*>(pImageCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(pAllocationCreateInfo), reinterpret_cast<VkImage*>(pImage), reinterpret_cast<VmaAllocation*>(pAllocation), reinterpret_cast<VmaAllocationInfo*>(pAllocationInfo)) );
+    return result;
+  }
+
+#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+  // wrapper function for command vmaCreateDedicatedImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image>>::type Allocator::createDedicatedImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                                                                                                                                                                                  const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                                                  void* memoryAllocateNext,
+                                                                                                                                                                                  VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image> pair;
+    VULKAN_HPP_NAMESPACE::Image& image = pair.second;
+    Allocation& allocation = pair.first;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateDedicatedImage(m_allocator, reinterpret_cast<const VkImageCreateInfo*>(&imageCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(&allocationCreateInfo), memoryAllocateNext, reinterpret_cast<VkImage*>(&image), reinterpret_cast<VmaAllocation*>(&allocation), reinterpret_cast<VmaAllocationInfo*>(static_cast<AllocationInfo*>(allocationInfo))) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::createDedicatedImage");
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, pair);
+  }
+#ifndef VULKAN_HPP_NO_SMART_HANDLE
+  // wrapper function for command vmaCreateDedicatedImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename VULKAN_HPP_NAMESPACE::ResultValueType<std::pair<UniqueAllocation, UniqueImage>>::type Allocator::createDedicatedImageUnique(const VULKAN_HPP_NAMESPACE::ImageCreateInfo& imageCreateInfo,
+                                                                                                                                                                              const AllocationCreateInfo& allocationCreateInfo,
+                                                                                                                                                                              void* memoryAllocateNext,
+                                                                                                                                                                              VULKAN_HPP_NAMESPACE::Optional<AllocationInfo> const & allocationInfo) const VULKAN_HPP_NOEXCEPT_WHEN_NO_EXCEPTIONS {
+    std::pair<Allocation, VULKAN_HPP_NAMESPACE::Image> pair;
+    VULKAN_HPP_NAMESPACE::Image& image = pair.second;
+    Allocation& allocation = pair.first;
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateDedicatedImage(m_allocator, reinterpret_cast<const VkImageCreateInfo*>(&imageCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(&allocationCreateInfo), memoryAllocateNext, reinterpret_cast<VkImage*>(&image), reinterpret_cast<VmaAllocation*>(&allocation), reinterpret_cast<VmaAllocationInfo*>(static_cast<AllocationInfo*>(allocationInfo))) );
+    VULKAN_HPP_NAMESPACE::detail::resultCheck(result, VMA_HPP_NAMESPACE_STRING "::Allocator::createDedicatedImageUnique");
+    std::pair<UniqueAllocation, UniqueImage> pairUnique {
+      UniqueAllocation(allocation, *this),
+      UniqueImage(image, *this)
+    };
+    return VULKAN_HPP_NAMESPACE::detail::createResultValueType(result, std::move(pairUnique));
+  }
+#endif
+#endif
+  // wrapper function for command vmaCreateDedicatedImage, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_func.html
+  VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE VULKAN_HPP_NAMESPACE::Result Allocator::createDedicatedImage(const VULKAN_HPP_NAMESPACE::ImageCreateInfo* pImageCreateInfo,
+                                                                                                      const AllocationCreateInfo* pAllocationCreateInfo,
+                                                                                                      void* pMemoryAllocateNext,
+                                                                                                      VULKAN_HPP_NAMESPACE::Image* pImage,
+                                                                                                      Allocation* pAllocation,
+                                                                                                      AllocationInfo* pAllocationInfo) const VULKAN_HPP_NOEXCEPT {
+    VULKAN_HPP_NAMESPACE::Result result = static_cast<VULKAN_HPP_NAMESPACE::Result>( vmaCreateDedicatedImage(m_allocator, reinterpret_cast<const VkImageCreateInfo*>(pImageCreateInfo), reinterpret_cast<const VmaAllocationCreateInfo*>(pAllocationCreateInfo), pMemoryAllocateNext, reinterpret_cast<VkImage*>(pImage), reinterpret_cast<VmaAllocation*>(pAllocation), reinterpret_cast<VmaAllocationInfo*>(pAllocationInfo)) );
     return result;
   }
 

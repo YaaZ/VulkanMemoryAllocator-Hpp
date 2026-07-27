@@ -1,4 +1,4 @@
-# VulkanMemoryAllocator-Hpp <!--VER-->3.3.0<!--/VER-->
+# VulkanMemoryAllocator-Hpp <!--VER-->3.4.0<!--/VER-->
 
 VMA-Hpp provides C++ bindings for [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator),
 consistent and compatible with Vulkan C++ bindings ([Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp)).
