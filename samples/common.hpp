@@ -12,6 +12,9 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 template<class T> T value(T&& t) { return std::forward<T>(t); }
 template<class T> T value(vk::ResultValue<T>&& t) { return std::forward<T>(t.value); }
+#ifdef VULKAN_HPP_EXPECTED
+template<class T> T value(VULKAN_HPP_EXPECTED<T, vk::Result>&& t) { return std::forward<T>(t.value()); }
+#endif
 
 static constexpr const char* LAYERS { "VK_LAYER_KHRONOS_validation" };
 static constexpr float QUEUE_PRIORITY[] { 1.0f };

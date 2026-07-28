@@ -70,6 +70,26 @@ VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
       struct Converter<VULKAN_HPP_NAMESPACE::ResultValue<Dst>, Wrapper, VULKAN_HPP_NAMESPACE::Result> :
              Converter<VULKAN_HPP_NAMESPACE::ResultValue<Dst>, Wrapper> {};
 
+      // std::expected converter.
+#if defined (VULKAN_HPP_EXPECTED)
+      template<class Dst, class Wrapper, class Src, class Err>
+      struct Converter<std::expected<Dst, Err>, Wrapper, std::expected<Src, Err>> : Converter<Dst, Wrapper, Src> {
+        std::expected<Dst, Err> convert(std::expected<Src, Err>&& src) const {
+          if (!src.has_value()) return std::unexpected(src.error());
+          return std::expected<Dst, Err>(std::in_place,
+            static_cast<Converter<Dst, Wrapper, Src> const&>(*this).convert(std::move(*src)));
+        }
+      };
+      template<class Dst, class Wrapper, class Err>
+      struct Converter<std::expected<Dst, Err>, Wrapper, std::expected<void, Err>> : Converter<Dst, Wrapper> {
+        std::expected<Dst, Err> convert(std::expected<void, Err>&& src) const {
+          if (!src.has_value()) return std::unexpected(src.error());
+          return std::expected<Dst, Err>(std::in_place,
+            static_cast<Converter<Dst, Wrapper> const&>(*this).convert());
+        }
+      };
+#endif
+
       // vk::raii::Buffer and vk::raii::Image converters.
       template<class T> struct VulkanRAIIResourceConverter : private T {
         using T::T;
