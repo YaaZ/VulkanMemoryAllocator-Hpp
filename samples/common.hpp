@@ -1,4 +1,6 @@
 #ifdef USE_MODULES
+import std;
+import vulkan;
 import vk_mem_alloc;
 #else
 #define VMA_IMPLEMENTATION

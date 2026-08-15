@@ -2174,7 +2174,8 @@ void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
     #include "vk_mem_alloc.h"
 
     export module vk_mem_alloc;
-    export import vulkan;
+    import std;
+    import vulkan;
 
     #include "vk_mem_alloc.hpp"
     #include "vk_mem_alloc_raii.hpp"
