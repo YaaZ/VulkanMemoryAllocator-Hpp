@@ -81,8 +81,7 @@ target_sources(<target> PRIVATE
 ```
 
 ```c++
-// Do not define VMA_IMPLEMENTATION
-import vk_mem_alloc; // Also imports vulkan and std
+import vk_mem_alloc;
 ```
 
 
