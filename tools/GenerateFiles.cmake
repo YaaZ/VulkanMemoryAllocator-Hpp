@@ -2,7 +2,7 @@
 function(generate_configuration_table)
     # Find testing configurations in the GH workflow.
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/.github/workflows/build-custom-vulkan.yml" WORKFLOW_SOURCE)
-    set(REGEX "build +\\$\{{ *env\.vk *\\|\\| *env\.modules *&& *'v([^']+)' *\\|\\| *'v([^']+)'}} *([^\n$]*)")
+    set(REGEX "build +\\$\{{ *env\.vk *\\|\\| *env\.modules *&& *'v?([^']+)' *\\|\\| *'v([^']+)'}} *([^\n$]*)")
     string(REGEX MATCHALL "${REGEX}" CONFIGS ${WORKFLOW_SOURCE})
     # Build a table of configurations.
     set(CONFIG_TABLE "\n\n  <table>

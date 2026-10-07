@@ -27,17 +27,39 @@ jobs:
       fail-fast: false
       matrix:
         env: [
-          { os: macos-15, cxx: clang++, name: apple-clang },
-          { os: macos-15, cxx: /opt/homebrew/opt/llvm/bin/clang++, name: clang, cxx_flags: '-I/opt/homebrew/opt/llvm/include/c++/v1 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk', linker_flags: '-L/opt/homebrew/opt/llvm/lib/c++', modules: true },
+          { os: macos-26, cxx: clang++, name: apple-clang },
+          { os: macos-26, cxx: '$(brew --prefix llvm@20)/bin/clang++', name: clang, extra_flags: '-DCMAKE_OSX_SYSROOT=macosx' },
+          { os: macos-26, cxx: '$(brew --prefix llvm@20)/bin/clang++', name: clang, extra_flags: '-DCMAKE_OSX_SYSROOT=macosx', modules: true },
+          { os: macos-26, cxx: g++-13, c: gcc-13 },
+          { os: macos-26, cxx: g++-14, c: gcc-14, cxx_flags: '-D__STDC_WANT_LIB_EXT1__=0' },
+          { os: macos-26, cxx: g++-15, c: gcc-15, cxx_flags: '-D__STDC_WANT_LIB_EXT1__=0' },
+          { os: macos-26, cxx: g++-15, c: gcc-15, cxx_flags: '-D__STDC_WANT_LIB_EXT1__=0', modules: true, extra_flags: '-DVMA_HPP_SAMPLES_BUILD=OFF' }, # TODO Build samples when GCC stops failing with ICE
           { os: ubuntu-24.04, cxx: clang++-16, c: clang-16 },
           { os: ubuntu-24.04, cxx: clang++-17, c: clang-17 },
           { os: ubuntu-24.04, cxx: clang++-18, c: clang-18 },
-          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true },
+          { os: ubuntu-26.04, cxx: clang++-20, c: clang-20 },
+          { os: ubuntu-26.04, cxx: clang++-21, c: clang-21 },
+          { os: ubuntu-26.04, cxx: clang++-22, c: clang-22 },
+          { os: ubuntu-26.04, cxx: clang++-20, c: clang-20, modules: true },
+          { os: ubuntu-26.04, cxx: clang++-21, c: clang-21, modules: true },
+          { os: ubuntu-26.04, cxx: clang++-22, c: clang-22, modules: true },
+          { os: ubuntu-24.04, cxx: clang++-16, c: clang-16, name: clang-16-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi' },
+          { os: ubuntu-24.04, cxx: clang++-17, c: clang-17, name: clang-17-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi' },
+          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18, name: clang-18-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi' },
+          { os: ubuntu-26.04, cxx: clang++-20, c: clang-20, name: clang-20-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi' },
+          { os: ubuntu-26.04, cxx: clang++-21, c: clang-21, name: clang-21-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi' },
+          { os: ubuntu-26.04, cxx: clang++-22, c: clang-22, name: clang-22-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi' },
+          { os: ubuntu-24.04, cxx: clang++-18, c: clang-18, name: clang-18-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true },
+          { os: ubuntu-26.04, cxx: clang++-20, c: clang-20, name: clang-20-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true },
+          { os: ubuntu-26.04, cxx: clang++-21, c: clang-21, name: clang-21-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true },
+          { os: ubuntu-26.04, cxx: clang++-22, c: clang-22, name: clang-22-libc++, cxx_flags: '-stdlib=libc++', linker_flags: '-stdlib=libc++ -lc++abi', modules: true },
           { os: ubuntu-24.04, cxx: g++-12, c: gcc-12 },
           { os: ubuntu-24.04, cxx: g++-13, c: gcc-13 },
           { os: ubuntu-24.04, cxx: g++-14, c: gcc-14 },
+          { os: ubuntu-26.04, cxx: g++-15, c: gcc-15 },
+          { os: ubuntu-26.04, cxx: g++-15, c: gcc-15, modules: true, extra_flags: '-DVMA_HPP_SAMPLES_BUILD=OFF' }, # TODO Build samples when GCC stops failing with ICE
           { os: windows-2025, name: msvc, cxx_flags: '//EHsc' },
-          { os: windows-2025, name: msvc, cxx_flags: '//EHsc', modules: true, extra_flags: '-DVMA_HPP_SAMPLES_BUILD=OFF' }, # TODO Build samples when MSVC stops failing with ICE
+          { os: windows-2025, name: msvc, cxx_flags: '//EHsc', modules: true },
           { os: windows-2025, cxx: clang-cl, c: clang-cl, cxx_flags: '/EHsc' },
           { os: windows-2025, cxx: c++, c: cc, name: gcc },
         ]
@@ -57,16 +79,26 @@ jobs:
         uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64
-      - name: Setup libc
-        if: contains(matrix.env.os, 'ubuntu') && matrix.env.modules
-        run: sudo apt install libc++-dev libc++abi-dev
-      - name: Setup libc & fix 'import std'
-        if: contains(matrix.env.os, 'macos') && matrix.env.modules
+      - name: Setup libc++
+        if: contains(matrix.env.os, 'ubuntu') && contains(matrix.env.name, 'libc++')
         run: |
-          brew install llvm
-          CMAKE_FIX=`which cmake`
-          CMAKE_FIX="`dirname $CMAKE_FIX`/../share/cmake-4.1/Modules/Compiler/Clang-CXX-CXXImportStd.cmake"
-          sed -i '' 's|\${_clang_modules_json_impl}.modules.json|/opt/homebrew/opt/llvm/lib/c++/libc++.modules.json|g' $CMAKE_FIX # https://gitlab.kitware.com/cmake/cmake/-/issues/25965#note_1523575
+          N=$(${{matrix.env.cxx}} -dumpversion | cut -d. -f1)
+          sudo apt install libc++-$N-dev libc++abi-$N-dev
+      - name: Fix 'import std'
+        if: contains(matrix.env.os, 'ubuntu') && contains(matrix.env.name, 'libc++') && matrix.env.modules
+        run: |
+          LLVM=$(realpath "$(dirname "$(readlink -f "$(which ${{matrix.env.cxx}})")")/..")
+          JSON=$(readlink -f "$(${{matrix.env.cxx}} -stdlib=libc++ -print-file-name=libc++.modules.json)")
+          SRC=$(dirname "$JSON")/$(grep -o '"source-path": *"[^"]*std.cppm"' "$JSON" | sed 's/.*"\(.*\)"/\1/')
+          if [[ ! -f "$SRC" ]]; then
+            sudo sed -i "s|\"\.\./share/|\"$LLVM/share/|g" "$JSON"
+            echo "Patched $JSON"
+          fi
+      - name: Fix 'import std'
+        if: contains(matrix.env.os, 'macos') && contains(matrix.env.name, 'clang') && matrix.env.modules
+        run: | # https://gitlab.kitware.com/cmake/cmake/-/issues/25965#note_1523575
+          LLVM=$(dirname $(dirname ${{matrix.env.cxx}}))
+          sed "s|\.\./\.\./share|$LLVM/share|g" $LLVM/lib/c++/libc++.modules.json > $LLVM/lib/libc++.modules.json
       - name: Setup build environment
         run: |
           IFS='#' read -r -a VULKAN <<< '${{inputs.vulkan}}'
@@ -127,5 +159,5 @@ jobs:
         run: build ${{env.vk || env.modules && 'v1.4.344' || 'v1.4.327'}} -DVULKAN_HPP_USE_REFLECT -DVULKAN_HPP_HANDLES_MOVE_EXCHANGE
       - if: ${{!cancelled()}}
         run: build ${{env.vk || env.modules && 'v1.4.345' || 'v1.4.345'}} -DVULKAN_HPP_TYPESAFE_CONVERSION=0
-      - if: ${{!cancelled()}}
-        run: build ${{env.vk || env.modules && 'v1.4.348' || 'v1.4.348'}} -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_STD_EXPECTED
+      - if: ${{!cancelled() && !env.modules}} # Build modules when https://github.com/KhronosGroup/Vulkan-Hpp/pull/2716 arrives from upstream.
+        run: build ${{env.vk || env.modules && '[broken]' || 'v1.4.348'}} -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_STD_EXPECTED
