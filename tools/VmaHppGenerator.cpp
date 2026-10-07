@@ -2134,68 +2134,6 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& symbol
     std::move("#include \"vk_mem_alloc.hpp\"" >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
 }
 
-void generateModule(const ConditionalTree& tree, const Symbols& symbols) {
-    Segment::Vector<3> segments;
-    auto& [specializations, uniqueSpecializations, raiiSpecializations] = *segments;
-
-    // Some workarounds for compilation errors on MSVC...
-
-    // error C2678: binary '|': no operator found which takes a left-hand operand of type 'const vma::AllocationCreateFlagBits' (or there is no acceptable conversion)
-    for (const Symbol& t : symbols.enums)
-        if (endsWith(*t.name, "FlagBits"))
-            specializations << n << navigate(t) << "template<> struct FlagTraits<VMA_HPP_NAMESPACE::" << t.name << ">;";
-
-    // fatal error C1116: unrecoverable error importing module 'vk_mem_alloc'.  Specialization of 'vma::operator ==' with arguments 'vma::Pool, 0'
-    for (const Symbol& t : symbols.handles)
-        specializations << n << navigate(t) << "template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::" << t.name << ">;";
-
-    // error C2027: use of undefined type 'vk::UniqueHandleTraits<Type,Dispatch>'
-    for (const Symbol& t : symbols.handles.unique)
-        uniqueSpecializations << n << navigate(t) << "template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::" << t.name << ", VMA_HPP_NAMESPACE::detail::Dispatcher>;";
-
-    // error C2676: binary '==': 'const vma::raii::Allocator' does not define this operator or a conversion to a type acceptable to the predefined operator
-    for (const Symbol& t : symbols.handles.raii)
-        raiiSpecializations << n << navigate(t) << "template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::" << t.name << ">;";
-
-    segments << navigate.reset;
-
-    // Don't forget Buffer and Image.
-    uniqueSpecializations << n << "template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;"  <<
-                             n << "template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;";
-
-    R"(// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
-    module;
-    #define VMA_HPP_CXX_MODULE
-
-    #define VULKAN_HPP_CXX_MODULE
-    #include <vulkan/vulkan_hpp_macros.hpp>
-
-    #define VMA_IMPLEMENTATION
-    #include "vk_mem_alloc.h"
-
-    export module vk_mem_alloc;
-    import std;
-    import vulkan;
-
-    #include "vk_mem_alloc.hpp"
-    #include "vk_mem_alloc_raii.hpp"
-
-    module : private;
-    namespace VULKAN_HPP_NAMESPACE {
-      // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
-      $0
-      #ifndef VULKAN_HPP_NO_SMART_HANDLE
-      $1
-      #endif
-      #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-      namespace VULKAN_HPP_RAII_NAMESPACE {
-        $2
-      }
-      #endif
-    }
-    )"_seg.replace(specializations, uniqueSpecializations, raiiSpecializations).resolve(tree).generate("vk_mem_alloc.cppm");
-}
-
 std::string readSource() {
     std::ifstream in(INPUT_HEADER);
     std::string text;
@@ -2220,7 +2158,6 @@ int main(int, char**) {
         generateStructs(source, symbols);
         generateHandles(source, symbols);
         generateStaticAssertions(source.tree, symbols);
-        generateModule(source.tree, symbols);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

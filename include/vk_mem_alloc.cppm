@@ -1,7 +1,5 @@
-// Generated from the Vulkan Memory Allocator (vk_mem_alloc.h).
 module;
 #define VMA_HPP_CXX_MODULE
-
 #define VULKAN_HPP_CXX_MODULE
 #include <vulkan/vulkan_hpp_macros.hpp>
 
@@ -14,42 +12,3 @@ import vulkan;
 
 #include "vk_mem_alloc.hpp"
 #include "vk_mem_alloc_raii.hpp"
-
-module : private;
-namespace VULKAN_HPP_NAMESPACE {
-  // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
-  template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits>;
-  template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocationCreateFlagBits>;
-  template<> struct FlagTraits<VMA_HPP_NAMESPACE::PoolCreateFlagBits>;
-  template<> struct FlagTraits<VMA_HPP_NAMESPACE::DefragmentationFlagBits>;
-  template<> struct FlagTraits<VMA_HPP_NAMESPACE::VirtualBlockCreateFlagBits>;
-  template<> struct FlagTraits<VMA_HPP_NAMESPACE::VirtualAllocationCreateFlagBits>;
-  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Allocator>;
-  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Pool>;
-  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::Allocation>;
-  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::DefragmentationContext>;
-  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::VirtualAllocation>;
-  template<> struct isVulkanHandleType<VMA_HPP_NAMESPACE::VirtualBlock>;
-#ifndef VULKAN_HPP_NO_SMART_HANDLE
-  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocator, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Pool, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::Allocation, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualAllocation, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-  template<> class UniqueHandleTraits<VMA_HPP_NAMESPACE::VirtualBlock, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-  template<> class UniqueHandleTraits<Buffer, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-  template<> class UniqueHandleTraits<Image, VMA_HPP_NAMESPACE::detail::Dispatcher>;
-#endif
-#ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
-  namespace VULKAN_HPP_RAII_NAMESPACE {
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Allocator>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Pool>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Allocation>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::DefragmentationContext>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::VirtualAllocation>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::VirtualBlock>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Buffer>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::Image>;
-    template<> struct isVulkanRAIIHandleType<VMA_HPP_NAMESPACE::VMA_HPP_RAII_NAMESPACE::StatsString>;
-  }
-#endif
-}
