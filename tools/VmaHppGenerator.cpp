@@ -1971,7 +1971,7 @@ void generateHandles(const Source& source, Symbols& symbols) {
     )"_seg.replace(definitions).resolve(source.tree).generateHpp("funcs");
     R"(
     #include "vk_mem_alloc.hpp"
-    #ifndef VMA_HPP_CXX_MODULE
+    #ifndef VULKAN_HPP_CXX_MODULE
     #include <vulkan/vulkan_raii.hpp>
     #endif
 

@@ -3,7 +3,7 @@
 #define VULKAN_MEMORY_ALLOCATOR_RAII_HPP
 
 #include "vk_mem_alloc.hpp"
-#ifndef VMA_HPP_CXX_MODULE
+#ifndef VULKAN_HPP_CXX_MODULE
 #include <vulkan/vulkan_raii.hpp>
 #endif
 

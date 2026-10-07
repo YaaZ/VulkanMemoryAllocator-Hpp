@@ -1,5 +1,4 @@
 module;
-#define VMA_HPP_CXX_MODULE
 #define VULKAN_HPP_CXX_MODULE
 #include <vulkan/vulkan_hpp_macros.hpp>
 
