@@ -28,8 +28,8 @@ jobs:
       matrix:
         env: [
           { os: macos-26, cxx: clang++, name: apple-clang },
-          { os: macos-26, cxx: '$(brew --prefix llvm@20)/bin/clang++', name: clang, extra_flags: '-DCMAKE_OSX_SYSROOT=macosx' },
-          { os: macos-26, cxx: '$(brew --prefix llvm@20)/bin/clang++', name: clang, extra_flags: '-DCMAKE_OSX_SYSROOT=macosx', modules: true },
+          { os: macos-26, cxx: '$(brew --prefix llvm@20)/bin/clang++', name: clang-libc++, extra_flags: '-DCMAKE_OSX_SYSROOT=macosx' },
+          { os: macos-26, cxx: '$(brew --prefix llvm@20)/bin/clang++', name: clang-libc++, extra_flags: '-DCMAKE_OSX_SYSROOT=macosx', modules: true },
           { os: macos-26, cxx: g++-13, c: gcc-13 },
           { os: macos-26, cxx: g++-14, c: gcc-14, cxx_flags: '-D__STDC_WANT_LIB_EXT1__=0' },
           { os: macos-26, cxx: g++-15, c: gcc-15, cxx_flags: '-D__STDC_WANT_LIB_EXT1__=0' },
@@ -72,7 +72,7 @@ jobs:
         if: matrix.env.modules
         uses: lukka/get-cmake@latest
         with:
-          cmakeVersion: 4.1.2
+          cmakeVersion: 4.2.3
           ninjaVersion: latest
       - name: Setup MSVC
         if: contains(matrix.env.os, 'windows') && matrix.env.name == 'msvc'
@@ -84,21 +84,11 @@ jobs:
         run: |
           N=$(${{matrix.env.cxx}} -dumpversion | cut -d. -f1)
           sudo apt install libc++-$N-dev libc++abi-$N-dev
-      - name: Fix 'import std'
-        if: contains(matrix.env.os, 'ubuntu') && contains(matrix.env.name, 'libc++') && matrix.env.modules
+      - name: Find libc++.modules.json
+        if: matrix.env.modules && contains(matrix.env.name, 'libc++')
         run: |
-          LLVM=$(realpath "$(dirname "$(readlink -f "$(which ${{matrix.env.cxx}})")")/..")
-          JSON=$(readlink -f "$(${{matrix.env.cxx}} -stdlib=libc++ -print-file-name=libc++.modules.json)")
-          SRC=$(dirname "$JSON")/$(grep -o '"source-path": *"[^"]*std.cppm"' "$JSON" | sed 's/.*"\(.*\)"/\1/')
-          if [[ ! -f "$SRC" ]]; then
-            sudo sed -i "s|\"\.\./share/|\"$LLVM/share/|g" "$JSON"
-            echo "Patched $JSON"
-          fi
-      - name: Fix 'import std'
-        if: contains(matrix.env.os, 'macos') && contains(matrix.env.name, 'clang') && matrix.env.modules
-        run: | # https://gitlab.kitware.com/cmake/cmake/-/issues/25965#note_1523575
-          LLVM=$(dirname $(dirname ${{matrix.env.cxx}}))
-          sed "s|\.\./\.\./share|$LLVM/share|g" $LLVM/lib/c++/libc++.modules.json > $LLVM/lib/libc++.modules.json
+          LLVM=$(dirname $(dirname $(readlink -f $(which ${{matrix.env.cxx}}))))
+          echo "LIBCXX_MODULES_JSON=$(ls $LLVM/lib/c++/libc++.modules.json $LLVM/lib/libc++.modules.json 2> /dev/null | head -1)" >> $GITHUB_ENV
       - name: Setup build environment
         run: |
           IFS='#' read -r -a VULKAN <<< '${{inputs.vulkan}}'
@@ -132,6 +122,7 @@ jobs:
               ${{matrix.env.c && format('-DCMAKE_C_COMPILER={0}', matrix.env.c)}}
               ${{matrix.env.linker_flags && format('-DCMAKE_EXE_LINKER_FLAGS=''{0}''', matrix.env.linker_flags)}}
               ${{matrix.env.extra_flags || ''}}
+              ${LIBCXX_MODULES_JSON:+-DCMAKE_CXX_STDLIB_MODULES_JSON=$LIBCXX_MODULES_JSON}
               -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
           )
           RESULT=0
