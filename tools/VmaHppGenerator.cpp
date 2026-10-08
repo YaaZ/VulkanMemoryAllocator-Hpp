@@ -2131,7 +2131,12 @@ void generateStaticAssertions(const ConditionalTree& tree, const Symbols& symbol
         VULKAN_HPP_STATIC_ASSERT(std::is_nothrow_move_constructible<VMA_HPP_NAMESPACE::$0>::value, "$0 is not nothrow_move_constructible!");
         )"_seg.replace(h.name);
     }
-    std::move("#include \"vk_mem_alloc.hpp\"" >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
+    std::move(R"(
+    #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
+    #include "vk_mem_alloc.h"
+    #endif
+    #include "vk_mem_alloc.hpp"
+    )"_seg >>= content << navigate.reset).resolve(tree).generateHpp("static_assertions");
 }
 
 std::string readSource() {

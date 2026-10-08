@@ -2,6 +2,9 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_STATIC_ASSERTIONS_HPP
 #define VULKAN_MEMORY_ALLOCATOR_STATIC_ASSERTIONS_HPP
 
+#ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
+#include "vk_mem_alloc.h"
+#endif
 #include "vk_mem_alloc.hpp"
 
 VULKAN_HPP_STATIC_ASSERT(sizeof(VMA_HPP_NAMESPACE::DeviceMemoryCallbacks) == sizeof(VmaDeviceMemoryCallbacks), "struct and wrapper have different size!");

@@ -4,13 +4,13 @@ import vulkan;
 import vk_mem_alloc;
 #else
 #define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.hpp>
-#include <vk_mem_alloc_raii.hpp>
+#include "vk_mem_alloc.hpp"
+#include "vk_mem_alloc_raii.hpp"
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 #endif
 
-#include <vk_mem_alloc_imported.hpp>
-#include <vk_mem_alloc_static_assertions.hpp>
+#include "vk_mem_alloc_imported.hpp"
+#include "vk_mem_alloc_static_assertions.hpp"
 
 template<class T> T value(T&& t) { return std::forward<T>(t); }
 template<class T> T value(vk::ResultValue<T>&& t) { return std::forward<T>(t.value); }

@@ -11,22 +11,15 @@
 #define VULKAN_HPP_EXPORT
 #endif
 
-// VMA header
-#ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
-#include "vk_mem_alloc.h"
-#endif
-
 // The body
 #ifndef VULKAN_MEMORY_ALLOCATOR_HPP
 #define VULKAN_MEMORY_ALLOCATOR_HPP
 
 #ifndef VULKAN_HPP_CXX_MODULE
-#include <vulkan/vulkan.hpp>
+#ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
+#include "vk_mem_alloc.h"
 #endif
-
-// volk
-#ifdef VMA_HPP_ENABLE_VOLK
-#include <volk.h>
+#include <vulkan/vulkan.hpp>
 #endif
 
 #define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
