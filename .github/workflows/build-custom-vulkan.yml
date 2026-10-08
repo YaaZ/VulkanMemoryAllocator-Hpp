@@ -150,5 +150,5 @@ jobs:
         run: build ${{env.vk || env.modules && 'v1.4.344' || 'v1.4.327'}} -DVULKAN_HPP_USE_REFLECT -DVULKAN_HPP_HANDLES_MOVE_EXCHANGE
       - if: ${{!cancelled()}}
         run: build ${{env.vk || env.modules && 'v1.4.345' || 'v1.4.345'}} -DVULKAN_HPP_TYPESAFE_CONVERSION=0
-      - if: ${{!cancelled() && !env.modules}} # Build modules when https://github.com/KhronosGroup/Vulkan-Hpp/pull/2716 arrives from upstream.
-        run: build ${{env.vk || env.modules && '[broken]' || 'v1.4.348'}} -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_STD_EXPECTED
+      - if: ${{!cancelled()}}
+        run: build ${{env.vk || env.modules && 'v1.4.366' || 'v1.4.348'}} -DVULKAN_HPP_NO_EXCEPTIONS -DVULKAN_HPP_USE_STD_EXPECTED
