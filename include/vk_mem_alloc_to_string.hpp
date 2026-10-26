@@ -15,6 +15,7 @@ VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
     if (value == AllocatorCreateFlagBits::eKhrMaintenance4) return "KhrMaintenance4";
     if (value == AllocatorCreateFlagBits::eKhrMaintenance5) return "KhrMaintenance5";
     if (value == AllocatorCreateFlagBits::eKhrExternalMemoryWin32) return "KhrExternalMemoryWin32";
+    if (value == AllocatorCreateFlagBits::eKhrExtendedFlags) return "KhrExtendedFlags";
     return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
   }
 
@@ -31,6 +32,7 @@ VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
     if (value & AllocatorCreateFlagBits::eKhrMaintenance4) result += " KhrMaintenance4 |";
     if (value & AllocatorCreateFlagBits::eKhrMaintenance5) result += " KhrMaintenance5 |";
     if (value & AllocatorCreateFlagBits::eKhrExternalMemoryWin32) result += " KhrExternalMemoryWin32 |";
+    if (value & AllocatorCreateFlagBits::eKhrExtendedFlags) result += " KhrExtendedFlags |";
     if (result.size() > 1) result.back() = '}';
     else result = "{}";
     return result;

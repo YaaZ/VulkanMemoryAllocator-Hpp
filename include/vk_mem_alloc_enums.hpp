@@ -15,7 +15,8 @@ VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
     eExtMemoryPriority = VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT,
     eKhrMaintenance4 = VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT,
     eKhrMaintenance5 = VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT,
-    eKhrExternalMemoryWin32 = VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT
+    eKhrExternalMemoryWin32 = VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT,
+    eKhrExtendedFlags = VMA_ALLOCATOR_CREATE_KHR_EXTENDED_FLAGS_BIT
   };
   // wrapper using for bitmask VmaAllocatorCreateFlags, see https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/globals_enum.html
   using AllocatorCreateFlags = VULKAN_HPP_NAMESPACE::Flags<AllocatorCreateFlagBits>;
@@ -119,7 +120,8 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eExtMemoryPriority
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrMaintenance4
       | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrMaintenance5
-      | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrExternalMemoryWin32;
+      | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrExternalMemoryWin32
+      | VMA_HPP_NAMESPACE::AllocatorCreateFlagBits::eKhrExtendedFlags;
   };
 
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocationCreateFlagBits> {
