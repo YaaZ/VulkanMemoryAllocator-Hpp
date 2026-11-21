@@ -79,13 +79,16 @@ jobs:
         uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64
+      - name: Setup clang-cl
+        if: contains(matrix.env.os, 'windows') && matrix.env.cxx == 'clang-cl'
+        run: choco upgrade llvm -y --no-progress
       - name: Setup libc++
         if: contains(matrix.env.os, 'ubuntu') && contains(matrix.env.name, 'libc++')
         run: |
           N=$(${{matrix.env.cxx}} -dumpversion | cut -d. -f1)
           sudo apt install libc++-$N-dev libc++abi-$N-dev
       - name: Find libc++.modules.json
-        if: matrix.env.modules && contains(matrix.env.name, 'libc++')
+        if: contains(matrix.env.name, 'libc++')
         run: |
           LLVM=$(dirname $(dirname $(readlink -f $(which ${{matrix.env.cxx}}))))
           echo "LIBCXX_MODULES_JSON=$(ls $LLVM/lib/c++/libc++.modules.json $LLVM/lib/libc++.modules.json 2> /dev/null | head -1)" >> $GITHUB_ENV
